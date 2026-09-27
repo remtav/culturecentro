@@ -29,3 +29,53 @@ jobs:
 
       - name: Lancer les tests
         run: python -m unittest discover -s tests -v
+
+  coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer les dépendances (dont coverage)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Mesurer la couverture
+        run: |
+          python -m coverage run -m unittest discover -s tests
+          python -m coverage report -m
+
+      - name: Ajouter le rapport au résumé de l'exécution
+        if: always()
+        run: |
+          {
+            echo '### Couverture des tests'
+            echo '```'
+            python -m coverage report
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Vérifier le seuil minimal
+        run: python -m coverage report --fail-under=85
+
+      - name: Régénérer le badge
+        run: python scripts/coverage_badge.py -o coverage.svg
+
+      - name: Publier le badge mis à jour
+        if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        run: |
+          if ! git diff --quiet -- coverage.svg; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add coverage.svg
+            git commit -m "Mettre à jour le badge de couverture [skip ci]"
+            git push
+          fi

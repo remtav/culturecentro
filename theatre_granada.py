@@ -65,7 +65,7 @@ _ENTETES = {
 }
 
 #: Colonnes utilisées pour la sérialisation CSV/JSON.
-CHAMPS = ("titre", "date_debut", "lien", "lieu")
+CHAMPS = ("titre", "sous_titre", "date_debut", "lien", "image", "lieu")
 
 
 @dataclass
@@ -76,17 +76,22 @@ class Evenement:
     date_debut: datetime | None
     lien: str | None = None
     lieu: str | None = None
+    sous_titre: str | None = None
+    image: str | None = None
 
     def __str__(self) -> str:
         quand = self.date_debut.strftime("%Y-%m-%d %H:%M") if self.date_debut else "date inconnue"
-        return f"{quand} — {self.titre}" + (f" ({self.lien})" if self.lien else "")
+        titre = self.titre + (f" — {self.sous_titre}" if self.sous_titre else "")
+        return f"{quand} — {titre}" + (f" ({self.lien})" if self.lien else "")
 
     def to_dict(self) -> dict[str, str | None]:
         """Représentation sérialisable (date au format ISO 8601)."""
         return {
             "titre": self.titre,
+            "sous_titre": self.sous_titre,
             "date_debut": self.date_debut.isoformat() if self.date_debut else None,
             "lien": self.lien,
+            "image": self.image,
             "lieu": self.lieu,
         }
 
@@ -214,6 +219,17 @@ def _extraire_lieu(noeud: dict) -> str | None:
     return None
 
 
+def _extraire_image(noeud: dict) -> str | None:
+    image = noeud.get("image")
+    if isinstance(image, list):
+        image = image[0] if image else None
+    if isinstance(image, dict):
+        return image.get("url")
+    if isinstance(image, str):
+        return image
+    return None
+
+
 # --------------------------------------------------------------------------- #
 # Extraction WPBakery (source principale)
 # --------------------------------------------------------------------------- #
@@ -298,7 +314,27 @@ def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
         lien_el = item.select_one("a.vc_gitem-link")
         lien = lien_el.get("href") if lien_el else None
 
-        evenements.append(Evenement(titre=titre, date_debut=date_debut, lien=lien))
+        # Sous-titre : plusieurs champs .home-soustitre par bloc (avant/après le
+        # titre) ; on garde le premier non vide.
+        sous_titre = None
+        for el in item.select(".home-soustitre"):
+            texte = el.get_text(" ", strip=True)
+            if texte:
+                sous_titre = texte
+                break
+
+        image_el = item.select_one("img.vc_gitem-zone-img")
+        image = image_el.get("src") if image_el else None
+
+        evenements.append(
+            Evenement(
+                titre=titre,
+                date_debut=date_debut,
+                lien=lien,
+                sous_titre=sous_titre,
+                image=image,
+            )
+        )
 
     return evenements
 
@@ -326,6 +362,7 @@ def _extraire_depuis_jsonld(html: str) -> list[Evenement]:
                     date_debut=_parse_date(noeud.get("startDate")),
                     lien=noeud.get("url"),
                     lieu=_extraire_lieu(noeud),
+                    image=_extraire_image(noeud),
                 )
             )
     return evenements

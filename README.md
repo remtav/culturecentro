@@ -1,5 +1,8 @@
 # Événements à venir — salles de spectacle
 
+[![Tests](https://github.com/remtav/culturecentro/actions/workflows/tests.yml/badge.svg)](https://github.com/remtav/culturecentro/actions/workflows/tests.yml)
+![Couverture](coverage.svg)
+
 Récupère la liste des **événements à venir** de la programmation de salles de
 spectacle et permet de les exporter en texte, CSV ou JSON. Deux salles sont
 prises en charge, chacune dans son propre module partageant la même interface
@@ -52,8 +55,19 @@ exporter_json(evenements, "evenements.json")
 exporter_csv(evenements, "evenements.csv")
 ```
 
-Chaque `Evenement` expose `titre`, `date_debut` (`datetime` ou `None`),
-`lien`, `lieu`, ainsi que `to_dict()` pour la sérialisation.
+Chaque `Evenement` expose :
+
+| Champ | Description |
+| --- | --- |
+| `titre` | Nom de l'événement. |
+| `sous_titre` | Mention / sous-titre (ex. « SUPPLÉMENTAIRE », nom de tournée), ou `None`. |
+| `date_debut` | `datetime` (naïf, supposé heure locale) ou `None`. |
+| `lien` | URL de la fiche de l'événement. |
+| `image` | URL de l'affiche. |
+| `lieu` | Nom du lieu (généralement `None` : toujours le Théâtre Granada). |
+
+`to_dict()` renvoie ces champs sérialisables (date au format ISO 8601), et
+les exports CSV/JSON reprennent les mêmes colonnes.
 
 ## Fonctionnement
 
@@ -87,8 +101,8 @@ exporter_json(evenements, "evenements.json")
 ```
 
 Les options (`--url`, `--format`, `-o/--sortie`, `--timeout`, `-v`) sont
-identiques à celles du Théâtre Granada, et chaque `Evenement` expose les
-mêmes champs (`titre`, `date_debut`, `lien`, `lieu`, `to_dict()`).
+identiques à celles du Théâtre Granada. Chaque `Evenement` expose `titre`,
+`date_debut`, `lien` et `lieu` (plus `to_dict()`).
 
 ### Fonctionnement
 
