@@ -1,13 +1,26 @@
 """Récupération des événements à venir du Théâtre Granada.
 
-Le site https://theatregranada.com est un site WordPress. Comme la plupart
-des sites d'agenda WordPress (The Events Calendar, etc.), la page de
-programmation expose ses événements de deux façons exploitables :
+Le site https://theatregranada.com est un site WordPress construit avec
+WPBakery Page Builder. La page de programmation
+(https://theatregranada.com/programmation-2/) affiche ses événements dans
+une grille « vc_basic_grid ». Chaque événement est un bloc
+``.vc_grid-item-mini`` contenant :
 
-1. Des données structurées schema.org de type ``Event`` en JSON-LD
-   (balise ``<script type="application/ld+json">``). C'est la source la
-   plus fiable et c'est celle qu'on privilégie.
-2. À défaut, on retombe sur un parcours du HTML.
+* la date en français dans un champ ACF ``.home-artist``
+  (ex. « dimanche 27 septembre 2026 à 20:00 ») ;
+* le titre dans ``.vc_gitem-post-data-source-post_title`` ;
+* le lien vers la fiche de l'événement dans ``a.vc_gitem-link``.
+
+On analyse donc en priorité cette grille WPBakery. Par sécurité (si le
+thème change un jour), on prévoit deux replis : les données structurées
+schema.org ``Event`` en JSON-LD, puis les sélecteurs du plugin
+« The Events Calendar ».
+
+Remarque : la grille est en mode « lazy » (10 éléments par page) mais ne
+propose ni bouton « charger plus » ni pagination visible ; les événements à
+venir tiennent donc sur cette unique page. Un éventuel chargement AJAX
+supplémentaire (``admin-ajax.php`` / ``vc_get_vc_grid_data``) est protégé
+par un nonce et n'est pas exploitable de façon fiable hors navigateur.
 
 La fonction ``lister_evenements_a_venir`` renvoie la liste des événements
 dont la date est postérieure (ou égale) à maintenant, triés par date.
@@ -72,6 +85,56 @@ def _parse_date(valeur: str | None) -> datetime | None:
         return None
 
 
+_MOIS_FR = {
+    "janvier": 1,
+    "février": 2,
+    "fevrier": 2,
+    "mars": 3,
+    "avril": 4,
+    "mai": 5,
+    "juin": 6,
+    "juillet": 7,
+    "août": 8,
+    "aout": 8,
+    "septembre": 9,
+    "octobre": 10,
+    "novembre": 11,
+    "décembre": 12,
+    "decembre": 12,
+}
+
+# Ex. : « dimanche 27 septembre 2026 à 20:00 » ou « 1er octobre 2026 ».
+_DATE_FR = re.compile(
+    r"(?P<jour>\d{1,2})\s*(?:er)?\s+"
+    r"(?P<mois>[a-zàâäéèêëîïôöùûüç]+)\s+"
+    r"(?P<annee>\d{4})"
+    r"(?:\D+(?P<heure>\d{1,2})\s*[h:]\s*(?P<minute>\d{2})?)?",
+    re.IGNORECASE,
+)
+
+
+def _parse_date_fr(valeur: str | None) -> datetime | None:
+    """Analyse une date française (« dimanche 27 septembre 2026 à 20:00 »).
+
+    Le nom du jour de la semaine et l'heure sont facultatifs. La date est
+    renvoyée « naïve » (sans fuseau) ; le filtrage la suppose en UTC.
+    """
+    if not valeur:
+        return None
+    m = _DATE_FR.search(valeur.strip().lower())
+    if not m:
+        return None
+    mois = _MOIS_FR.get(m.group("mois"))
+    if mois is None:
+        return None
+    heure = int(m.group("heure")) if m.group("heure") else 0
+    minute = int(m.group("minute")) if m.group("minute") else 0
+    try:
+        return datetime(int(m.group("annee")), mois, int(m.group("jour")), heure, minute)
+    except ValueError:
+        return None
+
+
 def _iterer_noeuds_jsonld(donnees: object) -> Iterable[dict]:
     """Parcourt récursivement une structure JSON-LD et livre chaque dict."""
     if isinstance(donnees, dict):
@@ -97,6 +160,31 @@ def _extraire_lieu(noeud: dict) -> str | None:
     if isinstance(lieu, str):
         return lieu
     return None
+
+
+def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
+    """Analyse la grille WPBakery de la page de programmation.
+
+    C'est la structure réellement utilisée par theatregranada.com.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    evenements: list[Evenement] = []
+
+    for item in soup.select(".vc_grid-item-mini"):
+        titre_el = item.select_one(".vc_gitem-post-data-source-post_title")
+        titre = titre_el.get_text(" ", strip=True) if titre_el else None
+        if not titre:
+            continue
+
+        date_el = item.select_one(".home-artist")
+        date_debut = _parse_date_fr(date_el.get_text(" ", strip=True)) if date_el else None
+
+        lien_el = item.select_one("a.vc_gitem-link")
+        lien = lien_el.get("href") if lien_el else None
+
+        evenements.append(Evenement(titre=titre, date_debut=date_debut, lien=lien))
+
+    return evenements
 
 
 def _extraire_depuis_jsonld(html: str) -> list[Evenement]:
@@ -186,7 +274,11 @@ def lister_evenements_a_venir(
 
     html = _telecharger(url, timeout)
 
-    evenements = _extraire_depuis_jsonld(html)
+    # Source principale : la grille WPBakery du site. Replis successifs si le
+    # thème change (JSON-LD schema.org, puis « The Events Calendar »).
+    evenements = _extraire_depuis_wpbakery(html)
+    if not evenements:
+        evenements = _extraire_depuis_jsonld(html)
     if not evenements:
         evenements = _extraire_depuis_html(html)
 
