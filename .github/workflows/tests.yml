@@ -67,7 +67,7 @@ jobs:
         run: python -m coverage report --fail-under=85
 
       - name: Régénérer le badge
-        run: python -m coverage_badge -o coverage.svg -f
+        run: python scripts/coverage_badge.py -o coverage.svg
 
       - name: Publier le badge mis à jour
         if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
