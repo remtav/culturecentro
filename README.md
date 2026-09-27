@@ -1,5 +1,8 @@
 # Théâtre Granada — événements à venir
 
+[![Tests](https://github.com/remtav/culturecentro/actions/workflows/tests.yml/badge.svg)](https://github.com/remtav/culturecentro/actions/workflows/tests.yml)
+![Couverture](coverage.svg)
+
 Récupère la liste des **événements à venir** de la programmation du
 [Théâtre Granada](https://theatregranada.com/programmation-2/) et permet de
 les exporter en texte, CSV ou JSON.
