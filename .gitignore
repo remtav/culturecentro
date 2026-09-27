@@ -1,3 +1,9 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Artefacts de couverture (le badge coverage.svg reste versionné)
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
