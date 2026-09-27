@@ -102,7 +102,9 @@ exporter_json(evenements, "evenements.json")
 
 Les options (`--url`, `--format`, `-o/--sortie`, `--timeout`, `-v`) sont
 identiques à celles du Théâtre Granada. Chaque `Evenement` expose `titre`,
-`date_debut`, `lien` et `lieu` (plus `to_dict()`).
+`date_debut`, `image`, `lien` et `lieu` (plus `to_dict()`). Le champ `image`
+(URL de l'affiche) est **obligatoire** dans le modèle : il est toujours
+présent, avec la valeur `None` si la source n'expose aucune affiche.
 
 ### Fonctionnement
 

@@ -18,6 +18,7 @@ Sur cette page de billetterie, chaque spectacle est un bloc
 * le titre dans ``.feature-title`` ;
 * la date en français dans ``.feature-date`` (ex. « 30 septembre 2026, 20h00 ») ;
 * le lieu dans ``.feature-city`` ;
+* l'affiche dans ``img[itemprop="image"]`` ;
 * l'identifiant de l'événement (``data-tpos-event``), d'où l'on reconstruit
   le lien de la fiche : ``<url_billetterie>/<id>``.
 
@@ -82,15 +83,22 @@ _ENTETES = {
 }
 
 #: Colonnes utilisées pour la sérialisation CSV/JSON.
-CHAMPS = ("titre", "date_debut", "lien", "lieu")
+CHAMPS = ("titre", "date_debut", "lien", "image", "lieu")
 
 
 @dataclass
 class Evenement:
-    """Un événement de la programmation."""
+    """Un événement de la programmation.
+
+    ``image`` (URL de l'affiche) est un champ **obligatoire** du modèle : il
+    doit être fourni à la construction. Sa valeur peut être ``None`` lorsque
+    la source n'expose réellement aucune image, mais le champ est toujours
+    présent dans la sérialisation.
+    """
 
     titre: str
     date_debut: datetime | None
+    image: str | None
     lien: str | None = None
     lieu: str | None = None
 
@@ -104,6 +112,7 @@ class Evenement:
             "titre": self.titre,
             "date_debut": self.date_debut.isoformat() if self.date_debut else None,
             "lien": self.lien,
+            "image": self.image,
             "lieu": self.lieu,
         }
 
@@ -232,6 +241,17 @@ def _extraire_lieu(noeud: dict) -> str | None:
     return None
 
 
+def _extraire_image(noeud: dict) -> str | None:
+    image = noeud.get("image")
+    if isinstance(image, list):
+        image = image[0] if image else None
+    if isinstance(image, dict):
+        return image.get("url")
+    if isinstance(image, str):
+        return image
+    return None
+
+
 # --------------------------------------------------------------------------- #
 # Découverte de la liste Lepointdevente
 # --------------------------------------------------------------------------- #
@@ -295,12 +315,18 @@ def _extraire_depuis_lepointdevente(html: str, url_base: str) -> list[Evenement]
         lieu_el = item.select_one(".feature-city")
         lieu = lieu_el.get_text(" ", strip=True) if lieu_el else None
 
+        # L'affiche : <img itemprop="image" src="..."> (repli sur toute <img>).
+        img_el = item.select_one("img[itemprop=image]") or item.select_one("img")
+        image = img_el.get("src") if img_el else None
+
         # Pas d'ancre dans la carte : le lien de la fiche se reconstruit à
         # partir de l'identifiant ``data-tpos-event`` (ex. .../<slug>/529998).
         event_id = item.get("data-tpos-event")
         lien = urljoin(url_base.rstrip("/") + "/", event_id) if event_id else None
 
-        evenements.append(Evenement(titre=titre, date_debut=date_debut, lien=lien, lieu=lieu))
+        evenements.append(
+            Evenement(titre=titre, date_debut=date_debut, image=image, lien=lien, lieu=lieu)
+        )
 
     return evenements
 
@@ -326,6 +352,7 @@ def _extraire_depuis_jsonld(html: str) -> list[Evenement]:
                 Evenement(
                     titre=titre.strip(),
                     date_debut=_parse_date(noeud.get("startDate")),
+                    image=_extraire_image(noeud),
                     lien=noeud.get("url"),
                     lieu=_extraire_lieu(noeud),
                 )

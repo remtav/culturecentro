@@ -41,6 +41,7 @@ FRAGMENT_LISTE = """
     <div class="feature-col is-small" data-tpos-event="529998" style="cursor: pointer">
       <article class="feature-canvas has-tag">
         <div class="feature-content">
+          <img itemprop="image" src="https://tpos.s3.amazonaws.com/events/PBN/26/09/30/001/pbn260930001-1152x648-fr.png" alt="Juste Miben">
           <h3 class="feature-title"><div class="tag-attendance-offline" title="Événement en personne"></div>Juste Miben (supplémentaire)</h3>
           <div class="feature-date">30 septembre 2026, 20h00</div>
           <div class="feature-city">La Petite boite noire, Sherbrooke, QC</div>
@@ -117,6 +118,10 @@ class TestExtractionLepointdevente(unittest.TestCase):
         self.assertEqual(ev.date_debut, datetime(2026, 9, 30, 20, 0))
         self.assertEqual(ev.lien, "https://lepointdevente.com/billets/programmationavenir/529998")
         self.assertEqual(ev.lieu, "La Petite boite noire, Sherbrooke, QC")
+        self.assertEqual(
+            ev.image,
+            "https://tpos.s3.amazonaws.com/events/PBN/26/09/30/001/pbn260930001-1152x648-fr.png",
+        )
 
     def test_lien_du_second(self):
         self.assertEqual(
@@ -124,16 +129,20 @@ class TestExtractionLepointdevente(unittest.TestCase):
             "https://lepointdevente.com/billets/programmationavenir/541978",
         )
 
+    def test_image_absente_vaut_none(self):
+        # La seconde carte n'a pas de balise <img> : image doit valoir None.
+        self.assertIsNone(self.evenements[1].image)
+
 
 class TestFinaliser(unittest.TestCase):
     def test_filtre_passe_deduplique_et_trie(self):
         seuil = datetime(2026, 10, 1, tzinfo=timezone.utc)
         brut = [
-            Evenement("Futur B", datetime(2026, 11, 5, 20, 0)),
-            Evenement("Passé", datetime(2026, 9, 1, 20, 0)),  # exclu (avant le seuil)
-            Evenement("Futur A", datetime(2026, 10, 2, 20, 0)),
-            Evenement("Futur A", datetime(2026, 10, 2, 20, 0)),  # doublon
-            Evenement("Sans date", None),  # conservé
+            Evenement("Futur B", datetime(2026, 11, 5, 20, 0), None),
+            Evenement("Passé", datetime(2026, 9, 1, 20, 0), None),  # exclu (avant le seuil)
+            Evenement("Futur A", datetime(2026, 10, 2, 20, 0), None),
+            Evenement("Futur A", datetime(2026, 10, 2, 20, 0), None),  # doublon
+            Evenement("Sans date", None, None),  # conservé
         ]
         resultat = _finaliser(brut, seuil)
         self.assertEqual(
@@ -148,6 +157,7 @@ class TestExports(unittest.TestCase):
             Evenement(
                 "Juste Miben",
                 datetime(2026, 9, 30, 20, 0),
+                "https://tpos.s3.amazonaws.com/events/PBN/pbn260930001.png",
                 "https://lepointdevente.com/billets/programmationavenir/529998",
                 "La Petite boite noire, Sherbrooke, QC",
             ),
@@ -159,6 +169,9 @@ class TestExports(unittest.TestCase):
         self.assertEqual(len(donnees), 2)
         self.assertEqual(donnees[0]["titre"], "Juste Miben")
         self.assertEqual(donnees[0]["date_debut"], "2026-09-30T20:00:00")
+        self.assertEqual(
+            donnees[0]["image"], "https://tpos.s3.amazonaws.com/events/PBN/pbn260930001.png"
+        )
         self.assertIsNone(donnees[1]["date_debut"])
 
     def test_csv_entete_et_lignes(self):
@@ -166,6 +179,9 @@ class TestExports(unittest.TestCase):
         self.assertEqual(len(lignes), 2)
         self.assertEqual(lignes[0]["titre"], "Juste Miben")
         self.assertEqual(lignes[0]["lieu"], "La Petite boite noire, Sherbrooke, QC")
+        self.assertEqual(
+            lignes[0]["image"], "https://tpos.s3.amazonaws.com/events/PBN/pbn260930001.png"
+        )
 
 
 if __name__ == "__main__":
