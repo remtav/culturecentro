@@ -33,8 +33,10 @@ from theatre_granada import (  # noqa: E402
 # Fragment reproduisant la structure réelle de deux items de la grille.
 FRAGMENT_GRILLE = """
 <div class="vc_grid-item-mini vc_clearfix">
+  <img alt="Jesse Cook" class="vc_gitem-zone-img" src="https://theatregranada.com/img/jesse-cook.jpg"/>
   <div class="vc_gitem-zone-c">
     <div class="vc_gitem-acf home-artist">dimanche 27 septembre 2026 à 20:00</div>
+    <div class="vc_gitem-acf home-soustitre"></div>
     <div class="vc_custom_heading home-date vc_gitem-post-data-source-post_title">
       <h4>Jesse Cook</h4>
     </div>
@@ -42,8 +44,10 @@ FRAGMENT_GRILLE = """
   </div>
 </div>
 <div class="vc_grid-item-mini vc_clearfix">
+  <img alt="Alain-François" class="vc_gitem-zone-img" src="https://theatregranada.com/img/alain-francois.jpg"/>
   <div class="vc_gitem-zone-c">
     <div class="vc_gitem-acf home-artist">jeudi 10 décembre 2026 à 20:30</div>
+    <div class="vc_gitem-acf home-soustitre">Souper-spectacle des Fêtes</div>
     <div class="vc_custom_heading home-date vc_gitem-post-data-source-post_title">
       <h4>Alain-François | Souper-spectacle</h4>
     </div>
@@ -85,9 +89,14 @@ class TestExtractionWPBakery(unittest.TestCase):
         ev = self.evenements[0]
         self.assertEqual(ev.date_debut, datetime(2026, 9, 27, 20, 0))
         self.assertEqual(ev.lien, "https://theatregranada.com/jesse-cook/")
+        self.assertEqual(ev.image, "https://theatregranada.com/img/jesse-cook.jpg")
+        self.assertIsNone(ev.sous_titre)  # champ home-soustitre vide
 
     def test_heure_avec_minutes(self):
         self.assertEqual(self.evenements[1].date_debut, datetime(2026, 12, 10, 20, 30))
+
+    def test_sous_titre(self):
+        self.assertEqual(self.evenements[1].sous_titre, "Souper-spectacle des Fêtes")
 
 
 class TestFinaliser(unittest.TestCase):
@@ -110,7 +119,13 @@ class TestFinaliser(unittest.TestCase):
 class TestExports(unittest.TestCase):
     def setUp(self):
         self.evenements = [
-            Evenement("Jesse Cook", datetime(2026, 9, 27, 20, 0), "https://x/jesse-cook/"),
+            Evenement(
+                "Jesse Cook",
+                datetime(2026, 9, 27, 20, 0),
+                "https://x/jesse-cook/",
+                sous_titre="Live in Concert",
+                image="https://x/jesse.jpg",
+            ),
             Evenement("Sans date", None, None),
         ]
 
@@ -119,14 +134,21 @@ class TestExports(unittest.TestCase):
         self.assertEqual(len(donnees), 2)
         self.assertEqual(donnees[0]["titre"], "Jesse Cook")
         self.assertEqual(donnees[0]["date_debut"], "2026-09-27T20:00:00")
+        self.assertEqual(donnees[0]["sous_titre"], "Live in Concert")
+        self.assertEqual(donnees[0]["image"], "https://x/jesse.jpg")
         self.assertIsNone(donnees[1]["date_debut"])
 
     def test_csv_entete_et_lignes(self):
-        lignes = list(csv.DictReader(io.StringIO(exporter_csv(self.evenements))))
+        flux = io.StringIO(exporter_csv(self.evenements))
+        lecteur = csv.DictReader(flux)
+        self.assertIn("sous_titre", lecteur.fieldnames)
+        self.assertIn("image", lecteur.fieldnames)
+        lignes = list(lecteur)
         self.assertEqual(len(lignes), 2)
         self.assertEqual(lignes[0]["titre"], "Jesse Cook")
         self.assertEqual(lignes[0]["date_debut"], "2026-09-27T20:00:00")
         self.assertEqual(lignes[0]["lien"], "https://x/jesse-cook/")
+        self.assertEqual(lignes[0]["image"], "https://x/jesse.jpg")
 
     def test_json_ecrit_fichier(self):
         import tempfile

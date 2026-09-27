@@ -44,8 +44,19 @@ exporter_json(evenements, "evenements.json")
 exporter_csv(evenements, "evenements.csv")
 ```
 
-Chaque `Evenement` expose `titre`, `date_debut` (`datetime` ou `None`),
-`lien`, `lieu`, ainsi que `to_dict()` pour la sérialisation.
+Chaque `Evenement` expose :
+
+| Champ | Description |
+| --- | --- |
+| `titre` | Nom de l'événement. |
+| `sous_titre` | Mention / sous-titre (ex. « SUPPLÉMENTAIRE », nom de tournée), ou `None`. |
+| `date_debut` | `datetime` (naïf, supposé heure locale) ou `None`. |
+| `lien` | URL de la fiche de l'événement. |
+| `image` | URL de l'affiche. |
+| `lieu` | Nom du lieu (généralement `None` : toujours le Théâtre Granada). |
+
+`to_dict()` renvoie ces champs sérialisables (date au format ISO 8601), et
+les exports CSV/JSON reprennent les mêmes colonnes.
 
 ## Fonctionnement
 
