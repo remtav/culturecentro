@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  html { -webkit-text-size-adjust: 100%; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Culture Centro Sherbrooke</title>
+<meta name="description" content="Guichet unique de la programmation culturelle du centre-ville de Sherbrooke.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper: #FBF7F0;
+    --paper-2: #F3ECDF;
+    --card: #FFFFFF;
+    --ink: #16162E;
+    --ink-soft: #45455E;
+    --ink-faint: #6E6E85;
+    --line: #E4DBCB;
+    --line-strong: #D2C7B2;
+    --accent: #B4741F;
+
+    --d-theatre: #D6435A;
+    --d-musique: #6C5CE7;
+    --d-arts: #159A8A;
+    --d-festival: #E39A2B;
+    --d-danse: #C24E8E;
+    --d-litt: #3D7DCA;
+
+    --shadow: 0 1px 2px rgba(22,22,46,.04), 0 8px 22px rgba(22,22,46,.06);
+    --radius: 14px;
+    --maxw: 1140px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #131322; --paper-2: #1B1B2E; --card: #1E1E33;
+      --ink: #F2EEF6; --ink-soft: #C3C0D4; --ink-faint: #918EA8;
+      --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C;
+      --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
+      --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px rgba(0,0,0,.34);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #131322; --paper-2: #1B1B2E; --card: #1E1E33;
+    --ink: #F2EEF6; --ink-soft: #C3C0D4; --ink-faint: #918EA8;
+    --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C;
+    --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
+    --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px rgba(0,0,0,.34);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display {
+    font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+    text-wrap: balance; letter-spacing: -0.02em; line-height: 1.05; margin: 0;
+  }
+  a { color: inherit; }
+  .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding-inline: 22px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* ---------- Masthead : en-tête + hero fusionnés, compact ---------- */
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(90% 130% at 100% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%),
+      var(--paper);
+  }
+  .mast-inner { padding-block: 20px 22px; }
+  .top-row { display: flex; align-items: center; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; margin-right: auto; }
+  .mark {
+    width: 40px; height: 40px; flex: none; border-radius: 11px;
+    background: var(--ink); color: var(--paper); display: grid; place-items: center;
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.04em;
+  }
+  .brand-txt strong { display: block; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 18px; line-height: 1; letter-spacing: -0.03em; }
+  .brand-txt span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
+  nav.top { display: flex; gap: 20px; font-size: 14.5px; font-weight: 500; }
+  nav.top a { text-decoration: none; color: var(--ink-soft); }
+  nav.top a:hover { color: var(--ink); }
+  .theme-btn {
+    border: 1px solid var(--line-strong); background: var(--card); color: var(--ink-soft);
+    width: 40px; height: 40px; border-radius: 11px; cursor: pointer; display: grid; place-items: center; flex: none;
+  }
+  .theme-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+  @media (max-width: 680px) { nav.top { display: none; } }
+
+  .mast-hero { margin-top: 20px; }
+  .mast-hero h1 { font-size: clamp(21px, 3.1vw, 33px); font-weight: 800; white-space: nowrap; }
+  .mast-hero h1 .hl { color: var(--accent); }
+  @media (max-width: 620px) { .mast-hero h1 { white-space: normal; text-align: right; } }
+
+  /* ---------- Toolbar sticky ---------- */
+  .toolbar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding-block: 12px;
+  }
+  .toolbar-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-right: auto; }
+  .chip {
+    border: 1px solid var(--line-strong); background: var(--card); color: var(--ink-soft);
+    font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px; transition: border-color .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--ink-faint); color: var(--ink); }
+  .chip .swatch { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--ink-faint)); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .chip[aria-pressed="true"] .swatch { box-shadow: 0 0 0 2px color-mix(in srgb, var(--paper) 40%, transparent); }
+  .search { position: relative; flex: 0 1 250px; }
+  .search input {
+    width: 100%; font: inherit; font-size: 14px; padding: 9px 14px 9px 38px;
+    border-radius: 999px; border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+  }
+  .search input::placeholder { color: var(--ink-faint); }
+  .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); }
+
+  /* ---------- Agenda layout : liste + fil chronologique ---------- */
+  .agenda { padding-block: 26px 48px; }
+  .agenda-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .agenda-head h2 { font-size: clamp(21px, 3vw, 28px); font-weight: 800; }
+  .agenda-head .count { font-size: 14px; color: var(--ink-faint); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .agenda-layout { display: grid; grid-template-columns: 1fr 128px; gap: 34px; align-items: start; }
+
+  .month-group { margin-bottom: 30px; scroll-margin-top: 90px; }
+  .month-title {
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 15px;
+    letter-spacing: 0.02em; text-transform: capitalize;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px; color: var(--ink);
+  }
+  .month-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .month-title .n { font-size: 12px; color: var(--ink-faint); font-weight: 600; text-transform: none; letter-spacing: 0; }
+
+  .rows { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Event card horizontale */
+  .event {
+    display: grid; grid-template-columns: 176px 1fr; gap: 0;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .15s;
+    text-decoration: none; color: inherit;
+  }
+  .event:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(22,22,46,.08), 0 16px 34px rgba(22,22,46,.1); }
+  .cover { position: relative; min-height: 132px; color: #fff; overflow: hidden; background: #1a1a24; }
+  .cover .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.04) 42%, rgba(0,0,0,0.3)); }
+  .cover .date-badge {
+    position: absolute; top: 12px; left: 12px; z-index: 2;
+    background: rgba(0,0,0,.32); border-radius: 10px; padding: 6px 9px; text-align: center; line-height: 1; backdrop-filter: blur(2px);
+  }
+  .cover .date-badge span { display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .92; margin-bottom: 3px; }
+  .cover .date-badge b { font-family: "Bricolage Grotesque", sans-serif; font-size: 22px; font-variant-numeric: tabular-nums; }
+
+  .event .body { padding: 15px 17px; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .disc-pill {
+    align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+    color: var(--dc); background: color-mix(in srgb, var(--dc) 14%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--dc) 30%, transparent);
+  }
+  .event h3 { font-size: 19px; font-weight: 700; }
+  .event .venue { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
+  .event .venue svg { color: var(--ink-faint); flex: none; }
+  .event .when { font-size: 13px; color: var(--ink-faint); font-weight: 500; }
+  .event .desc { font-size: 13.5px; color: var(--ink-soft); margin-top: 1px; }
+
+  .empty { text-align: center; padding: 54px 20px; color: var(--ink-faint); border: 1.5px dashed var(--line-strong); border-radius: var(--radius); }
+  .empty b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 20px; color: var(--ink); margin-bottom: 4px; }
+
+  /* Filtre de période (segmenté) */
+  .seg { display: inline-flex; background: var(--card); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg button { border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+  /* Bande « En ce moment » (longue durée) */
+  .now-band { margin-bottom: 28px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--accent) 7%, var(--card)); }
+  .band-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+  .band-head h3 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .band-head h3::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .band-head span { font-size: 13px; color: var(--ink-faint); }
+  .now-rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+
+  /* Étiquettes de statut */
+  .pill-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tag-last { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: #241a08; background: var(--accent); }
+  .tag-soon { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: var(--ink-soft); background: color-mix(in srgb, var(--ink) 8%, var(--card)); border: 1px solid var(--line); }
+  .date-badge.cont { padding: 6px 10px; }
+  .date-badge.cont b { font-size: 15px; letter-spacing: -0.01em; }
+
+  /* ---------- Fil chronologique (rail) ---------- */
+  .rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 82px); align-self: start; }
+  .rail .rail-label { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 14px; padding-left: 4px; }
+  .rail .track { position: relative; display: flex; flex-direction: column; gap: 4px; max-height: calc(100vh - 150px); overflow-y: auto; }
+  .rail .track::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: var(--line); border-radius: 2px; }
+  .tl-node {
+    position: relative; display: flex; align-items: center; gap: 11px;
+    background: none; border: 0; padding: 6px 4px; cursor: pointer; text-align: left; font: inherit; color: var(--ink-faint); width: 100%; border-radius: 8px;
+  }
+  .tl-node:hover { color: var(--ink); }
+  .tl-node .dot {
+    width: 14px; height: 14px; flex: none; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--line-strong); z-index: 1; transition: all .15s;
+  }
+  .tl-node .lbl { line-height: 1.1; }
+  .tl-node .lbl b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 14px; font-weight: 700; text-transform: capitalize; }
+  .tl-node .lbl i { font-style: normal; font-size: 11px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  .tl-node .lbl em { font-style: normal; font-size: 11px; font-weight: 600; }
+  .tl-node[aria-current="true"] { color: var(--ink); }
+  .tl-node[aria-current="true"] .dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+
+  @media (max-width: 820px) {
+    .agenda-layout { grid-template-columns: 1fr; gap: 6px; }
+    .rail {
+      order: -1; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 60px); z-index: 20;
+      background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(6px);
+      margin-inline: -22px; padding: 10px 22px; border-bottom: 1px solid var(--line);
+    }
+    .rail .rail-label { display: none; }
+    .rail .track { flex-direction: row; gap: 8px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+    .rail .track::before { display: none; }
+    .tl-node { flex: none; padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--card); }
+    .tl-node .dot { width: 8px; height: 8px; }
+    .tl-node .lbl i { display: none; }
+    .tl-node[aria-current="true"] { border-color: var(--accent); }
+  }
+  @media (max-width: 540px) {
+    .event { grid-template-columns: 108px 1fr; }
+    .cover { min-height: 100%; }
+    .cover .date-badge b { font-size: 18px; }
+  }
+
+  /* ---------- Partenaires (condensé) ---------- */
+  .partners-sec { background: var(--paper-2); border-top: 1px solid var(--line); }
+  .partners-sec .wrap { padding-block: 34px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .sec-head h2 { font-size: clamp(19px, 2.6vw, 25px); font-weight: 800; }
+  .sec-head .count { font-size: 13px; color: var(--ink-faint); font-weight: 600; }
+  .partners { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .partner { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; gap: 12px; align-items: center; }
+  .partner .glyph { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 15px; color: #fff; background: var(--pc, var(--ink)); }
+  .partner b { display: block; font-size: 14.5px; }
+  .partner span { font-size: 12px; color: var(--ink-faint); }
+
+  /* ---------- Footer ---------- */
+  footer.site { background: var(--ink); color: color-mix(in srgb, var(--paper) 86%, transparent); padding-block: 34px 28px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer.site { background: #0C0C18; } }
+  :root[data-theme="dark"] footer.site { background: #0C0C18; }
+  footer.site .cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,.14); }
+  footer .mark { background: var(--paper); color: var(--ink); }
+  footer h4 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 11px; color: color-mix(in srgb, var(--paper) 58%, transparent); font-family: "Instrument Sans", sans-serif; font-weight: 600; }
+  footer a { color: color-mix(in srgb, var(--paper) 82%, transparent); text-decoration: none; display: block; margin-bottom: 7px; font-size: 14px; }
+  footer a:hover { color: #fff; }
+  footer .lede { font-size: 13.5px; max-width: 36ch; margin: 12px 0 0; color: color-mix(in srgb, var(--paper) 68%, transparent); }
+  footer .fine { padding-top: 18px; font-size: 12.5px; color: color-mix(in srgb, var(--paper) 54%, transparent); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  @media (max-width: 680px) { footer.site .cols { grid-template-columns: 1fr; gap: 20px; } }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  html { scroll-behavior: smooth; }
+</style>
+
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap mast-inner">
+    <div class="top-row">
+      <a class="brand" href="#">
+        <span class="mark">CC</span>
+        <span class="brand-txt"><strong>Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
+      </a>
+      <nav class="top">
+        <a href="#agenda">Agenda</a>
+        <a href="#lieux">Lieux partenaires</a>
+        <a href="#apropos">À propos</a>
+      </nav>
+      <button class="theme-btn" id="theme" title="Basculer le thème" aria-label="Basculer le thème clair / sombre">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+    <div class="mast-hero">
+      <h1>Toute la culture du <span class="hl">centre-ville</span>, un seul agenda.</h1>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar" id="agenda">
+  <div class="wrap toolbar-inner">
+    <div class="chips" id="chips"></div>
+    <div class="seg" id="period" role="group" aria-label="Filtrer par période">
+      <button type="button" data-p="all" aria-pressed="true">Tout</button>
+      <button type="button" data-p="week">Cette semaine</button>
+      <button type="button" data-p="month">Ce mois-ci</button>
+    </div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Rechercher…" aria-label="Rechercher un événement ou un lieu">
+    </div>
+  </div>
+</div>
+
+<main class="wrap agenda">
+  <div class="agenda-head">
+    <h2>Agenda</h2>
+    <span class="count" id="resCount"></span>
+  </div>
+  <section class="now-band" id="nowBand" hidden>
+    <div class="band-head"><h3>En ce moment</h3><span>expositions et parcours à voir avant la fin</span></div>
+    <div class="now-rows" id="nowRows"></div>
+  </section>
+  <div class="agenda-layout">
+    <div id="list"></div>
+    <nav class="rail" id="rail" aria-label="Fil chronologique par mois">
+      <div class="track" id="track"></div>
+    </nav>
+  </div>
+  <div class="empty" id="empty" hidden>
+    <b>Aucun événement ne correspond</b>
+    Essayez une autre discipline ou effacez votre recherche.
+  </div>
+</main>
+
+<section class="partners-sec" id="lieux">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Lieux partenaires</h2>
+      <span class="count">Le réseau culturel du centre-ville</span>
+    </div>
+    <div class="partners" id="partners"></div>
+  </div>
+</section>
+
+<footer class="site" id="apropos">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="#">
+          <span class="mark">CC</span>
+          <span class="brand-txt"><strong style="color:var(--paper)">Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
+        </a>
+        <p class="lede">Le guichet unique, gratuit et public, de la programmation culturelle du cœur de Sherbrooke. Données de démonstration fictives.</p>
+      </div>
+      <div>
+        <h4>Explorer</h4>
+        <a href="#agenda">Agenda complet</a>
+        <a href="#lieux">Lieux partenaires</a>
+        <a href="#">Ce week-end</a>
+      </div>
+      <div>
+        <h4>Le projet</h4>
+        <a href="#">Devenir partenaire</a>
+        <a href="#">Soumettre un événement</a>
+        <a href="#">Infolettre</a>
+      </div>
+    </div>
+    <div class="fine">
+      <span>Maquette de démonstration · Données fictives</span>
+      <span>Sherbrooke, Québec</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // Vignettes « photo démo » : scènes illustrées par discipline (images externes bloquées en artefact).
+  function svgWrap(u, inner){
+    return '<svg class="scene" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      inner +
+      '<rect width="400" height="300" fill="url(#vg'+u+')"/>' +
+      '<defs><radialGradient id="vg'+u+'" cx="50%" cy="40%" r="78%">' +
+        '<stop offset="52%" stop-color="#000" stop-opacity="0"/>' +
+        '<stop offset="100%" stop-color="#000" stop-opacity="0.36"/>' +
+      '</radialGradient></defs></svg>';
+  }
+
+  var SCENES = {
+    theatre: function(u){ return svgWrap(u,
+      '<rect width="400" height="300" fill="#251016"/>' +
+      '<rect y="158" width="400" height="142" fill="#3a1a20"/>' +
+      '<ellipse cx="200" cy="52" rx="150" ry="130" fill="#f0cf8c" opacity="0.15"/>' +
+      '<polygon points="200,10 118,300 282,300" fill="#f4d78f" opacity="0.13"/>' +
+      '<rect y="0" width="400" height="26" fill="#5a1520"/>' +
+      '<path d="M0,0 H126 C116,64 134,128 104,190 C120,244 92,300 100,300 H0 Z" fill="#7c1f2c"/>' +
+      '<path d="M400,0 H274 C284,64 266,128 296,190 C280,244 308,300 300,300 H400 Z" fill="#6a1824"/>' +
+      '<path d="M126,2 C118,70 134,140 108,208 C120,258 100,300 100,300" stroke="#4d1019" stroke-width="7" fill="none" opacity=".45"/>' +
+      '<path d="M274,2 C282,70 266,140 292,208 C280,258 300,300 300,300" stroke="#43101a" stroke-width="7" fill="none" opacity=".45"/>'
+    ); },
+    musique: function(u){ return svgWrap(u,
+      '<rect width="400" height="300" fill="#0d0d20"/>' +
+      '<polygon points="95,0 62,300 152,300" fill="#6C5CE7" opacity=".5"/>' +
+      '<polygon points="165,0 128,300 246,300" fill="#C24E8E" opacity=".42"/>' +
+      '<polygon points="250,0 220,300 330,300" fill="#28B6C9" opacity=".4"/>' +
+      '<polygon points="322,0 300,300 384,300" fill="#E39A2B" opacity=".32"/>' +
+      '<circle cx="200" cy="26" r="64" fill="#ffffff" opacity=".07"/>' +
+      '<g stroke="#05050d" stroke-width="4" stroke-linecap="round"><path d="M60,246 V212"/><path d="M132,244 V208"/><path d="M242,248 V210"/><path d="M304,244 V214"/></g>' +
+      '<rect y="238" width="400" height="62" fill="#05050d"/>' +
+      '<g fill="#05050d"><circle cx="34" cy="246" r="24"/><circle cx="92" cy="250" r="26"/><circle cx="150" cy="244" r="23"/><circle cx="208" cy="250" r="27"/><circle cx="268" cy="245" r="24"/><circle cx="326" cy="250" r="26"/><circle cx="380" cy="246" r="23"/></g>'
+    ); },
+    arts: function(u){ return svgWrap(u,
+      '<rect width="400" height="300" fill="#ece5d6"/>' +
+      '<rect y="212" width="400" height="88" fill="#c7b085"/>' +
+      '<rect y="206" width="400" height="7" fill="#ac9068"/>' +
+      '<g stroke="#d9ccb2" stroke-width="7"><rect x="34" y="66" width="72" height="94" fill="#fff"/><rect x="164" y="52" width="96" height="70" fill="#fff"/><rect x="312" y="70" width="60" height="86" fill="#fff"/></g>' +
+      '<rect x="46" y="78" width="48" height="70" fill="#3d7dca"/>' +
+      '<rect x="176" y="64" width="72" height="46" fill="#159A8A"/>' +
+      '<rect x="324" y="82" width="36" height="62" fill="#D6435A"/>' +
+      '<g fill="#2b2b34" opacity=".8"><circle cx="150" cy="176" r="12"/><path d="M136,250 C136,212 164,212 164,250 Z"/></g>'
+    ); },
+    festival: function(u){ return svgWrap(u,
+      '<defs><linearGradient id="fs'+u+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3A24B"/><stop offset=".5" stop-color="#C85F6E"/><stop offset="1" stop-color="#573A6B"/></linearGradient></defs>' +
+      '<rect width="400" height="300" fill="url(#fs'+u+')"/>' +
+      '<circle cx="200" cy="150" r="52" fill="#FFE0A6" opacity=".55"/>' +
+      '<rect y="222" width="400" height="78" fill="#2b1e33"/>' +
+      '<polygon points="52,222 104,168 156,222" fill="#2b1e33"/>' +
+      '<polygon points="250,222 304,158 358,222" fill="#241a2e"/>' +
+      '<path d="M0,34 Q200,74 400,34" stroke="#fff" stroke-opacity=".5" stroke-width="2" fill="none"/>' +
+      '<g><polygon points="34,40 56,42 45,60" fill="#E39A2B"/><polygon points="90,48 112,50 101,68" fill="#D6435A"/><polygon points="150,52 172,54 161,72" fill="#159A8A"/><polygon points="228,52 250,54 239,72" fill="#6C5CE7"/><polygon points="292,48 314,50 303,68" fill="#E39A2B"/><polygon points="350,42 372,44 361,62" fill="#D6435A"/></g>' +
+      '<g fill="#160f1c"><circle cx="40" cy="240" r="16"/><circle cx="86" cy="244" r="18"/><circle cx="140" cy="238" r="16"/><circle cx="196" cy="245" r="19"/><circle cx="256" cy="240" r="17"/><circle cx="316" cy="245" r="18"/><circle cx="372" cy="240" r="16"/></g>' +
+      '<g><rect x="210" y="70" width="5" height="9" fill="#D6435A"/><rect x="140" y="104" width="5" height="9" fill="#6C5CE7"/><rect x="286" y="96" width="5" height="9" fill="#FFE9B8"/><rect x="96" y="86" width="5" height="9" fill="#159A8A"/></g>'
+    ); },
+    danse: function(u){ return svgWrap(u,
+      '<defs><radialGradient id="dr'+u+'" cx="50%" cy="34%" r="82%"><stop offset="0" stop-color="#E58FC0"/><stop offset="1" stop-color="#571E44"/></radialGradient></defs>' +
+      '<rect width="400" height="300" fill="url(#dr'+u+')"/>' +
+      '<ellipse cx="200" cy="298" rx="240" ry="56" fill="#3a1430" opacity=".55"/>' +
+      '<polygon points="200,0 150,300 250,300" fill="#ffffff" opacity=".12"/>' +
+      '<g stroke="#ffffff" stroke-opacity=".18" stroke-width="3" fill="none" stroke-linecap="round"><path d="M118,150 C150,118 172,120 192,140"/><path d="M282,172 C256,150 234,150 220,166"/></g>' +
+      '<g fill="#180a15"><circle cx="205" cy="92" r="14"/><path d="M205,106 C195,118 196,150 186,168 C179,182 166,192 146,196 C168,193 184,203 194,224 L178,272 L194,274 L214,224 C223,203 238,194 258,203 C240,187 230,166 226,146 C241,136 252,116 248,100 C242,118 224,126 210,118 Z"/></g>'
+    ); },
+    litt: function(u){
+      var cols = ['#8a3b2e','#b6863c','#3d6b6f','#7c4a86','#a85a4a','#4a5f8a','#9c7b3a','#6b8a4a'];
+      var widths = [16,22,14,20,18,15,24,17,19,16,21,15,18,22,14,20];
+      function shelf(y){
+        var s = '', x = 8, i = 0;
+        while (x < 390){
+          var w = widths[i % widths.length];
+          var h = 44 - ((i * 7) % 16);
+          s += '<rect x="'+x+'" y="'+(y + (48 - h))+'" width="'+(w - 2)+'" height="'+h+'" fill="'+cols[(i + y) % cols.length]+'"/>';
+          x += w; i++;
+        }
+        return s + '<rect x="0" y="'+(y + 48)+'" width="400" height="8" fill="#5a3f28"/>';
+      }
+      return svgWrap(u,
+        '<rect width="400" height="300" fill="#e7dcc4"/>' +
+        '<ellipse cx="330" cy="40" rx="140" ry="100" fill="#ffe6a8" opacity=".5"/>' +
+        shelf(30) + shelf(120) + shelf(210)
+      );
+    }
+  };
+
+  var DISC = {
+    theatre:  { label: "Théâtre",      pill: "var(--d-theatre)",  a: "#E0556B", b: "#8E2C4A" },
+    musique:  { label: "Musique",      pill: "var(--d-musique)",  a: "#7B6BF0", b: "#3E2FA6" },
+    arts:     { label: "Arts visuels", pill: "var(--d-arts)",     a: "#1FB0A0", b: "#0C6E63" },
+    festival: { label: "Festivals",    pill: "var(--d-festival)", a: "#F0A93C", b: "#C9701A" },
+    danse:    { label: "Danse",        pill: "var(--d-danse)",    a: "#D06AA0", b: "#8A2F6E" },
+    litt:     { label: "Littérature",  pill: "var(--d-litt)",     a: "#4E89D6", b: "#285FA6" }
+  };
+
+  var MOIS_ABBR = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  var MOIS_LONG = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  var JOURS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+  var JOURS_LONG = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+
+  var EVENTS = [
+    // ---- Automne 2026 ----
+    { d:"musique",  title:"Soirée jazz manouche",             venue:"La Petite Boîte Noire",     date:"2026-09-27", time:"21 h 00", desc:"Trio de guitares dans l'esprit de Django Reinhardt, ambiance intime." },
+    { d:"arts",     title:"Exposition « Territoires »",        venue:"Musée des beaux-arts",      date:"2026-09-20", dateEnd:"2026-11-15", time:"10 h – 17 h", desc:"Le paysage estrien vu par une dizaine d'artistes contemporains." },
+    { d:"litt",     title:"Rencontre d'autrice : Kim Thúy",    venue:"Bibliothèque Éva-Senécal",  date:"2026-10-01", time:"19 h 00", desc:"Lecture et discussion suivies d'une séance de dédicaces." },
+    { d:"festival", title:"Festival des traditions du monde",  venue:"Parc Jacques-Cartier",      date:"2026-10-02", dateEnd:"2026-10-04", time:"Dès 11 h", desc:"Musiques, danses et cuisines d'ici et d'ailleurs, trois jours durant." },
+    { d:"theatre",  title:"Les Belles-Sœurs",                  venue:"Théâtre Granada",           date:"2026-10-03", time:"20 h 00", desc:"Le classique de Michel Tremblay dans une nouvelle mise en scène." },
+    { d:"musique",  title:"OSSH — Nuit romantique",           venue:"Salle Maurice-O'Bready",    date:"2026-10-05", time:"19 h 30", desc:"Brahms et Schumann sous la direction de la cheffe invitée." },
+    { d:"arts",     title:"Art actuel : installations sonores",venue:"Sporobole",                 date:"2026-10-08", dateEnd:"2026-10-30", time:"12 h – 17 h", desc:"Parcours immersif dans l'espace de la galerie." },
+    { d:"musique",  title:"Vitrine de la relève",             venue:"Le Tremplin",               date:"2026-10-09", time:"20 h 00", desc:"Quatre groupes émergents de la scène sherbrookoise." },
+    { d:"theatre",  title:"Le Petit Prince (jeune public)",    venue:"Centre culturel de l'UdeS", date:"2026-10-12", time:"14 h 00", desc:"Adaptation familiale, à partir de 6 ans." },
+    { d:"litt",     title:"Slam ouvert : micro libre",         venue:"Le Boquébière",             date:"2026-10-16", time:"20 h 00", desc:"Scène ouverte de poésie parlée, inscription sur place." },
+    { d:"danse",    title:"Création contemporaine « Fascia »", venue:"Théâtre Léonard-St-Laurent",date:"2026-10-18", time:"20 h 00", desc:"Cinq interprètes, une écriture chorégraphique du souffle." },
+    { d:"festival", title:"Nuit des galeries",                 venue:"Rue Wellington Nord",       date:"2026-10-24", time:"18 h – 23 h", desc:"Vernissages, performances et ateliers tout au long de l'artère." },
+    { d:"musique",  title:"Chœur symphonique — Requiem",       venue:"Salle Maurice-O'Bready",    date:"2026-11-07", time:"19 h 30", desc:"Le Requiem de Fauré porté par 80 voix et l'orchestre." },
+    { d:"theatre",  title:"Improvisation : la grande ligue",   venue:"Théâtre Granada",           date:"2026-11-14", time:"20 h 00", desc:"Match d'impro déjanté entre deux équipes de la région." },
+    { d:"arts",     title:"Exposition « Lumières du Nord »",   venue:"Musée des beaux-arts",      date:"2026-11-20", dateEnd:"2027-01-24", time:"10 h – 17 h", desc:"La photographie hivernale québécoise, du crépuscule aux aurores." },
+    { d:"danse",    title:"Bal folk du centre-ville",          venue:"Centre culturel de l'UdeS", date:"2026-11-21", time:"19 h 00", desc:"Initiation aux danses traditionnelles, ouvert à tous." },
+    { d:"musique",  title:"Nuit électro-acoustique",           venue:"La Petite Boîte Noire",     date:"2026-11-28", time:"21 h 30", desc:"Rencontre entre musiciens acoustiques et machines analogiques." },
+
+    // ---- Hiver 2026-2027 ----
+    { d:"theatre",  title:"Un conte de Noël",                  venue:"Théâtre Granada",           date:"2026-12-03", time:"20 h 00", desc:"L'adaptation scénique du récit de Dickens, en famille." },
+    { d:"musique",  title:"Concert de Noël de l'OSSH",         venue:"Salle Maurice-O'Bready",    date:"2026-12-05", time:"19 h 30", desc:"Les grands classiques des Fêtes par l'orchestre et ses invités." },
+    { d:"danse",    title:"Casse-Noisette",                    venue:"Centre culturel de l'UdeS", date:"2026-12-06", time:"14 h 00", desc:"Le ballet féerique de Tchaïkovski dans une version régionale." },
+    { d:"festival", title:"Marché de Noël du centre-ville",    venue:"Rue Wellington Nord",       date:"2026-12-11", dateEnd:"2026-12-13", time:"Dès 11 h", desc:"Artisans, food trucks et musique au cœur du quartier illuminé." },
+    { d:"litt",     title:"Contes d'hiver au coin du feu",     venue:"Bibliothèque Éva-Senécal",  date:"2026-12-12", time:"15 h 00", desc:"Heure du conte pour petits et grands, chocolat chaud offert." },
+    { d:"festival", title:"Grand feu du Nouvel An",            venue:"Parc Jacques-Cartier",      date:"2026-12-31", time:"22 h 00", desc:"Feux d'artifice et DJ pour accueillir la nouvelle année." },
+    { d:"musique",  title:"Traditions du Jour de l'An",        venue:"Le Tremplin",               date:"2027-01-09", time:"20 h 00", desc:"Veillée de musique trad avec violon, podorythmie et gigue." },
+    { d:"festival", title:"Sherbrooke en lumières",            venue:"Rue Wellington Nord",       date:"2027-01-15", dateEnd:"2027-01-17", time:"17 h – 22 h", desc:"Projections monumentales et parcours lumineux dans le centre-ville." },
+    { d:"theatre",  title:"Huis clos",                         venue:"Théâtre Léonard-St-Laurent",date:"2027-01-22", time:"20 h 00", desc:"Le huis clos de Sartre, mise en scène épurée et tendue." },
+    { d:"litt",     title:"Nuit de la bande dessinée",         venue:"Bibliothèque Éva-Senécal",  date:"2027-01-28", time:"18 h 30", desc:"Rencontres d'illustrateurs et ateliers de création." },
+
+    // ---- Hiver-printemps 2027 ----
+    { d:"arts",     title:"Exposition « Matières premières »", venue:"Musée des beaux-arts",      date:"2027-02-05", dateEnd:"2027-04-25", time:"10 h – 17 h", desc:"La sculpture contemporaine et ses matériaux bruts." },
+    { d:"musique",  title:"OSSH — Symphonies nordiques",       venue:"Salle Maurice-O'Bready",    date:"2027-02-06", time:"19 h 30", desc:"Sibelius et Grieg, un voyage sonore vers le grand froid." },
+    { d:"danse",    title:"Soirée de danse contemporaine",     venue:"Théâtre Léonard-St-Laurent",date:"2027-02-13", time:"20 h 00", desc:"Trois courtes pièces de chorégraphes de la relève." },
+    { d:"festival", title:"Carnaval d'hiver du centre-ville",  venue:"Parc Jacques-Cartier",      date:"2027-02-26", dateEnd:"2027-02-28", time:"Dès 10 h", desc:"Sculptures sur glace, glissades et animations pour tous." },
+    { d:"musique",  title:"Vitrine de la relève",             venue:"Le Tremplin",               date:"2027-03-06", time:"20 h 00", desc:"Nouvelle sélection d'artistes émergents de l'Estrie." },
+    { d:"theatre",  title:"En attendant Godot",               venue:"Théâtre Granada",           date:"2027-03-13", time:"20 h 00", desc:"Le chef-d'œuvre de Beckett dans une lecture lumineuse." },
+    { d:"festival", title:"Festival du film étudiant",         venue:"Centre culturel de l'UdeS", date:"2027-03-19", dateEnd:"2027-03-21", time:"Dès 13 h", desc:"Projections, jury et remise de prix aux jeunes cinéastes." },
+    { d:"litt",     title:"Slam ouvert : micro libre",         venue:"Le Boquébière",             date:"2027-03-27", time:"20 h 00", desc:"Scène ouverte de poésie parlée, inscription sur place." },
+    { d:"musique",  title:"Récital de piano",                 venue:"La Petite Boîte Noire",     date:"2027-04-03", time:"20 h 00", desc:"Un tour du répertoire romantique par une pianiste invitée." },
+    { d:"danse",    title:"Krump & cultures urbaines",        venue:"Centre culturel de l'UdeS", date:"2027-04-10", time:"20 h 00", desc:"Battle de danse urbaine et démonstrations de la scène locale." },
+    { d:"theatre",  title:"Théâtre d'objets : « Fragile »",   venue:"Théâtre Léonard-St-Laurent",date:"2027-04-17", time:"19 h 00", desc:"Un spectacle sans mots où les objets prennent vie." },
+    { d:"festival", title:"Festival de la relève musicale",   venue:"Rue Wellington Nord",       date:"2027-04-23", dateEnd:"2027-04-25", time:"Dès 16 h", desc:"Scènes extérieures et découvertes tout au long du week-end." },
+
+    // ---- Été 2027 ----
+    { d:"arts",     title:"Exposition estivale « Rivières »",  venue:"Musée des beaux-arts",      date:"2027-06-06", dateEnd:"2027-09-06", time:"10 h – 17 h", desc:"L'eau et le paysage fluvial de Sherbrooke à travers les époques." },
+    { d:"musique",  title:"OSSH — Final de saison",           venue:"Salle Maurice-O'Bready",    date:"2027-05-08", time:"19 h 30", desc:"La 9e de Beethoven pour clore la saison symphonique." },
+    { d:"theatre",  title:"Roméo et Juliette",                venue:"Théâtre Granada",           date:"2027-05-15", time:"20 h 00", desc:"La tragédie de Shakespeare, mise en scène contemporaine." },
+    { d:"litt",     title:"Salon du livre de l'Estrie",       venue:"Centre culturel de l'UdeS", date:"2027-05-21", dateEnd:"2027-05-23", time:"Dès 10 h", desc:"Rencontres, dédicaces et tables rondes avec des auteurs d'ici." },
+    { d:"festival", title:"Fête nationale au centre-ville",   venue:"Parc Jacques-Cartier",      date:"2027-06-23", dateEnd:"2027-06-24", time:"Dès 15 h", desc:"Grand spectacle, feu de joie et musique jusqu'à la nuit." },
+    { d:"danse",    title:"Danse en plein air",               venue:"Parc Jacques-Cartier",      date:"2027-06-27", time:"18 h 00", desc:"Spectacle chorégraphique gratuit au bord de la rivière." },
+    { d:"festival", title:"Sherbrooke Blues",                 venue:"Rue Wellington Nord",       date:"2027-07-09", dateEnd:"2027-07-12", time:"Dès 17 h", desc:"Quatre jours de blues sur les scènes extérieures du centre-ville." },
+    { d:"musique",  title:"Concerts du parc",                 venue:"Parc Jacques-Cartier",      date:"2027-07-16", time:"19 h 00", desc:"Série gratuite de concerts en plein air, tous les vendredis." },
+    { d:"theatre",  title:"Théâtre d'été : comédie",          venue:"Théâtre Granada",           date:"2027-07-24", time:"20 h 00", desc:"Une comédie estivale légère et enlevée." },
+    { d:"festival", title:"Festival des traditions du monde", venue:"Parc Jacques-Cartier",      date:"2027-07-30", dateEnd:"2027-08-02", time:"Dès 11 h", desc:"L'édition estivale du grand rendez-vous interculturel." },
+    { d:"musique",  title:"Nuit électro sur le toit",         venue:"La Petite Boîte Noire",     date:"2027-08-07", time:"22 h 00", desc:"DJ set et création sonore sous les étoiles." },
+    { d:"danse",    title:"Bal populaire d'été",              venue:"Rue Wellington Nord",       date:"2027-08-21", time:"19 h 30", desc:"Piste de danse en plein air et orchestre swing." },
+
+    // ---- Automne-hiver 2027 ----
+    { d:"arts",     title:"Exposition « Regards contemporains »", venue:"Sporobole",              date:"2027-09-10", dateEnd:"2027-11-28", time:"12 h – 17 h", desc:"Cinq artistes explorent l'image à l'ère numérique." },
+    { d:"musique",  title:"Concert de rentrée de l'OSSH",     venue:"Salle Maurice-O'Bready",    date:"2027-09-11", time:"19 h 30", desc:"Le coup d'envoi de la nouvelle saison symphonique." },
+    { d:"theatre",  title:"La Cantatrice chauve",             venue:"Théâtre Léonard-St-Laurent",date:"2027-09-18", time:"20 h 00", desc:"L'absurde de Ionesco, drôle et grinçant." },
+    { d:"festival", title:"Nuit des galeries",               venue:"Rue Wellington Nord",       date:"2027-09-24", time:"18 h – 23 h", desc:"Le retour du grand parcours d'art dans le centre-ville." },
+    { d:"litt",     title:"Rencontre d'auteur : Éric Dupont", venue:"Bibliothèque Éva-Senécal",  date:"2027-10-02", time:"19 h 00", desc:"Discussion autour de son dernier roman, suivie d'une dédicace." },
+    { d:"danse",    title:"Création : « Territoire du corps »",venue:"Théâtre Léonard-St-Laurent",date:"2027-10-15", time:"20 h 00", desc:"Une pièce sur le mouvement et l'espace intérieur." },
+    { d:"musique",  title:"Vitrine de la relève",             venue:"Le Tremplin",               date:"2027-10-22", time:"20 h 00", desc:"Les nouvelles voix de la scène estrienne." },
+    { d:"theatre",  title:"Impro : la grande ligue",          venue:"Théâtre Granada",           date:"2027-11-13", time:"20 h 00", desc:"La saison d'improvisation reprend ses droits." },
+    { d:"litt",     title:"Marathon d'écriture",              venue:"Bibliothèque Éva-Senécal",  date:"2027-11-20", time:"13 h 00", desc:"Six heures pour écrire ensemble, ateliers et lectures." },
+    { d:"musique",  title:"Chœurs d'automne",                 venue:"Salle Maurice-O'Bready",    date:"2027-11-27", time:"19 h 30", desc:"Un programme choral autour des saisons." },
+
+    // ---- Hiver 2027-2028 ----
+    { d:"theatre",  title:"Un conte de Noël",                  venue:"Théâtre Granada",           date:"2027-12-03", time:"20 h 00", desc:"Le retour du grand classique des Fêtes." },
+    { d:"festival", title:"Marché de Noël du centre-ville",    venue:"Rue Wellington Nord",       date:"2027-12-10", dateEnd:"2027-12-12", time:"Dès 11 h", desc:"Artisans, saveurs et musique dans le quartier illuminé." },
+    { d:"musique",  title:"Concert des Fêtes de l'OSSH",       venue:"Salle Maurice-O'Bready",    date:"2027-12-17", time:"19 h 30", desc:"Les incontournables de Noël par l'orchestre." },
+    { d:"festival", title:"Grand feu du Nouvel An",            venue:"Parc Jacques-Cartier",      date:"2027-12-31", time:"22 h 00", desc:"Feux d'artifice pour saluer 2028 au bord de la rivière." },
+    { d:"musique",  title:"Veillée trad du Jour de l'An",      venue:"Le Tremplin",               date:"2028-01-08", time:"20 h 00", desc:"Musique traditionnelle, gigue et bonne humeur." },
+    { d:"festival", title:"Sherbrooke en lumières",            venue:"Rue Wellington Nord",       date:"2028-01-14", dateEnd:"2028-01-16", time:"17 h – 22 h", desc:"Deuxième édition du parcours lumineux du centre-ville." },
+    { d:"theatre",  title:"Le Malade imaginaire",             venue:"Théâtre Léonard-St-Laurent",date:"2028-01-21", time:"20 h 00", desc:"La comédie de Molière, toujours aussi mordante." },
+    { d:"litt",     title:"Rendez-vous polar",                venue:"Bibliothèque Éva-Senécal",  date:"2028-01-28", time:"19 h 00", desc:"Une soirée noire : auteurs de romans policiers de la région." }
+  ];
+
+  var PARTNERS = [
+    { name:"Théâtre Granada",            kind:"Salle patrimoniale",           d:"theatre" },
+    { name:"Salle Maurice-O'Bready",     kind:"Grande salle · Centre culturel", d:"musique" },
+    { name:"Musée des beaux-arts",       kind:"Arts visuels",                 d:"arts" },
+    { name:"Sporobole",                  kind:"Centre en art actuel",         d:"arts" },
+    { name:"La Petite Boîte Noire",      kind:"Salle de musique",             d:"musique" },
+    { name:"Bibliothèque Éva-Senécal",   kind:"Littérature · Médiation",      d:"litt" },
+    { name:"Théâtre Léonard-St-Laurent", kind:"Danse · Théâtre",              d:"danse" },
+    { name:"Le Tremplin",                kind:"Diffusion de la relève",       d:"musique" }
+  ];
+
+  var PIN = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+
+  function parseD(s){ var p = s.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+
+  function whenLabel(ev){
+    var s = parseD(ev.date);
+    if (ev.dateEnd){
+      var e = parseD(ev.dateEnd);
+      var sameMonth = s.getMonth() === e.getMonth();
+      var txt = "Du " + s.getDate() + (sameMonth ? "" : " " + MOIS_ABBR[s.getMonth()]) +
+                " au " + e.getDate() + " " + MOIS_ABBR[e.getMonth()];
+      return txt + " · " + ev.time;
+    }
+    return JOURS_LONG[s.getDay()] + " " + s.getDate() + " " + MOIS_ABBR[s.getMonth()] + " · " + ev.time;
+  }
+
+  // Durée & période
+  var DAY = 86400000;
+  var NOW = new Date(2026, 8, 27); // « aujourd'hui » de la démo
+  function endOf(ev){ return ev.dateEnd ? parseD(ev.dateEnd) : parseD(ev.date); }
+  function spanDays(ev){ return Math.round((endOf(ev) - parseD(ev.date)) / DAY) + 1; }
+  function isContinu(ev){ return ev.cont === true || (ev.dateEnd && spanDays(ev) > 8); }
+  function daysUntil(dt){ return Math.ceil((dt - NOW) / DAY); }
+  function inPeriod(ev){
+    if (state.period === "all") return true;
+    var wEnd = new Date(NOW.getTime() + (state.period === "week" ? 7 : 31) * DAY);
+    return parseD(ev.date) <= wEnd && endOf(ev) >= NOW; // chevauchement avec la fenêtre
+  }
+
+  // Ligne « quand » selon le type
+  function whenLine(ev, cont){
+    if (!cont) return whenLabel(ev);
+    var s = parseD(ev.date), e = endOf(ev);
+    if (s <= NOW) return "Jusqu'au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + " · " + ev.time;
+    var sm = s.getMonth() === e.getMonth();
+    return "Du " + s.getDate() + (sm ? "" : " " + MOIS_ABBR[s.getMonth()]) + " au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + " · " + ev.time;
+  }
+
+  // Pastille de date : jour, plage, ou « jusqu'au » pour le continu
+  function badgeHtml(ev, cont){
+    var s = parseD(ev.date), e = endOf(ev);
+    if (cont){
+      if (s <= NOW) return '<span class="date-badge cont"><span>Jusqu\'au</span><b>'+ e.getDate() +' '+ MOIS_ABBR[e.getMonth()] +'</b></span>';
+      return '<span class="date-badge cont"><span>Dès le</span><b>'+ s.getDate() +' '+ MOIS_ABBR[s.getMonth()] +'</b></span>';
+    }
+    if (ev.dateEnd && s.getMonth() === e.getMonth())
+      return '<span class="date-badge"><span>'+ MOIS_ABBR[s.getMonth()] +'</span><b>'+ s.getDate() +'–'+ e.getDate() +'</b></span>';
+    if (ev.dateEnd)
+      return '<span class="date-badge"><span>dès '+ MOIS_ABBR[s.getMonth()] +'</span><b>'+ s.getDate() +'</b></span>';
+    return '<span class="date-badge"><span>'+ JOURS[s.getDay()] +'</span><b>'+ s.getDate() +'</b></span>';
+  }
+
+  var state = { disc: "all", q: "", period: "all" };
+  var listEl = document.getElementById("list");
+  var trackEl = document.getElementById("track");
+  var railEl = document.getElementById("rail");
+  var emptyEl = document.getElementById("empty");
+  var resCount = document.getElementById("resCount");
+  var nowBand = document.getElementById("nowBand");
+  var nowRows = document.getElementById("nowRows");
+
+  // Chips
+  var chipsEl = document.getElementById("chips");
+  function addChip(key, label, color){
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.setAttribute("aria-pressed", key === state.disc ? "true" : "false");
+    b.dataset.key = key;
+    b.innerHTML = (color ? '<span class="swatch" style="--c:'+color+'"></span>' : '') + label;
+    b.addEventListener("click", function(){
+      state.disc = key;
+      Array.prototype.forEach.call(chipsEl.children, function(c){ c.setAttribute("aria-pressed", c.dataset.key === key ? "true" : "false"); });
+      render();
+    });
+    chipsEl.appendChild(b);
+  }
+  addChip("all", "Tout");
+  Object.keys(DISC).forEach(function(k){ addChip(k, DISC[k].label, DISC[k].pill); });
+
+  document.getElementById("q").addEventListener("input", function(e){ state.q = e.target.value.trim().toLowerCase(); render(); });
+
+  var periodEl = document.getElementById("period");
+  Array.prototype.forEach.call(periodEl.children, function(btn){
+    btn.addEventListener("click", function(){
+      state.period = btn.dataset.p;
+      Array.prototype.forEach.call(periodEl.children, function(b){ b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+      render();
+    });
+  });
+
+  function card(ev, uid, cont){
+    var d = DISC[ev.d];
+    var started = parseD(ev.date) <= NOW;
+    var tag = "";
+    if (cont && started && daysUntil(endOf(ev)) <= 7) tag = '<span class="tag-last">Dernière chance</span>';
+    else if (cont && !started && daysUntil(parseD(ev.date)) <= 30) tag = '<span class="tag-soon">Bientôt</span>';
+    var a = document.createElement("a");
+    a.className = "event";
+    a.href = "#";
+    a.style.setProperty("--dc", d.pill);
+    a.innerHTML =
+      '<div class="cover">' + SCENES[ev.d](uid) + badgeHtml(ev, cont) + '</div>' +
+      '<div class="body">' +
+        '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>' +
+        '<h3>'+ ev.title +'</h3>' +
+        '<span class="venue">'+ PIN +' '+ ev.venue +'</span>' +
+        '<span class="when">'+ whenLine(ev, cont) +'</span>' +
+        '<span class="desc">'+ ev.desc +'</span>' +
+      '</div>';
+    return a;
+  }
+
+  var observer = null;
+
+  function render(){
+    var base = EVENTS.filter(function(ev){
+      if (state.disc !== "all" && ev.d !== state.disc) return false;
+      if (state.q){
+        var hay = (ev.title + " " + ev.venue + " " + DISC[ev.d].label + " " + ev.desc).toLowerCase();
+        if (hay.indexOf(state.q) === -1) return false;
+      }
+      return inPeriod(ev);
+    });
+
+    var uid = 0;
+    var soonEnd = new Date(NOW.getTime() + 45 * DAY);
+
+    // Bande « En ce moment » : longue durée en cours ou débutant sous 45 jours
+    var band = base.filter(function(ev){ return isContinu(ev) && endOf(ev) >= NOW && parseD(ev.date) <= soonEnd; });
+    band.sort(function(a, b){
+      var sa = parseD(a.date) <= NOW ? 0 : 1, sb = parseD(b.date) <= NOW ? 0 : 1;
+      if (sa !== sb) return sa - sb;          // en cours d'abord
+      return endOf(a) - endOf(b);             // puis fin la plus proche
+    });
+    nowRows.innerHTML = "";
+    band.forEach(function(ev){ nowRows.appendChild(card(ev, uid++, true)); });
+    nowBand.hidden = band.length === 0;
+
+    // Liste datée : rendez-vous ponctuels + expositions lointaines, à leur mois de début
+    var dated = [];
+    base.forEach(function(ev){
+      if (!isContinu(ev)) dated.push({ ev: ev, cont: false });
+      else if (band.indexOf(ev) === -1 && endOf(ev) >= NOW) dated.push({ ev: ev, cont: true });
+    });
+    dated.sort(function(a, b){ return parseD(a.ev.date) - parseD(b.ev.date); });
+
+    listEl.innerHTML = "";
+    trackEl.innerHTML = "";
+
+    var groups = [], byKey = {};
+    dated.forEach(function(o){
+      var dt = parseD(o.ev.date);
+      var key = dt.getFullYear() + "-" + dt.getMonth();
+      if (!byKey[key]){ byKey[key] = { key:key, m:dt.getMonth(), y:dt.getFullYear(), items:[] }; groups.push(byKey[key]); }
+      byKey[key].items.push(o);
+    });
+
+    groups.forEach(function(g){
+      var wrap = document.createElement("section");
+      wrap.className = "month-group";
+      wrap.id = "m-" + g.key;
+      var head = document.createElement("h2");
+      head.className = "month-title";
+      head.innerHTML = MOIS_LONG[g.m] + " " + g.y + ' <span class="n">' + g.items.length + (g.items.length > 1 ? " événements" : " événement") + '</span>';
+      wrap.appendChild(head);
+      var rows = document.createElement("div");
+      rows.className = "rows";
+      g.items.forEach(function(o){ rows.appendChild(card(o.ev, uid++, o.cont)); });
+      wrap.appendChild(rows);
+      listEl.appendChild(wrap);
+
+      var node = document.createElement("button");
+      node.className = "tl-node";
+      node.type = "button";
+      node.dataset.target = "m-" + g.key;
+      node.innerHTML = '<span class="dot"></span><span class="lbl"><b>'+ MOIS_ABBR[g.m] +'</b><i>'+ g.y +'</i></span>';
+      node.addEventListener("click", function(){
+        var t = document.getElementById(this.dataset.target);
+        if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      trackEl.appendChild(node);
+    });
+
+    railEl.style.display = dated.length ? "" : "none";
+    emptyEl.hidden = (dated.length + band.length) !== 0;
+
+    var total = base.length;
+    resCount.textContent = total ? (total + (total > 1 ? " événements" : " événement")) : "";
+
+    setupSpy(groups);
+  }
+
+  function setActive(key){
+    Array.prototype.forEach.call(trackEl.children, function(n){
+      n.setAttribute("aria-current", n.dataset.target === "m-" + key ? "true" : "false");
+    });
+  }
+
+  function setupSpy(groups){
+    if (observer) observer.disconnect();
+    if (!groups.length) return;
+    var visible = {};
+    observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        var key = en.target.id.replace("m-", "");
+        if (en.isIntersecting) visible[key] = en.intersectionRatio; else delete visible[key];
+      });
+      var best = null, bestR = -1;
+      groups.forEach(function(g){ if (visible[g.key] != null && visible[g.key] > bestR){ bestR = visible[g.key]; best = g.key; } });
+      if (best == null) best = groups[0].key;
+      setActive(best);
+    }, { rootMargin: "-88px 0px -55% 0px", threshold: [0, 0.2, 0.5, 1] });
+    groups.forEach(function(g){ var el = document.getElementById("m-" + g.key); if (el) observer.observe(el); });
+    setActive(groups[0].key);
+  }
+
+  // Partenaires
+  var partnersEl = document.getElementById("partners");
+  PARTNERS.forEach(function(p){
+    var initials = p.name.replace(/^(Le |La |L')/,"").split(/\s|-/).slice(0,2).map(function(w){ return w[0]; }).join("").toUpperCase();
+    var el = document.createElement("div");
+    el.className = "partner";
+    el.innerHTML = '<span class="glyph" style="--pc:'+ DISC[p.d].pill +'">'+ initials +'</span><div><b>'+ p.name +'</b><span>'+ p.kind +'</span></div>';
+    partnersEl.appendChild(el);
+  });
+
+  // Thème
+  var themeBtn = document.getElementById("theme");
+  var root = document.documentElement;
+  try { var saved = localStorage.getItem("cc-theme"); if (saved) root.setAttribute("data-theme", saved); } catch(e){}
+  themeBtn.addEventListener("click", function(){
+    var isDark = getComputedStyle(root).colorScheme.indexOf("dark") !== -1;
+    var next = isDark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("cc-theme", next); } catch(e){}
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

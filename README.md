@@ -61,6 +61,16 @@ successivement sur : la grille inline (10 événements), les données
 structurées schema.org `Event` (JSON-LD), puis les sélecteurs du plugin
 « The Events Calendar ». Chaque repli émet un avertissement via `logging`.
 
+## Maquette web
+
+Le dossier [`maquette/`](maquette/) contient une **maquette de page publique**
+(`index.html`, autonome, sans dépendance) illustrant le guichet unique
+d'agrégation de la programmation culturelle du centre-ville : agenda
+filtrable par discipline et par période, fil chronologique par mois, bande
+« En ce moment » pour les expositions longue durée. Les données affichées
+sont fictives et servent uniquement à la démonstration ; il suffit d'ouvrir
+`maquette/index.html` dans un navigateur.
+
 ## Tests
 
 Les tests sont hors-ligne (aucun accès réseau requis) :
