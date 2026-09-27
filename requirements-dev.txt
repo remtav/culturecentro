@@ -1,3 +1,4 @@
 -r requirements.txt
 coverage>=7
 coverage-badge>=1.1
+setuptools>=68  # fournit pkg_resources, requis par coverage-badge sur Python 3.12+
