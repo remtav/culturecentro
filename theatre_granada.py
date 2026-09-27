@@ -65,8 +65,9 @@ class Evenement:
         return f"{quand} — {self.titre}" + (f" ({self.lien})" if self.lien else "")
 
 
-def _telecharger(url: str, timeout: float) -> str:
-    reponse = requests.get(url, headers=_ENTETES, timeout=timeout)
+def _telecharger(url: str, timeout: float, session: requests.Session | None = None) -> str:
+    client = session or requests
+    reponse = client.get(url, headers=_ENTETES, timeout=timeout)
     reponse.raise_for_status()
     return reponse.text
 
@@ -160,6 +161,68 @@ def _extraire_lieu(noeud: dict) -> str | None:
     if isinstance(lieu, str):
         return lieu
     return None
+
+
+def _charger_grille_complete(
+    page_html: str, timeout: float, session: requests.Session
+) -> str | None:
+    """Récupère la grille WPBakery complète via ``admin-ajax.php``.
+
+    La grille de la page est en mode « lazy » : le HTML initial ne contient
+    que les 10 premiers événements, mais un unique appel AJAX
+    (``vc_get_vc_grid_data``) renvoie l'intégralité des éléments — c'est
+    ainsi qu'on obtient tous les événements à venir (bien au-delà des 10
+    affichés).
+
+    Renvoie le fragment HTML de la grille, ou ``None`` si l'appel échoue
+    (l'appelant retombe alors sur la grille inline).
+    """
+    soup = BeautifulSoup(page_html, "html.parser")
+    conteneur = soup.select_one("[data-vc-request][data-vc-grid-settings]")
+    if conteneur is None:
+        return None
+
+    try:
+        reglages = json.loads(conteneur.get("data-vc-grid-settings") or "{}")
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+    url_ajax = conteneur.get("data-vc-request")
+    nonce = conteneur.get("data-vc-public-nonce")
+    post_id = conteneur.get("data-vc-post-id")
+    if not url_ajax or not reglages:
+        return None
+
+    # Format exact attendu par vc_grid.min.js : les réglages sont envoyés
+    # sous la clé « data », et non « vc_grid_data ».
+    donnees = {
+        "action": "vc_get_vc_grid_data",
+        "vc_action": "vc_get_vc_grid_data",
+        "tag": reglages.get("tag", "vc_basic_grid"),
+        "vc_post_id": post_id,
+        "_vcnonce": nonce,
+    }
+    for cle, valeur in reglages.items():
+        donnees[f"data[{cle}]"] = valeur
+
+    try:
+        reponse = session.post(
+            url_ajax,
+            data=donnees,
+            headers={
+                **_ENTETES,
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": URL_PROGRAMMATION,
+            },
+            timeout=timeout,
+        )
+    except requests.RequestException:
+        return None
+
+    # admin-ajax renvoie « 0 » (corps d'un octet) en cas d'échec/nonce invalide.
+    if reponse.status_code != 200 or len(reponse.text) <= 1:
+        return None
+    return reponse.text
 
 
 def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
@@ -272,11 +335,17 @@ def lister_evenements_a_venir(
     if a_partir_de is None:
         a_partir_de = datetime.now(timezone.utc)
 
-    html = _telecharger(url, timeout)
+    session = requests.Session()
+    html = _telecharger(url, timeout, session=session)
 
-    # Source principale : la grille WPBakery du site. Replis successifs si le
-    # thème change (JSON-LD schema.org, puis « The Events Calendar »).
-    evenements = _extraire_depuis_wpbakery(html)
+    # Source principale : la grille WPBakery. On tente d'abord de charger la
+    # grille COMPLÈTE via AJAX (tous les événements à venir) ; à défaut, on se
+    # rabat sur les 10 événements présents dans le HTML initial. Replis
+    # ultérieurs si le thème change (JSON-LD schema.org, « The Events Calendar »).
+    fragment = _charger_grille_complete(html, timeout, session)
+    evenements = _extraire_depuis_wpbakery(fragment) if fragment else []
+    if not evenements:
+        evenements = _extraire_depuis_wpbakery(html)
     if not evenements:
         evenements = _extraire_depuis_jsonld(html)
     if not evenements:
