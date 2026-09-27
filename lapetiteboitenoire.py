@@ -1,36 +1,49 @@
-"""Récupération des événements à venir du Théâtre Granada.
+"""Récupération des événements à venir de La Petite Boîte Noire.
 
-Le site https://theatregranada.com est un site WordPress construit avec
-WPBakery Page Builder. La page de programmation
-(https://theatregranada.com/programmation-2/) affiche ses événements dans
-une grille « vc_basic_grid ». Chaque événement est un bloc
-``.vc_grid-item-mini`` contenant :
+La page de programmation https://lapetiteboitenoire.com/evenements/ est un
+site WordPress, mais elle n'affiche PAS elle-même la liste des spectacles :
+ceux-ci sont injectés par un widget de la billetterie
+`Lepointdevente.com <https://lepointdevente.com>`_. Le HTML de la page ne
+contient qu'un script ::
 
-* la date en français dans un champ ACF ``.home-artist``
-  (ex. « dimanche 27 septembre 2026 à 20:00 ») ;
-* le titre dans ``.vc_gitem-post-data-source-post_title`` ;
-* le lien vers la fiche de l'événement dans ``a.vc_gitem-link``.
+    <script src="https://lepointdevente.com/plugins/widget.js?group=6603…">
 
-La grille est en mode « lazy » : le HTML initial ne contient que les 10
-premiers événements. Un unique appel AJAX (``admin-ajax.php`` /
-``vc_get_vc_grid_data``) renvoie l'intégralité des éléments — c'est ainsi
-qu'on récupère TOUS les événements à venir (jusqu'à plus d'un an à l'avance).
-Si cet appel échoue (thème modifié, nonce invalide…), on retombe
-successivement sur : la grille inline (10 événements), les données
-structurées schema.org ``Event`` en JSON-LD, puis les sélecteurs du plugin
-« The Events Calendar ». Chaque repli émet un avertissement via ``logging``.
+qui insère une iframe pointant vers la vraie liste :
+``https://lepointdevente.com/billets/programmationavenir``. C'est cette page
+qu'on télécharge et qu'on analyse pour obtenir TOUS les événements à venir.
+
+Sur cette page de billetterie, chaque spectacle est un bloc
+``.feature-col[data-tpos-event="<id>"]`` contenant :
+
+* le titre dans ``.feature-title`` ;
+* la date en français dans ``.feature-date`` (ex. « 30 septembre 2026, 20h00 ») ;
+* le lieu dans ``.feature-city`` ;
+* l'affiche dans ``img[itemprop="image"]`` ;
+* l'identifiant de l'événement (``data-tpos-event``), d'où l'on reconstruit
+  le lien de la fiche : ``<url_billetterie>/<id>``.
+
+La source est déterminée ainsi :
+
+1. on télécharge la page ``evenements`` de La Petite Boîte Noire ;
+2. on y découvre l'URL de la liste Lepointdevente (lien ``/billets/…`` ou,
+   à défaut, ``group`` du widget, via ``widget.js``) ;
+3. on télécharge et on analyse cette liste.
+
+Si la découverte échoue, on retombe sur l'URL de billetterie connue, puis sur
+l'analyse directe de la page ``evenements`` (données schema.org ``Event`` en
+JSON-LD). Chaque repli émet un avertissement via ``logging``.
 
 Utilisation en bibliothèque ::
 
-    from theatre_granada import lister_evenements_a_venir, exporter_json
+    from lapetiteboitenoire import lister_evenements_a_venir, exporter_json
     evenements = lister_evenements_a_venir()
     exporter_json(evenements, "evenements.json")
 
 En ligne de commande ::
 
-    python theatre_granada.py --format csv -o evenements.csv
-    python theatre_granada.py --format json
-    python theatre_granada.py -v            # journalisation détaillée
+    python lapetiteboitenoire.py --format csv -o evenements.csv
+    python lapetiteboitenoire.py --format json
+    python lapetiteboitenoire.py -v            # journalisation détaillée
 
 Dépendances : ``requests`` et ``beautifulsoup4`` (voir requirements.txt).
 """
@@ -47,14 +60,19 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Sequence
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
 from urllib3.util.retry import Retry
 
-_LOG = logging.getLogger("theatre_granada")
+_LOG = logging.getLogger("lapetiteboitenoire")
 
-URL_PROGRAMMATION = "https://theatregranada.com/programmation-2/"
+URL_EVENEMENTS = "https://lapetiteboitenoire.com/evenements/"
+
+#: URL de secours de la liste Lepointdevente, si on ne parvient pas à la
+#: découvrir dans la page (``group=6603`` = La Petite Boîte Noire).
+URL_BILLETTERIE_DEFAUT = "https://lepointdevente.com/billets/programmationavenir"
 
 _ENTETES = {
     # Un User-Agent « navigateur » évite les blocages basiques.
@@ -65,30 +83,33 @@ _ENTETES = {
 }
 
 #: Colonnes utilisées pour la sérialisation CSV/JSON.
-CHAMPS = ("titre", "sous_titre", "date_debut", "lien", "image", "lieu")
+CHAMPS = ("titre", "date_debut", "lien", "image", "lieu")
 
 
 @dataclass
 class Evenement:
-    """Un événement de la programmation."""
+    """Un événement de la programmation.
+
+    ``image`` (URL de l'affiche) est un champ **obligatoire** du modèle : il
+    doit être fourni à la construction. Sa valeur peut être ``None`` lorsque
+    la source n'expose réellement aucune image, mais le champ est toujours
+    présent dans la sérialisation.
+    """
 
     titre: str
     date_debut: datetime | None
+    image: str | None
     lien: str | None = None
     lieu: str | None = None
-    sous_titre: str | None = None
-    image: str | None = None
 
     def __str__(self) -> str:
         quand = self.date_debut.strftime("%Y-%m-%d %H:%M") if self.date_debut else "date inconnue"
-        titre = self.titre + (f" — {self.sous_titre}" if self.sous_titre else "")
-        return f"{quand} — {titre}" + (f" ({self.lien})" if self.lien else "")
+        return f"{quand} — {self.titre}" + (f" ({self.lien})" if self.lien else "")
 
     def to_dict(self) -> dict[str, str | None]:
         """Représentation sérialisable (date au format ISO 8601)."""
         return {
             "titre": self.titre,
-            "sous_titre": self.sous_titre,
             "date_debut": self.date_debut.isoformat() if self.date_debut else None,
             "lien": self.lien,
             "image": self.image,
@@ -157,7 +178,8 @@ _MOIS_FR = {
     "decembre": 12,
 }
 
-# Ex. : « dimanche 27 septembre 2026 à 20:00 » ou « 1er octobre 2026 ».
+# Ex. : « 30 septembre 2026, 20h00 », « 1er octobre 2026, 20h00 » ou
+# « 8 août 2026 ». Le nom du jour et l'heure sont facultatifs.
 _DATE_FR = re.compile(
     r"(?P<jour>\d{1,2})\s*(?:er)?\s+"
     r"(?P<mois>[a-zàâäéèêëîïôöùûüç]+)\s+"
@@ -168,7 +190,7 @@ _DATE_FR = re.compile(
 
 
 def _parse_date_fr(valeur: str | None) -> datetime | None:
-    """Analyse une date française (« dimanche 27 septembre 2026 à 20:00 »).
+    """Analyse une date française (« 30 septembre 2026, 20h00 »).
 
     Le nom du jour de la semaine et l'heure sont facultatifs. La date est
     renvoyée « naïve » (sans fuseau) ; le filtrage la suppose en UTC.
@@ -231,109 +253,79 @@ def _extraire_image(noeud: dict) -> str | None:
 
 
 # --------------------------------------------------------------------------- #
-# Extraction WPBakery (source principale)
+# Découverte de la liste Lepointdevente
 # --------------------------------------------------------------------------- #
-def _charger_grille_complete(
-    page_html: str, timeout: float, session: requests.Session
-) -> str | None:
-    """Récupère la grille WPBakery complète via ``admin-ajax.php``.
+def _trouver_url_billetterie(page_html: str, timeout: float, session: requests.Session) -> str:
+    """Découvre l'URL de la liste Lepointdevente dans la page ``evenements``.
 
-    Renvoie le fragment HTML de la grille (tous les événements), ou ``None``
-    si l'appel échoue — l'appelant retombe alors sur la grille inline.
+    Renvoie l'URL de la page ``/billets/<slug>``. Si rien n'est trouvé, on
+    retombe sur :data:`URL_BILLETTERIE_DEFAUT`.
     """
     soup = BeautifulSoup(page_html, "html.parser")
-    conteneur = soup.select_one("[data-vc-request][data-vc-grid-settings]")
-    if conteneur is None:
-        _LOG.debug("Aucun conteneur de grille WPBakery trouvé dans la page.")
-        return None
 
-    try:
-        reglages = json.loads(conteneur.get("data-vc-grid-settings") or "{}")
-    except (json.JSONDecodeError, TypeError):
-        _LOG.debug("Réglages de grille WPBakery illisibles.")
-        return None
+    # 1. Un lien direct vers la liste (« Programmation complète »).
+    for lien in soup.find_all("a", href=True):
+        href = lien["href"]
+        if "lepointdevente.com/billets/" in href:
+            return href.split("?", 1)[0]
 
-    url_ajax = conteneur.get("data-vc-request")
-    nonce = conteneur.get("data-vc-public-nonce")
-    post_id = conteneur.get("data-vc-post-id")
-    if not url_ajax or not reglages:
-        _LOG.debug("Grille WPBakery : URL AJAX ou réglages manquants.")
-        return None
+    # 2. Le widget : on lit ``widget.js`` pour en extraire l'URL de l'iframe.
+    for balise in soup.find_all("script", src=True):
+        src = balise["src"]
+        if "lepointdevente.com/plugins/widget.js" not in src:
+            continue
+        try:
+            script = _telecharger(src, timeout, session=session)
+        except requests.RequestException as exc:
+            _LOG.debug("Téléchargement de widget.js échoué : %s", exc)
+            continue
+        # document.write('<iframe … src="https://…/billets/<slug>?…" …>')
+        m = re.search(r'https://lepointdevente\.com/billets/[^"?&\']+', script)
+        if m:
+            return m.group(0)
 
-    # Format exact attendu par vc_grid.min.js : les réglages sont envoyés
-    # sous la clé « data », et non « vc_grid_data ».
-    donnees = {
-        "action": "vc_get_vc_grid_data",
-        "vc_action": "vc_get_vc_grid_data",
-        "tag": reglages.get("tag", "vc_basic_grid"),
-        "vc_post_id": post_id,
-        "_vcnonce": nonce,
-    }
-    for cle, valeur in reglages.items():
-        donnees[f"data[{cle}]"] = valeur
-
-    try:
-        reponse = session.post(
-            url_ajax,
-            data=donnees,
-            headers={"X-Requested-With": "XMLHttpRequest", "Referer": URL_PROGRAMMATION},
-            timeout=timeout,
-        )
-    except requests.RequestException as exc:
-        _LOG.debug("Appel AJAX de la grille échoué : %s", exc)
-        return None
-
-    # admin-ajax renvoie « 0 » (corps d'un octet) en cas d'échec/nonce invalide.
-    if reponse.status_code != 200 or len(reponse.text) <= 1:
-        _LOG.debug(
-            "Réponse AJAX inutilisable (statut %s, %d octets).",
-            reponse.status_code,
-            len(reponse.text),
-        )
-        return None
-    return reponse.text
+    _LOG.warning(
+        "URL de la billetterie introuvable dans la page : repli sur %s.",
+        URL_BILLETTERIE_DEFAUT,
+    )
+    return URL_BILLETTERIE_DEFAUT
 
 
-def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
-    """Analyse la grille WPBakery de la page de programmation.
+# --------------------------------------------------------------------------- #
+# Extraction Lepointdevente (source principale)
+# --------------------------------------------------------------------------- #
+def _extraire_depuis_lepointdevente(html: str, url_base: str) -> list[Evenement]:
+    """Analyse la liste de spectacles d'une page Lepointdevente.
 
-    C'est la structure réellement utilisée par theatregranada.com.
+    C'est la structure réellement utilisée par la billetterie de
+    La Petite Boîte Noire.
     """
     soup = BeautifulSoup(html, "html.parser")
     evenements: list[Evenement] = []
 
-    for item in soup.select(".vc_grid-item-mini"):
-        titre_el = item.select_one(".vc_gitem-post-data-source-post_title")
+    for item in soup.select(".feature-col[data-tpos-event]"):
+        titre_el = item.select_one(".feature-title")
         titre = titre_el.get_text(" ", strip=True) if titre_el else None
         if not titre:
             continue
 
-        date_el = item.select_one(".home-artist")
+        date_el = item.select_one(".feature-date")
         date_debut = _parse_date_fr(date_el.get_text(" ", strip=True)) if date_el else None
 
-        lien_el = item.select_one("a.vc_gitem-link")
-        lien = lien_el.get("href") if lien_el else None
+        lieu_el = item.select_one(".feature-city")
+        lieu = lieu_el.get_text(" ", strip=True) if lieu_el else None
 
-        # Sous-titre : plusieurs champs .home-soustitre par bloc (avant/après le
-        # titre) ; on garde le premier non vide.
-        sous_titre = None
-        for el in item.select(".home-soustitre"):
-            texte = el.get_text(" ", strip=True)
-            if texte:
-                sous_titre = texte
-                break
+        # L'affiche : <img itemprop="image" src="..."> (repli sur toute <img>).
+        img_el = item.select_one("img[itemprop=image]") or item.select_one("img")
+        image = img_el.get("src") if img_el else None
 
-        image_el = item.select_one("img.vc_gitem-zone-img")
-        image = image_el.get("src") if image_el else None
+        # Pas d'ancre dans la carte : le lien de la fiche se reconstruit à
+        # partir de l'identifiant ``data-tpos-event`` (ex. .../<slug>/529998).
+        event_id = item.get("data-tpos-event")
+        lien = urljoin(url_base.rstrip("/") + "/", event_id) if event_id else None
 
         evenements.append(
-            Evenement(
-                titre=titre,
-                date_debut=date_debut,
-                lien=lien,
-                sous_titre=sous_titre,
-                image=image,
-            )
+            Evenement(titre=titre, date_debut=date_debut, image=image, lien=lien, lieu=lieu)
         )
 
     return evenements
@@ -360,48 +352,11 @@ def _extraire_depuis_jsonld(html: str) -> list[Evenement]:
                 Evenement(
                     titre=titre.strip(),
                     date_debut=_parse_date(noeud.get("startDate")),
+                    image=_extraire_image(noeud),
                     lien=noeud.get("url"),
                     lieu=_extraire_lieu(noeud),
-                    image=_extraire_image(noeud),
                 )
             )
-    return evenements
-
-
-def _extraire_depuis_html(html: str) -> list[Evenement]:
-    """Repli générique si aucun JSON-LD n'est présent.
-
-    Cible les motifs les plus courants des thèmes d'agenda WordPress
-    (The Events Calendar). Les sélecteurs peuvent devoir être ajustés
-    si le thème du site change.
-    """
-    soup = BeautifulSoup(html, "html.parser")
-    evenements: list[Evenement] = []
-
-    for article in soup.select(
-        ".tribe-events-calendar-list__event, article.tribe_events, .type-tribe_events"
-    ):
-        lien_titre = article.select_one(
-            "a.tribe-events-calendar-list__event-title-link, h3 a, h2 a, .tribe-event-url"
-        )
-        titre = lien_titre.get_text(strip=True) if lien_titre else None
-        if not titre:
-            continue
-
-        balise_date = article.select_one("time[datetime], .tribe-event-date-start, time")
-        date_debut = None
-        if balise_date is not None:
-            date_debut = _parse_date(balise_date.get("datetime")) or _parse_date(
-                balise_date.get_text(strip=True)
-            )
-
-        evenements.append(
-            Evenement(
-                titre=titre,
-                date_debut=date_debut,
-                lien=lien_titre.get("href") if lien_titre else None,
-            )
-        )
     return evenements
 
 
@@ -410,33 +365,27 @@ def _extraire_depuis_html(html: str) -> list[Evenement]:
 # --------------------------------------------------------------------------- #
 def _extraire_evenements(html: str, timeout: float, session: requests.Session) -> list[Evenement]:
     """Choisit la meilleure source disponible et renvoie les événements bruts."""
-    fragment = _charger_grille_complete(html, timeout, session)
-    if fragment:
-        evenements = _extraire_depuis_wpbakery(fragment)
+    url_billetterie = _trouver_url_billetterie(html, timeout, session)
+    try:
+        liste_html = _telecharger(url_billetterie, timeout, session=session)
+    except requests.RequestException as exc:
+        _LOG.warning("Téléchargement de la liste Lepointdevente échoué : %s", exc)
+        liste_html = None
+
+    if liste_html:
+        evenements = _extraire_depuis_lepointdevente(liste_html, url_billetterie)
         if evenements:
-            _LOG.info("Grille complète chargée via AJAX : %d éléments.", len(evenements))
+            _LOG.info("Liste Lepointdevente analysée : %d événements.", len(evenements))
             return evenements
+        _LOG.warning("Aucun événement dans la liste Lepointdevente (structure modifiée ?).")
 
-    evenements = _extraire_depuis_wpbakery(html)
-    if evenements:
-        _LOG.warning(
-            "Chargement AJAX de la grille complète indisponible : repli sur la "
-            "grille inline (%d événements visibles seulement).",
-            len(evenements),
-        )
-        return evenements
-
+    # Repli : données structurées de la page « evenements » elle-même.
     evenements = _extraire_depuis_jsonld(html)
     if evenements:
-        _LOG.warning("Repli sur les données JSON-LD (%d événements).", len(evenements))
+        _LOG.warning("Repli sur les données JSON-LD de la page (%d événements).", len(evenements))
         return evenements
 
-    evenements = _extraire_depuis_html(html)
-    if evenements:
-        _LOG.warning("Repli sur le HTML générique (%d événements).", len(evenements))
-        return evenements
-
-    _LOG.warning("Aucun événement n'a pu être extrait de la page.")
+    _LOG.warning("Aucun événement n'a pu être extrait.")
     return []
 
 
@@ -470,7 +419,7 @@ def _finaliser(
 
 
 def lister_evenements_a_venir(
-    url: str = URL_PROGRAMMATION,
+    url: str = URL_EVENEMENTS,
     *,
     a_partir_de: datetime | None = None,
     timeout: float = 20.0,
@@ -478,7 +427,7 @@ def lister_evenements_a_venir(
     """Retourne les événements à venir de la programmation, triés par date.
 
     Args:
-        url: page de programmation à analyser.
+        url: page d'événements de La Petite Boîte Noire à analyser.
         a_partir_de: seuil temporel ; par défaut « maintenant » (UTC).
             Les événements sans date connue sont conservés.
         timeout: délai d'attente réseau, en secondes.
@@ -554,10 +503,10 @@ exporter_csv.__doc__ = exporter_csv.__doc__ % ", ".join(CHAMPS)
 # --------------------------------------------------------------------------- #
 def _construire_parseur() -> argparse.ArgumentParser:
     parseur = argparse.ArgumentParser(
-        description="Liste les événements à venir du Théâtre Granada."
+        description="Liste les événements à venir de La Petite Boîte Noire."
     )
     parseur.add_argument(
-        "--url", default=URL_PROGRAMMATION, help="Page de programmation à analyser."
+        "--url", default=URL_EVENEMENTS, help="Page d'événements à analyser."
     )
     parseur.add_argument(
         "--format",

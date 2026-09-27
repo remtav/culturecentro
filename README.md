@@ -1,8 +1,19 @@
-# Théâtre Granada — événements à venir
+# Événements à venir — salles de spectacle
 
-Récupère la liste des **événements à venir** de la programmation du
-[Théâtre Granada](https://theatregranada.com/programmation-2/) et permet de
-les exporter en texte, CSV ou JSON.
+[![Tests](https://github.com/remtav/culturecentro/actions/workflows/tests.yml/badge.svg)](https://github.com/remtav/culturecentro/actions/workflows/tests.yml)
+![Couverture](coverage.svg)
+
+Récupère la liste des **événements à venir** de la programmation de salles de
+spectacle et permet de les exporter en texte, CSV ou JSON. Deux salles sont
+prises en charge, chacune dans son propre module partageant la même interface
+(`lister_evenements_a_venir`, `exporter_json`, `exporter_csv`) :
+
+| Salle | Module | Source |
+| --- | --- | --- |
+| [Théâtre Granada](https://theatregranada.com/programmation-2/) | `theatre_granada.py` | WPBakery (grille AJAX) |
+| [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `lapetiteboitenoire.py` | billetterie Lepointdevente |
+
+## Théâtre Granada
 
 ## Installation
 
@@ -44,8 +55,19 @@ exporter_json(evenements, "evenements.json")
 exporter_csv(evenements, "evenements.csv")
 ```
 
-Chaque `Evenement` expose `titre`, `date_debut` (`datetime` ou `None`),
-`lien`, `lieu`, ainsi que `to_dict()` pour la sérialisation.
+Chaque `Evenement` expose :
+
+| Champ | Description |
+| --- | --- |
+| `titre` | Nom de l'événement. |
+| `sous_titre` | Mention / sous-titre (ex. « SUPPLÉMENTAIRE », nom de tournée), ou `None`. |
+| `date_debut` | `datetime` (naïf, supposé heure locale) ou `None`. |
+| `lien` | URL de la fiche de l'événement. |
+| `image` | URL de l'affiche. |
+| `lieu` | Nom du lieu (généralement `None` : toujours le Théâtre Granada). |
+
+`to_dict()` renvoie ces champs sérialisables (date au format ISO 8601), et
+les exports CSV/JSON reprennent les mêmes colonnes.
 
 ## Fonctionnement
 
@@ -60,6 +82,43 @@ Si cet appel échoue (thème modifié, nonce invalide…), le module se rabat
 successivement sur : la grille inline (10 événements), les données
 structurées schema.org `Event` (JSON-LD), puis les sélecteurs du plugin
 « The Events Calendar ». Chaque repli émet un avertissement via `logging`.
+
+## La Petite Boîte Noire
+
+Même interface, dans le module `lapetiteboitenoire.py` :
+
+```bash
+python lapetiteboitenoire.py                       # liste texte
+python lapetiteboitenoire.py --format json
+python lapetiteboitenoire.py --format csv -o evenements.csv
+```
+
+```python
+from lapetiteboitenoire import lister_evenements_a_venir, exporter_json
+
+evenements = lister_evenements_a_venir()
+exporter_json(evenements, "evenements.json")
+```
+
+Les options (`--url`, `--format`, `-o/--sortie`, `--timeout`, `-v`) sont
+identiques à celles du Théâtre Granada. Chaque `Evenement` expose `titre`,
+`date_debut`, `image`, `lien` et `lieu` (plus `to_dict()`). Le champ `image`
+(URL de l'affiche) est **obligatoire** dans le modèle : il est toujours
+présent, avec la valeur `None` si la source n'expose aucune affiche.
+
+### Fonctionnement
+
+La page [`/evenements/`](https://lapetiteboitenoire.com/evenements/) n'affiche
+pas elle-même les spectacles : elle charge un **widget de la billetterie
+[Lepointdevente.com](https://lepointdevente.com)**. Le module télécharge la
+page, y découvre l'URL de la liste Lepointdevente (lien « Programmation
+complète » ou, à défaut, `widget.js`), télécharge cette liste et analyse
+chaque carte `.feature-col[data-tpos-event]` (titre, date en français, lieu).
+Le lien de la fiche est reconstruit à partir de l'identifiant de l'événement.
+
+Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
+puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
+via `logging`.
 
 ## Maquette web
 
