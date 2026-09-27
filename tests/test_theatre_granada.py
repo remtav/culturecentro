@@ -125,6 +125,26 @@ class TestFinaliser(unittest.TestCase):
         )
 
 
+class TestFiltreJourCourant(unittest.TestCase):
+    """Le seuil par défaut est minuit du jour courant, pas l'instant présent."""
+
+    def test_evenement_plus_tot_aujourdhui_conserve(self):
+        from datetime import timedelta
+
+        maintenant = datetime.now(timezone.utc)
+        tot_aujourdhui = maintenant.replace(hour=0, minute=1, second=0, microsecond=0)
+        hier = maintenant - timedelta(days=1)
+        brut = [
+            Evenement("Tôt aujourd'hui", tot_aujourdhui),
+            Evenement("Hier", hier),
+        ]
+        with mock.patch.object(tg, "_telecharger", return_value=""), mock.patch.object(
+            tg, "_extraire_evenements", return_value=brut
+        ):
+            resultat = tg.lister_evenements_a_venir()
+        self.assertEqual([e.titre for e in resultat], ["Tôt aujourd'hui"])
+
+
 class TestExports(unittest.TestCase):
     def setUp(self):
         self.evenements = [
