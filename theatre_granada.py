@@ -11,34 +11,48 @@ une grille « vc_basic_grid ». Chaque événement est un bloc
 * le titre dans ``.vc_gitem-post-data-source-post_title`` ;
 * le lien vers la fiche de l'événement dans ``a.vc_gitem-link``.
 
-On analyse donc en priorité cette grille WPBakery. Par sécurité (si le
-thème change un jour), on prévoit deux replis : les données structurées
-schema.org ``Event`` en JSON-LD, puis les sélecteurs du plugin
-« The Events Calendar ».
+La grille est en mode « lazy » : le HTML initial ne contient que les 10
+premiers événements. Un unique appel AJAX (``admin-ajax.php`` /
+``vc_get_vc_grid_data``) renvoie l'intégralité des éléments — c'est ainsi
+qu'on récupère TOUS les événements à venir (jusqu'à plus d'un an à l'avance).
+Si cet appel échoue (thème modifié, nonce invalide…), on retombe
+successivement sur : la grille inline (10 événements), les données
+structurées schema.org ``Event`` en JSON-LD, puis les sélecteurs du plugin
+« The Events Calendar ». Chaque repli émet un avertissement via ``logging``.
 
-Remarque : la grille est en mode « lazy » (10 éléments par page) mais ne
-propose ni bouton « charger plus » ni pagination visible ; les événements à
-venir tiennent donc sur cette unique page. Un éventuel chargement AJAX
-supplémentaire (``admin-ajax.php`` / ``vc_get_vc_grid_data``) est protégé
-par un nonce et n'est pas exploitable de façon fiable hors navigateur.
+Utilisation en bibliothèque ::
 
-La fonction ``lister_evenements_a_venir`` renvoie la liste des événements
-dont la date est postérieure (ou égale) à maintenant, triés par date.
+    from theatre_granada import lister_evenements_a_venir, exporter_json
+    evenements = lister_evenements_a_venir()
+    exporter_json(evenements, "evenements.json")
 
-Dépendances : ``requests`` et ``beautifulsoup4``.
-    pip install requests beautifulsoup4
+En ligne de commande ::
+
+    python theatre_granada.py --format csv -o evenements.csv
+    python theatre_granada.py --format json
+    python theatre_granada.py -v            # journalisation détaillée
+
+Dépendances : ``requests`` et ``beautifulsoup4`` (voir requirements.txt).
 """
 
 from __future__ import annotations
 
+import argparse
+import csv
+import io
 import json
+import logging
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Iterable
+from pathlib import Path
+from typing import Iterable, Sequence
 
 import requests
 from bs4 import BeautifulSoup
+from urllib3.util.retry import Retry
+
+_LOG = logging.getLogger("theatre_granada")
 
 URL_PROGRAMMATION = "https://theatregranada.com/programmation-2/"
 
@@ -49,6 +63,9 @@ _ENTETES = {
         "(KHTML, like Gecko) Chrome/125.0 Safari/537.36"
     )
 }
+
+#: Colonnes utilisées pour la sérialisation CSV/JSON.
+CHAMPS = ("titre", "date_debut", "lien", "lieu")
 
 
 @dataclass
@@ -64,6 +81,34 @@ class Evenement:
         quand = self.date_debut.strftime("%Y-%m-%d %H:%M") if self.date_debut else "date inconnue"
         return f"{quand} — {self.titre}" + (f" ({self.lien})" if self.lien else "")
 
+    def to_dict(self) -> dict[str, str | None]:
+        """Représentation sérialisable (date au format ISO 8601)."""
+        return {
+            "titre": self.titre,
+            "date_debut": self.date_debut.isoformat() if self.date_debut else None,
+            "lien": self.lien,
+            "lieu": self.lieu,
+        }
+
+
+# --------------------------------------------------------------------------- #
+# Réseau
+# --------------------------------------------------------------------------- #
+def _creer_session() -> requests.Session:
+    """Session ``requests`` avec en-têtes navigateur et reprises réseau."""
+    session = requests.Session()
+    session.headers.update(_ENTETES)
+    reprises = Retry(
+        total=3,
+        backoff_factor=1.0,  # 0s, 1s, 2s, 4s
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset({"GET", "POST"}),
+    )
+    adaptateur = requests.adapters.HTTPAdapter(max_retries=reprises)
+    session.mount("https://", adaptateur)
+    session.mount("http://", adaptateur)
+    return session
+
 
 def _telecharger(url: str, timeout: float, session: requests.Session | None = None) -> str:
     client = session or requests
@@ -72,6 +117,9 @@ def _telecharger(url: str, timeout: float, session: requests.Session | None = No
     return reponse.text
 
 
+# --------------------------------------------------------------------------- #
+# Analyse des dates
+# --------------------------------------------------------------------------- #
 def _parse_date(valeur: str | None) -> datetime | None:
     """Analyse une date ISO 8601 (format renvoyé par le JSON-LD)."""
     if not valeur:
@@ -136,6 +184,9 @@ def _parse_date_fr(valeur: str | None) -> datetime | None:
         return None
 
 
+# --------------------------------------------------------------------------- #
+# Extraction JSON-LD (repli)
+# --------------------------------------------------------------------------- #
 def _iterer_noeuds_jsonld(donnees: object) -> Iterable[dict]:
     """Parcourt récursivement une structure JSON-LD et livre chaque dict."""
     if isinstance(donnees, dict):
@@ -163,34 +214,34 @@ def _extraire_lieu(noeud: dict) -> str | None:
     return None
 
 
+# --------------------------------------------------------------------------- #
+# Extraction WPBakery (source principale)
+# --------------------------------------------------------------------------- #
 def _charger_grille_complete(
     page_html: str, timeout: float, session: requests.Session
 ) -> str | None:
     """Récupère la grille WPBakery complète via ``admin-ajax.php``.
 
-    La grille de la page est en mode « lazy » : le HTML initial ne contient
-    que les 10 premiers événements, mais un unique appel AJAX
-    (``vc_get_vc_grid_data``) renvoie l'intégralité des éléments — c'est
-    ainsi qu'on obtient tous les événements à venir (bien au-delà des 10
-    affichés).
-
-    Renvoie le fragment HTML de la grille, ou ``None`` si l'appel échoue
-    (l'appelant retombe alors sur la grille inline).
+    Renvoie le fragment HTML de la grille (tous les événements), ou ``None``
+    si l'appel échoue — l'appelant retombe alors sur la grille inline.
     """
     soup = BeautifulSoup(page_html, "html.parser")
     conteneur = soup.select_one("[data-vc-request][data-vc-grid-settings]")
     if conteneur is None:
+        _LOG.debug("Aucun conteneur de grille WPBakery trouvé dans la page.")
         return None
 
     try:
         reglages = json.loads(conteneur.get("data-vc-grid-settings") or "{}")
     except (json.JSONDecodeError, TypeError):
+        _LOG.debug("Réglages de grille WPBakery illisibles.")
         return None
 
     url_ajax = conteneur.get("data-vc-request")
     nonce = conteneur.get("data-vc-public-nonce")
     post_id = conteneur.get("data-vc-post-id")
     if not url_ajax or not reglages:
+        _LOG.debug("Grille WPBakery : URL AJAX ou réglages manquants.")
         return None
 
     # Format exact attendu par vc_grid.min.js : les réglages sont envoyés
@@ -209,18 +260,20 @@ def _charger_grille_complete(
         reponse = session.post(
             url_ajax,
             data=donnees,
-            headers={
-                **_ENTETES,
-                "X-Requested-With": "XMLHttpRequest",
-                "Referer": URL_PROGRAMMATION,
-            },
+            headers={"X-Requested-With": "XMLHttpRequest", "Referer": URL_PROGRAMMATION},
             timeout=timeout,
         )
-    except requests.RequestException:
+    except requests.RequestException as exc:
+        _LOG.debug("Appel AJAX de la grille échoué : %s", exc)
         return None
 
     # admin-ajax renvoie « 0 » (corps d'un octet) en cas d'échec/nonce invalide.
     if reponse.status_code != 200 or len(reponse.text) <= 1:
+        _LOG.debug(
+            "Réponse AJAX inutilisable (statut %s, %d octets).",
+            reponse.status_code,
+            len(reponse.text),
+        )
         return None
     return reponse.text
 
@@ -315,6 +368,70 @@ def _extraire_depuis_html(html: str) -> list[Evenement]:
     return evenements
 
 
+# --------------------------------------------------------------------------- #
+# Sélection de la source + finalisation
+# --------------------------------------------------------------------------- #
+def _extraire_evenements(html: str, timeout: float, session: requests.Session) -> list[Evenement]:
+    """Choisit la meilleure source disponible et renvoie les événements bruts."""
+    fragment = _charger_grille_complete(html, timeout, session)
+    if fragment:
+        evenements = _extraire_depuis_wpbakery(fragment)
+        if evenements:
+            _LOG.info("Grille complète chargée via AJAX : %d éléments.", len(evenements))
+            return evenements
+
+    evenements = _extraire_depuis_wpbakery(html)
+    if evenements:
+        _LOG.warning(
+            "Chargement AJAX de la grille complète indisponible : repli sur la "
+            "grille inline (%d événements visibles seulement).",
+            len(evenements),
+        )
+        return evenements
+
+    evenements = _extraire_depuis_jsonld(html)
+    if evenements:
+        _LOG.warning("Repli sur les données JSON-LD (%d événements).", len(evenements))
+        return evenements
+
+    evenements = _extraire_depuis_html(html)
+    if evenements:
+        _LOG.warning("Repli sur le HTML générique (%d événements).", len(evenements))
+        return evenements
+
+    _LOG.warning("Aucun événement n'a pu être extrait de la page.")
+    return []
+
+
+def _finaliser(
+    evenements: Sequence[Evenement], a_partir_de: datetime
+) -> list[Evenement]:
+    """Déduplique, filtre les événements à venir et trie par date."""
+    # Déduplication (titre + date) en conservant l'ordre de découverte.
+    vus: set[tuple[str, str]] = set()
+    uniques: list[Evenement] = []
+    for ev in evenements:
+        cle = (ev.titre, ev.date_debut.isoformat() if ev.date_debut else "")
+        if cle not in vus:
+            vus.add(cle)
+            uniques.append(ev)
+
+    def _en_aware(date: datetime) -> datetime:
+        # Date « naïve » : on la suppose en UTC pour permettre les comparaisons.
+        return date if date.tzinfo is not None else date.replace(tzinfo=timezone.utc)
+
+    def _est_a_venir(ev: Evenement) -> bool:
+        if ev.date_debut is None:
+            return True  # date inconnue : on ne l'exclut pas
+        return _en_aware(ev.date_debut) >= a_partir_de
+
+    _LOINTAIN = datetime.max.replace(tzinfo=timezone.utc)  # trie les dates inconnues en fin
+
+    a_venir = [ev for ev in uniques if _est_a_venir(ev)]
+    a_venir.sort(key=lambda ev: _en_aware(ev.date_debut) if ev.date_debut else _LOINTAIN)
+    return a_venir
+
+
 def lister_evenements_a_venir(
     url: str = URL_PROGRAMMATION,
     *,
@@ -331,48 +448,131 @@ def lister_evenements_a_venir(
 
     Returns:
         Liste d'objets :class:`Evenement`.
+
+    Raises:
+        requests.RequestException: en cas d'échec réseau lors du
+            téléchargement de la page.
     """
     if a_partir_de is None:
         a_partir_de = datetime.now(timezone.utc)
 
-    session = requests.Session()
-    html = _telecharger(url, timeout, session=session)
+    session = _creer_session()
+    try:
+        html = _telecharger(url, timeout, session=session)
+        evenements = _extraire_evenements(html, timeout, session)
+    finally:
+        session.close()
 
-    # Source principale : la grille WPBakery. On tente d'abord de charger la
-    # grille COMPLÈTE via AJAX (tous les événements à venir) ; à défaut, on se
-    # rabat sur les 10 événements présents dans le HTML initial. Replis
-    # ultérieurs si le thème change (JSON-LD schema.org, « The Events Calendar »).
-    fragment = _charger_grille_complete(html, timeout, session)
-    evenements = _extraire_depuis_wpbakery(fragment) if fragment else []
-    if not evenements:
-        evenements = _extraire_depuis_wpbakery(html)
-    if not evenements:
-        evenements = _extraire_depuis_jsonld(html)
-    if not evenements:
-        evenements = _extraire_depuis_html(html)
+    return _finaliser(evenements, a_partir_de)
 
-    # Déduplication (titre + date) en conservant l'ordre de découverte.
-    vus: set[tuple[str, str]] = set()
-    uniques: list[Evenement] = []
+
+# --------------------------------------------------------------------------- #
+# Export CSV / JSON
+# --------------------------------------------------------------------------- #
+def exporter_json(
+    evenements: Iterable[Evenement],
+    fichier: str | Path | None = None,
+    *,
+    indent: int | None = 2,
+) -> str:
+    """Sérialise les événements en JSON (UTF-8).
+
+    Écrit dans ``fichier`` s'il est fourni, et renvoie toujours la chaîne.
+    """
+    donnees = [ev.to_dict() for ev in evenements]
+    texte = json.dumps(donnees, ensure_ascii=False, indent=indent)
+    if fichier is not None:
+        Path(fichier).write_text(texte + "\n", encoding="utf-8")
+        _LOG.info("%d événements écrits dans %s", len(donnees), fichier)
+    return texte
+
+
+def exporter_csv(
+    evenements: Iterable[Evenement], fichier: str | Path | None = None
+) -> str:
+    """Sérialise les événements en CSV (UTF-8, colonnes : %s).
+
+    Écrit dans ``fichier`` s'il est fourni, et renvoie toujours la chaîne.
+    """
+    evenements = list(evenements)
+    tampon = io.StringIO()
+    redacteur = csv.DictWriter(tampon, fieldnames=CHAMPS)
+    redacteur.writeheader()
     for ev in evenements:
-        cle = (ev.titre, ev.date_debut.isoformat() if ev.date_debut else "")
-        if cle not in vus:
-            vus.add(cle)
-            uniques.append(ev)
+        redacteur.writerow(ev.to_dict())
+    texte = tampon.getvalue()
+    if fichier is not None:
+        # newline="" : laisse le module csv gérer les fins de ligne.
+        with open(fichier, "w", encoding="utf-8", newline="") as flux:
+            flux.write(texte)
+        _LOG.info("%d événements écrits dans %s", len(evenements), fichier)
+    return texte
 
-    def _est_a_venir(ev: Evenement) -> bool:
-        if ev.date_debut is None:
-            return True  # date inconnue : on ne l'exclut pas
-        date = ev.date_debut
-        if date.tzinfo is None:  # date « naïve » : on la suppose en UTC
-            date = date.replace(tzinfo=timezone.utc)
-        return date >= a_partir_de
 
-    a_venir = [ev for ev in uniques if _est_a_venir(ev)]
-    a_venir.sort(key=lambda ev: ev.date_debut or datetime.max.replace(tzinfo=timezone.utc))
-    return a_venir
+exporter_csv.__doc__ = exporter_csv.__doc__ % ", ".join(CHAMPS)
+
+
+# --------------------------------------------------------------------------- #
+# Interface en ligne de commande
+# --------------------------------------------------------------------------- #
+def _construire_parseur() -> argparse.ArgumentParser:
+    parseur = argparse.ArgumentParser(
+        description="Liste les événements à venir du Théâtre Granada."
+    )
+    parseur.add_argument(
+        "--url", default=URL_PROGRAMMATION, help="Page de programmation à analyser."
+    )
+    parseur.add_argument(
+        "--format",
+        choices=("texte", "csv", "json"),
+        default="texte",
+        help="Format de sortie (défaut : texte).",
+    )
+    parseur.add_argument(
+        "-o",
+        "--sortie",
+        type=Path,
+        help="Fichier de sortie (défaut : sortie standard).",
+    )
+    parseur.add_argument(
+        "--timeout", type=float, default=20.0, help="Délai réseau en secondes."
+    )
+    parseur.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Journalisation détaillée (niveau DEBUG).",
+    )
+    return parseur
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = _construire_parseur().parse_args(argv)
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
+
+    try:
+        evenements = lister_evenements_a_venir(args.url, timeout=args.timeout)
+    except requests.RequestException as exc:
+        _LOG.error("Échec du téléchargement de %s : %s", args.url, exc)
+        return 1
+
+    if args.format == "csv":
+        contenu = exporter_csv(evenements, args.sortie)
+    elif args.format == "json":
+        contenu = exporter_json(evenements, args.sortie)
+    else:
+        contenu = "\n".join(str(ev) for ev in evenements)
+        if args.sortie is not None:
+            Path(args.sortie).write_text(contenu + "\n", encoding="utf-8")
+            _LOG.info("%d événements écrits dans %s", len(evenements), args.sortie)
+
+    if args.sortie is None:
+        print(contenu)
+    return 0
 
 
 if __name__ == "__main__":
-    for evenement in lister_evenements_a_venir():
-        print(evenement)
+    raise SystemExit(main())
