@@ -17,10 +17,12 @@ import json
 import os
 import sys
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import lapetiteboitenoire as lpbn  # noqa: E402
 from lapetiteboitenoire import (  # noqa: E402
     URL_BILLETTERIE_DEFAUT,
     Evenement,
@@ -149,6 +151,24 @@ class TestFinaliser(unittest.TestCase):
             [e.titre for e in resultat],
             ["Futur A", "Futur B", "Sans date"],
         )
+
+
+class TestFiltreJourCourant(unittest.TestCase):
+    """Le seuil par défaut est minuit du jour courant, pas l'instant présent."""
+
+    def test_evenement_plus_tot_aujourdhui_conserve(self):
+        maintenant = datetime.now(timezone.utc)
+        tot_aujourdhui = maintenant.replace(hour=0, minute=1, second=0, microsecond=0)
+        hier = maintenant - timedelta(days=1)
+        brut = [
+            Evenement("Tôt aujourd'hui", tot_aujourdhui, None),
+            Evenement("Hier", hier, None),
+        ]
+        with mock.patch.object(lpbn, "_telecharger", return_value=""), mock.patch.object(
+            lpbn, "_extraire_evenements", return_value=brut
+        ):
+            resultat = lpbn.lister_evenements_a_venir()
+        self.assertEqual([e.titre for e in resultat], ["Tôt aujourd'hui"])
 
 
 class TestExports(unittest.TestCase):

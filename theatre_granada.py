@@ -479,7 +479,8 @@ def lister_evenements_a_venir(
 
     Args:
         url: page de programmation à analyser.
-        a_partir_de: seuil temporel ; par défaut « maintenant » (UTC).
+        a_partir_de: seuil temporel ; par défaut minuit du jour courant (UTC),
+            afin de lister les événements du jour courant ou à venir.
             Les événements sans date connue sont conservés.
         timeout: délai d'attente réseau, en secondes.
 
@@ -491,7 +492,11 @@ def lister_evenements_a_venir(
             téléchargement de la page.
     """
     if a_partir_de is None:
-        a_partir_de = datetime.now(timezone.utc)
+        # Minuit du jour courant : on conserve les événements plus tôt dans la
+        # journée (« jour courant ou futur »), pas seulement ceux après l'instant présent.
+        a_partir_de = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
 
     session = _creer_session()
     try:
