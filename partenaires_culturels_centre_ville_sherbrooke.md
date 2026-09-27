@@ -17,6 +17,12 @@ existe pour ce lieu dans le dépôt, à l'état de la branche par défaut
 | Musée des beaux-arts de Sherbrooke (MBAS) | Musée | https://mbas.qc.ca/en-cours/ | ❌ Non implémenté |
 | Sporobole | Centre en art actuel / galerie | https://sporobole.org/programmation/ | ❌ Non implémenté |
 | La Petite Boîte Noire | Salle indépendante | https://lapetiteboitenoire.com/evenements/ | ✅ Implémenté (`lapetiteboitenoire.py`) |
+| Café 440 | Café-spectacle | https://lecafe440sherbrooke.com/programmation | ❌ Non implémenté |
+| Théâtre du Double signe | Compagnie / théâtre de création | https://www.doublesigne.ca/les-productions-du-double-signe/ | ❌ Non implémenté |
+| Le Petit Théâtre de Sherbrooke | Théâtre (jeune public) | https://www.petittheatre.qc.ca/spectacles/ | ❌ Non implémenté |
+| Le Tremplin 16-30 | Salle multifonctionnelle / art social | https://tremplin16-30.com/evenements/ | ❌ Non implémenté |
+| Maison des arts de la parole | Diffuseur (conte / poésie) | https://maisondesartsdelaparole.com/programmation/ | ❌ Non implémenté |
+| Bibliothèque municipale Éva-Senécal | Bibliothèque | https://bibliotheques.sherbrooke.ca/horaire-activites | ❌ Non implémenté |
 
 ## À proximité et organismes de référence
 
