@@ -13,7 +13,7 @@ existe pour ce lieu dans le dépôt, à l'état de la branche par défaut
 | Lieu / organisme | Type | Lien URL vers programmation | Statut d'implémentation |
 | --- | --- | --- | --- |
 | Théâtre Granada | Salle de spectacle | https://theatregranada.com/programmation-2/ | ✅ Implémenté (`theatre_granada.py`) |
-| Le Grand-Espace — Centre des arts de la scène Jean-Besré | Salle (théâtre / danse) | https://legrandespace.ca/public/grand-public/ | ❌ Non implémenté |
+| Le Grand-Espace — Centre des arts de la scène Jean-Besré | Salle (théâtre / danse) | https://legrandespace.ca/public/grand-public/ | ✅ Implémenté (`legrandespace.py`) |
 | Musée des beaux-arts de Sherbrooke (MBAS) | Musée | https://mbas.qc.ca/en-cours/ | ✅ Implémenté (`mbas.py`) |
 | Sporobole | Centre en art actuel / galerie | https://sporobole.org/programmation/ | ✅ Implémenté (`sporobole.py`) |
 | La Petite Boîte Noire | Salle indépendante | https://lapetiteboitenoire.com/evenements/ | ✅ Implémenté (`lapetiteboitenoire.py`) |
@@ -37,10 +37,10 @@ existe pour ce lieu dans le dépôt, à l'état de la branche par défaut
 - Toutes les URLs de programmation ci-dessus ont été confirmées comme
   existantes et pointant vers une page de programmation / calendrier /
   expositions.
-- **Statut d'implémentation** : au 2026-09-27, seuls le **Théâtre Granada**
-  (`theatre_granada.py`) et **La Petite Boîte Noire** (`lapetiteboitenoire.py`)
-  disposent d'un extracteur dans le dépôt ; les autres lieux ne sont pas
-  encore couverts.
+- **Statut d'implémentation** : au 2026-09-28, sept lieux disposent d'un
+  extracteur dans le dépôt (Théâtre Granada, La Petite Boîte Noire, Maison
+  des arts de la parole, Le Tremplin 16-30, MBAS, Sporobole, Le Grand-Espace) ;
+  les autres ne sont pas encore couverts.
 - **Culture Estrie** ne publie pas de calendrier régional unique ; le lien
   renvoie vers la section « Nouvelles / Écho des membres ».
 - **ACVS** n'a pas de programmation propre : l'organisme gère le Théâtre

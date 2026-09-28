@@ -944,7 +944,15 @@
       .then(function(data){
         if (!Array.isArray(data) || data.length === 0) return;
         // Discipline par défaut selon la salle (le feed ne la fournit pas encore).
-        var DISC_LIEU = { "Théâtre Granada": "theatre", "La Petite Boîte Noire": "musique" };
+        var DISC_LIEU = {
+          "Théâtre Granada": "theatre",
+          "La Petite Boîte Noire": "musique",
+          "Maison des arts de la parole": "litt",
+          "Le Tremplin 16-30": "musique",
+          "Musée des beaux-arts de Sherbrooke": "arts",
+          "Sporobole": "arts",
+          "Le Grand-Espace": "theatre"
+        };
         var mapped = data.map(function(e){
           var iso = e.date_debut || "";
           var m = iso.match(/T(\d{2}):(\d{2})/);
