@@ -624,9 +624,10 @@
       var sameMonth = s.getMonth() === e.getMonth();
       var txt = "Du " + s.getDate() + (sameMonth ? "" : " " + MOIS_ABBR[s.getMonth()]) +
                 " au " + e.getDate() + " " + MOIS_ABBR[e.getMonth()];
-      return txt + " · " + ev.time;
+      return txt + (ev.time ? " · " + ev.time : "");
     }
-    return JOURS_LONG[s.getDay()] + " " + s.getDate() + " " + MOIS_ABBR[s.getMonth()] + " · " + ev.time;
+    return JOURS_LONG[s.getDay()] + " " + s.getDate() + " " + MOIS_ABBR[s.getMonth()] +
+           (ev.time ? " · " + ev.time : "");
   }
 
   // Durée & période
@@ -646,9 +647,9 @@
   function whenLine(ev, cont){
     if (!cont) return whenLabel(ev);
     var s = parseD(ev.date), e = endOf(ev);
-    if (s <= NOW) return "Jusqu'au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + " · " + ev.time;
+    if (s <= NOW) return "Jusqu'au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + (ev.time ? " · " + ev.time : "");
     var sm = s.getMonth() === e.getMonth();
-    return "Du " + s.getDate() + (sm ? "" : " " + MOIS_ABBR[s.getMonth()]) + " au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + " · " + ev.time;
+    return "Du " + s.getDate() + (sm ? "" : " " + MOIS_ABBR[s.getMonth()]) + " au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + (ev.time ? " · " + ev.time : "");
   }
 
   // Pastille de date : jour, plage, ou « jusqu'au » pour le continu
@@ -711,10 +712,13 @@
 
   // Filtre par lieu (partenaire)
   var venueEl = document.getElementById("venue");
-  var venues = EVENTS.map(function(e){ return e.venue; }).filter(function(v, i, a){ return a.indexOf(v) === i; })
-    .sort(function(a, b){ return a.localeCompare(b, "fr"); });
-  venueEl.innerHTML = '<option value="all">Tous les lieux</option>' +
-    venues.map(function(v){ return '<option value="' + v.replace(/"/g, "&quot;") + '">' + v + '</option>'; }).join("");
+  function populateVenues(){
+    var venues = EVENTS.map(function(e){ return e.venue; }).filter(function(v, i, a){ return a.indexOf(v) === i; })
+      .sort(function(a, b){ return a.localeCompare(b, "fr"); });
+    venueEl.innerHTML = '<option value="all">Tous les lieux</option>' +
+      venues.map(function(v){ return '<option value="' + v.replace(/"/g, "&quot;") + '">' + v + '</option>'; }).join("");
+  }
+  populateVenues();
   venueEl.addEventListener("change", function(){
     state.venue = this.value;
     this.parentNode.classList.toggle("active", this.value !== "all");
@@ -729,7 +733,8 @@
     else if (cont && !started && daysUntil(parseD(ev.date)) <= 30) tag = '<span class="tag-soon">Bientôt</span>';
     var a = document.createElement("a");
     a.className = "event";
-    a.href = "#";
+    a.href = ev.lien || "#";
+    if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
     a.style.setProperty("--dc", d.pill);
     a.innerHTML =
       '<div class="cover">' + SCENES[ev.d](uid) + badgeHtml(ev, cont) + '</div>' +
@@ -914,6 +919,43 @@
 
   render();
   positionRail();
+
+  // Données en direct : si le feed agrégé (data/evenements.json) est présent
+  // et non vide, il remplace les données de démonstration. Sinon (fichier
+  // absent, vide, ou ouverture locale du fichier), la démo reste affichée.
+  chargerFeed();
+
+  function chargerFeed(){
+    fetch("data/evenements.json", { cache: "no-store" })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(data){
+        if (!Array.isArray(data) || data.length === 0) return;
+        // Discipline par défaut selon la salle (le feed ne la fournit pas encore).
+        var DISC_LIEU = { "Théâtre Granada": "theatre", "La Petite Boîte Noire": "musique" };
+        var mapped = data.map(function(e){
+          var iso = e.date_debut || "";
+          var m = iso.match(/T(\d{2}):(\d{2})/);
+          var heure = m && !(m[1] === "00" && m[2] === "00") ? m[1] + " h " + m[2] : "";
+          return {
+            d: DISC_LIEU[e.lieu] || "musique",
+            title: e.titre || "Sans titre",
+            venue: e.lieu || "",
+            date: (iso || "").slice(0, 10),
+            time: heure,
+            desc: e.sous_titre || "",
+            lien: e.lien || null
+          };
+        }).filter(function(e){ return /^\d{4}-\d{2}-\d{2}$/.test(e.date); });
+        if (!mapped.length) return;
+        EVENTS = mapped;
+        NOW = new Date();
+        NOW.setHours(0, 0, 0, 0); // vraie date du jour pour les données réelles
+        populateVenues();
+        render();
+        positionRail();
+      })
+      .catch(function(){ /* feed indisponible : la démo reste affichée */ });
+  }
 })();
 </script>
 
