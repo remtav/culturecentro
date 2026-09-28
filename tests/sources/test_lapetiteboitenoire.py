@@ -123,6 +123,17 @@ class TestExtractionLepointdevente(unittest.TestCase):
     def test_image_absente_vaut_none(self):
         self.assertIsNone(self.evenements[1].image)
 
+    def test_image_repli_fond_css(self):
+        fragment = """
+        <div class="feature-col" data-tpos-event="1">
+          <div class="feature-canvas" style="background-image:url('https://x/fond.png')">
+            <h3 class="feature-title">Fond</h3>
+          </div>
+        </div>
+        """
+        evs = _extraire_depuis_lepointdevente(fragment, URL_BASE)
+        self.assertEqual(evs[0].image, "https://x/fond.png")
+
 
 class TestNormaliserLieu(unittest.TestCase):
     """Le lieu Lepointdevente varie en casse/accents et porte un suffixe de ville."""

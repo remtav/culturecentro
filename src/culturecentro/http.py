@@ -39,4 +39,4 @@ def telecharger(url: str, timeout: float, session: requests.Session | None = Non
     client = session or requests
     reponse = client.get(url, headers=ENTETES, timeout=timeout)
     reponse.raise_for_status()
-    return reponse.text
+    return str(reponse.text)

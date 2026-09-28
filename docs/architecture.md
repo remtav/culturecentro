@@ -30,7 +30,7 @@ exporters          web/data/evenements.json  ──► web/index.html (GitHub Pa
 | `http.py` | Session `requests` et `telecharger()` (en-têtes, reprises). |
 | `dates.py` | Analyse ISO 8601 et dates françaises. |
 | `jsonld.py` | Extraction schema.org `Event` (repli commun). |
-| `scraping.py` | `attribut()` : accès normalisé aux attributs HTML. |
+| `scraping.py` | `attribut()`, `url_image()`, `premiere_image()` : accès normalisé aux attributs HTML et aux images (lazy, `srcset`, fonds CSS). |
 | `filtrage.py` | `finaliser()` (dédup/filtre/tri) et `minuit_utc()`. |
 | `exporters.py` | Exports texte / CSV / JSON. |
 | `aggregate.py` | `agreger()` : fusion multi-salles, tolérante aux pannes. |
@@ -52,8 +52,10 @@ découvrir les salles automatiquement.
 ## Schéma d'événement unifié
 
 Toutes les sources produisent le même `Evenement` (`titre`, `sous_titre`,
-`date_debut`, `lien`, `image`, `lieu`). Un champ non exposé par une salle vaut
-`None`. Cette homogénéité est ce qui rend l'agrégation et les exports uniformes.
+`date_debut`, `date_fin`, `lien`, `image`, `lieu`). Un champ non exposé par une
+salle vaut `None`. Cette homogénéité est ce qui rend l'agrégation et les
+exports uniformes. `date_fin` sert aux événements qui s'étalent dans le temps
+(expositions, séries) : `finaliser()` les conserve tant qu'ils sont en cours.
 
 ## Du code au site public
 

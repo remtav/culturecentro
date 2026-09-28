@@ -22,6 +22,17 @@ class TestFinaliser(unittest.TestCase):
         resultat = finaliser(brut, seuil)
         self.assertEqual([e.titre for e in resultat], ["Futur A", "Futur B", "Sans date"])
 
+    def test_evenement_en_cours_conserve_grace_a_date_fin(self):
+        seuil = datetime(2026, 10, 1, tzinfo=timezone.utc)
+        brut = [
+            Evenement("Expo en cours", datetime(2026, 9, 1), date_fin=datetime(2026, 12, 31)),
+            Evenement("Expo terminée", datetime(2026, 8, 1), date_fin=datetime(2026, 9, 30)),
+            Evenement("Passé sans fin", datetime(2026, 9, 1)),
+            Evenement("Futur", datetime(2026, 11, 1)),
+        ]
+        resultat = finaliser(brut, seuil)
+        self.assertEqual([e.titre for e in resultat], ["Expo en cours", "Futur"])
+
     def test_seuil_est_minuit_jour_courant(self):
         # Un événement plus tôt aujourd'hui est conservé ; hier est exclu.
         maintenant = datetime.now(timezone.utc)

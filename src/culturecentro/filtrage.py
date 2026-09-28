@@ -25,7 +25,10 @@ def _en_aware(date: datetime) -> datetime:
 def finaliser(evenements: Sequence[Evenement], a_partir_de: datetime) -> list[Evenement]:
     """Déduplique (titre + date), filtre les événements à venir et trie par date.
 
-    Les événements sans date connue sont conservés et triés en fin de liste.
+    Un événement est « à venir » si son début est postérieur au seuil **ou**
+    s'il est encore en cours (``date_fin`` postérieure au seuil : exposition,
+    série…). Les événements sans date connue sont conservés et triés en fin
+    de liste.
     """
     vus: set[tuple[str, str]] = set()
     uniques: list[Evenement] = []
@@ -38,7 +41,10 @@ def finaliser(evenements: Sequence[Evenement], a_partir_de: datetime) -> list[Ev
     def _est_a_venir(ev: Evenement) -> bool:
         if ev.date_debut is None:
             return True  # date inconnue : on ne l'exclut pas
-        return _en_aware(ev.date_debut) >= a_partir_de
+        if _en_aware(ev.date_debut) >= a_partir_de:
+            return True
+        # Déjà commencé : conservé tant que la fin n'est pas passée.
+        return ev.date_fin is not None and _en_aware(ev.date_fin) >= a_partir_de
 
     lointain = datetime.max.replace(tzinfo=timezone.utc)  # trie les dates inconnues en fin
 

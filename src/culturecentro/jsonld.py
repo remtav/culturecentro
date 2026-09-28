@@ -80,6 +80,7 @@ def extraire_depuis_jsonld(html: str) -> list[Evenement]:
                 Evenement(
                     titre=titre.strip(),
                     date_debut=parse_date_iso(noeud.get("startDate")),
+                    date_fin=parse_date_iso(noeud.get("endDate")),
                     lien=noeud.get("url"),
                     lieu=extraire_lieu(noeud),
                     image=extraire_image(noeud),
