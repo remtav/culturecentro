@@ -13,7 +13,17 @@ from dataclasses import dataclass
 from datetime import datetime
 
 #: Colonnes utilisées pour la sérialisation CSV/JSON, dans l'ordre.
-CHAMPS = ("titre", "sous_titre", "date_debut", "date_fin", "lien", "image", "lieu", "partenaire")
+CHAMPS = (
+    "titre",
+    "sous_titre",
+    "date_debut",
+    "date_fin",
+    "lien",
+    "image",
+    "lieu",
+    "partenaire",
+    "categorie",
+)
 
 
 @dataclass
@@ -30,6 +40,10 @@ class Evenement:
     source) ; ``lieu`` est l'endroit où il se tient, qui peut différer
     (programmation hors les murs). La source renseigne ``partenaire`` ;
     l'agrégation complète ``lieu`` avec le nom du partenaire s'il manque.
+
+    ``categorie`` est la catégorie artistique (clé de
+    :data:`culturecentro.categories.CATEGORIES`) : une source la renseigne
+    quand le site l'expose ; sinon l'agrégation la détermine automatiquement.
     """
 
     titre: str
@@ -40,6 +54,7 @@ class Evenement:
     image: str | None = None
     date_fin: datetime | None = None
     partenaire: str | None = None
+    categorie: str | None = None
 
     def __str__(self) -> str:
         quand = self.date_debut.strftime("%Y-%m-%d %H:%M") if self.date_debut else "date inconnue"
@@ -61,4 +76,5 @@ class Evenement:
             "image": self.image,
             "lieu": self.lieu,
             "partenaire": self.partenaire,
+            "categorie": self.categorie,
         }

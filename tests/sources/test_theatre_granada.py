@@ -133,6 +133,61 @@ class TestExtractionWPBakery(unittest.TestCase):
         )
 
 
+class TestCategoriesWordPress(unittest.TestCase):
+    GRILLE = """
+    <div class="vc_grid-item vc_clearfix vc_grid-term-20 vc_grid-term-8 vc_grid-term-9">
+      <div class="vc_grid-item-mini">
+        <div class="home-artist">vendredi 2 octobre 2026 à 20:00</div>
+        <div class="vc_gitem-post-data-source-post_title"><h4>Concert</h4></div>
+      </div>
+    </div>
+    <div class="vc_grid-item vc_grid-term-21 vc_grid-term-8">
+      <div class="vc_grid-item-mini">
+        <div class="home-artist">samedi 3 octobre 2026 à 20:00</div>
+        <div class="vc_gitem-post-data-source-post_title"><h4>Humoriste</h4></div>
+      </div>
+    </div>
+    <div class="vc_grid-item vc_grid-term-8">
+      <div class="vc_grid-item-mini">
+        <div class="vc_gitem-post-data-source-post_title"><h4>Sans catégorie</h4></div>
+      </div>
+    </div>
+    """
+    NOMS = {8: "Programmation", 9: "Théâtre Granada", 20: "Musique", 21: "Humour"}
+
+    def test_termes_de_la_grille(self):
+        self.assertEqual(tg._termes_de_la_grille(self.GRILLE), {8, 9, 20, 21})
+
+    def test_categorie_par_terme(self):
+        evs = _extraire_depuis_wpbakery(self.GRILLE, self.NOMS)
+        self.assertEqual([e.categorie for e in evs], ["musique", "humour", None])
+        self.assertEqual([e.categorie for e in _extraire_depuis_wpbakery(self.GRILLE)], [None] * 3)
+
+    def test_noms_des_termes_via_rest(self):
+        session = mock.Mock()
+        rep = mock.Mock()
+        rep.raise_for_status.return_value = None
+        rep.json.return_value = [{"id": 20, "name": "Musique"}, {"id": 21, "name": "Humour"}]
+        session.get.return_value = rep
+        self.assertEqual(tg._noms_des_termes({20, 21}, 5.0, session), {20: "Musique", 21: "Humour"})
+        self.assertEqual(session.get.call_args.kwargs["params"]["include"], "20,21")
+        self.assertEqual(tg._noms_des_termes(set(), 5.0, session), {})
+
+    def test_noms_des_termes_en_echec(self):
+        session = mock.Mock()
+        session.get.side_effect = requests.ConnectionError("x")
+        self.assertEqual(tg._noms_des_termes({20}, 5.0, session), {})
+
+    def test_extraction_complete_utilise_les_termes(self):
+        session = mock.Mock()
+        with (
+            mock.patch.object(tg, "_charger_grille_complete", return_value=self.GRILLE),
+            mock.patch.object(tg, "_noms_des_termes", return_value=self.NOMS),
+        ):
+            evs = _extraire_evenements("<p></p>", timeout=5, session=session)
+        self.assertEqual([e.categorie for e in evs], ["musique", "humour", None])
+
+
 class TestReplis(unittest.TestCase):
     def test_html_tribe(self):
         evs = _extraire_depuis_html(TRIBE)

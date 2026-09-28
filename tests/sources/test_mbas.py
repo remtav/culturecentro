@@ -119,6 +119,7 @@ class TestExtractionEnCours(unittest.TestCase):
         self.assertIsNone(ev.date_debut)
         self.assertIsNone(ev.date_fin)
         self.assertEqual(ev.sous_titre, "Exposition permanente")
+        self.assertEqual(ev.categorie, "arts")
         self.assertEqual(ev.lien, "https://mbas.qc.ca/couleurs-manifestes-exposition-permanente/")
         self.assertEqual(ev.image, "https://x/coma-300x300.jpg")
 

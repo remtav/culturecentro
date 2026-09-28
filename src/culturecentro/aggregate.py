@@ -4,7 +4,8 @@ Interroge chaque source indépendamment, tolère qu'une salle échoue (réseau,
 structure modifiée) sans faire échouer les autres, renseigne le partenaire et
 le lieu manquant avec le nom de la salle, ramène les lieux à leur nom
 canonique, écarte les événements hors du centre-ville, puis déduplique et
-trie l'ensemble.
+trie l'ensemble. Enfin, la catégorie artistique de chaque événement est
+déterminée automatiquement (:mod:`culturecentro.categories`).
 """
 
 from __future__ import annotations
@@ -15,7 +16,9 @@ from datetime import datetime
 
 import requests
 
+from culturecentro.categories import Categorisation
 from culturecentro.filtrage import finaliser, minuit_utc
+from culturecentro.http import creer_session
 from culturecentro.lieux import est_centre_ville, normaliser_lieu
 from culturecentro.models import Evenement
 from culturecentro.sources import Source, toutes
@@ -28,6 +31,7 @@ def agreger(
     *,
     a_partir_de: datetime | None = None,
     timeout: float = 20.0,
+    lire_fiches: bool = True,
 ) -> list[Evenement]:
     """Agrège les événements à venir de plusieurs salles.
 
@@ -35,6 +39,8 @@ def agreger(
         sources: salles à interroger (défaut : toutes celles enregistrées).
         a_partir_de: seuil temporel ; par défaut minuit du jour courant (UTC).
         timeout: délai d'attente réseau par salle, en secondes.
+        lire_fiches: lire la fiche des événements dont la catégorie n'a pu
+            être déterminée autrement (une requête par fiche).
 
     Returns:
         La liste fusionnée, dédupliquée et triée par date. ``partenaire`` et,
@@ -42,7 +48,9 @@ def agreger(
         les lieux sont ramenés à leur nom canonique
         (:func:`~culturecentro.lieux.normaliser_lieu`) et les événements hors
         du centre-ville (:func:`~culturecentro.lieux.est_centre_ville`) sont
-        écartés.
+        écartés. ``categorie`` est déterminée automatiquement
+        (:class:`~culturecentro.categories.Categorisation`) avec, en dernier
+        recours, la catégorie par défaut de la salle.
 
     Une salle qui échoue (``requests.RequestException``) est ignorée avec un
     avertissement : l'agrégation renvoie les événements des autres salles.
@@ -52,6 +60,8 @@ def agreger(
     if a_partir_de is None:
         a_partir_de = minuit_utc()
 
+    session = creer_session() if lire_fiches else None
+    categorisation = Categorisation(session=session, timeout=timeout)
     evenements: list[Evenement] = []
     for source in sources:
         try:
@@ -66,6 +76,9 @@ def agreger(
             if not est_centre_ville(ev.lieu):
                 _LOG.debug("Hors centre-ville, écarté : %s (%s)", ev.titre, ev.lieu)
                 continue
+            ev.categorie = categorisation.categoriser(
+                ev, source.categorie_defaut, lire_fiche=source.fiche_categorisable
+            )
             conserves.append(ev)
         _LOG.info(
             "Salle « %s » : %d événements (%d hors centre-ville écartés).",
@@ -75,4 +88,8 @@ def agreger(
         )
         evenements.extend(conserves)
 
+    if session is not None:
+        session.close()
+    if categorisation.fiches_lues:
+        _LOG.info("Catégorisation : %d fiches d'événement lues.", categorisation.fiches_lues)
     return finaliser(evenements, a_partir_de)

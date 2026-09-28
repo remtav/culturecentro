@@ -203,6 +203,9 @@ class LaPetiteBoiteNoire(Source):
     slug = "la-petite-boite-noire"
     nom = NOM_SALLE
     url_defaut = URL_EVENEMENTS
+    categorie_defaut = "musique"
+    # Le lien de la fiche mène à la liste de la billetterie : rien à y lire.
+    fiche_categorisable = False
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:
         return _extraire_evenements(html, timeout, session)

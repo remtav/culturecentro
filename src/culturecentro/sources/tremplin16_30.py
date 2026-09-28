@@ -195,6 +195,7 @@ class Tremplin1630(Source):
     slug = "tremplin-16-30"
     nom = "Le Tremplin 16-30"
     url_defaut = URL_EVENEMENTS
+    categorie_defaut = "musique"
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:
         return _extraire_evenements(html, timeout, session)

@@ -32,6 +32,7 @@ exporters          web/data/evenements.json  ──► web/index.html (GitHub Pa
 | `jsonld.py` | Extraction schema.org `Event` (repli commun). |
 | `scraping.py` | `attribut()`, `url_image()`, `premiere_image()` : accès normalisé aux attributs HTML et aux images (lazy, `srcset`, fonds CSS). |
 | `filtrage.py` | `finaliser()` (dédup/filtre/tri) et `minuit_utc()`. |
+| `categories.py` | Catégorie artistique automatique : libellés de taxonomie, mots-clés, fiche de l'événement (`Categorisation`). |
 | `lieux.py` | `normaliser_lieu()` (noms canoniques, alias) et `est_centre_ville()` (périmètre du centre-ville : lieux connus, rues, marqueurs hors périmètre). |
 | `exporters.py` | Exports texte / CSV / JSON. |
 | `aggregate.py` | `agreger()` : fusion multi-salles, tolérante aux pannes. |
@@ -53,7 +54,7 @@ découvrir les salles automatiquement.
 ## Schéma d'événement unifié
 
 Toutes les sources produisent le même `Evenement` (`titre`, `sous_titre`,
-`date_debut`, `date_fin`, `lien`, `image`, `lieu`, `partenaire`). Un champ non exposé par une
+`date_debut`, `date_fin`, `lien`, `image`, `lieu`, `partenaire`, `categorie`). Un champ non exposé par une
 salle vaut `None`. Cette homogénéité est ce qui rend l'agrégation et les
 exports uniformes. `date_fin` sert aux événements qui s'étalent dans le temps
 (expositions, séries) : `finaliser()` les conserve tant qu'ils sont en cours.
@@ -62,7 +63,8 @@ exports uniformes. `date_fin` sert aux événements qui s'étalent dans le temps
 
 1. `agreger()` interroge toutes les salles, renseigne le `partenaire`, remplit
    le `lieu` manquant avec le nom de la salle, ramène les lieux à leur nom
-   canonique, écarte les événements hors du centre-ville, déduplique et trie.
+   canonique, écarte les événements hors du centre-ville, détermine la
+   catégorie artistique, déduplique et trie.
 2. La CLI écrit le feed : `python -m culturecentro lister --format json -o web/data/evenements.json`.
 3. `web/index.html` charge ce feed (repli sur des données de démo s'il est
    absent) et l'affiche.

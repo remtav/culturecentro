@@ -50,6 +50,7 @@ class TestExports(unittest.TestCase):
                 "image",
                 "lieu",
                 "partenaire",
+                "categorie",
             ],
         )
         lignes = list(lecteur)

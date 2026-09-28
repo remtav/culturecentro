@@ -124,6 +124,7 @@ def _extraire_depuis_fragment(html: str) -> list[Evenement]:
                 lien=lien,
                 sous_titre=categorie or None,
                 image=image,
+                categorie="arts",  # centre en art actuel : expositions, résidences, lancements
             )
         )
     return evenements
@@ -192,6 +193,7 @@ class Sporobole(Source):
     slug = "sporobole"
     nom = "Sporobole"
     url_defaut = URL_PROGRAMMATION
+    categorie_defaut = "arts"
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:
         return _extraire_evenements(html, timeout, session)

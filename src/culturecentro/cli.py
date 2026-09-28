@@ -105,6 +105,11 @@ def _construire_parseur_principal() -> argparse.ArgumentParser:
     lister.add_argument("-o", "--sortie", type=Path, help="Fichier de sortie (défaut : stdout).")
     lister.add_argument("--timeout", type=float, default=20.0, help="Délai réseau en secondes.")
     lister.add_argument(
+        "--sans-fiches",
+        action="store_true",
+        help="Ne pas lire la fiche des événements pour déterminer leur catégorie.",
+    )
+    lister.add_argument(
         "-v", "--verbose", action="store_true", help="Journalisation détaillée (DEBUG)."
     )
     return parseur
@@ -138,7 +143,7 @@ def principal(argv: Sequence[str] | None = None) -> int:
         sources = None  # toutes
 
     try:
-        evenements = agreger(sources, timeout=args.timeout)
+        evenements = agreger(sources, timeout=args.timeout, lire_fiches=not args.sans_fiches)
     except requests.RequestException as exc:
         _LOG.error("Échec de l'agrégation : %s", exc)
         return 1

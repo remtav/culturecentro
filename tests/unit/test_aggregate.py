@@ -80,6 +80,31 @@ class TestAgreger(unittest.TestCase):
         res = agreger([a], a_partir_de=SEUIL)
         self.assertEqual([e.titre for e in res], ["Au centre"])
 
+    def test_categorie_par_source_mots_cles_ou_defaut(self):
+        a = _SourceFactice(
+            "a",
+            "Salle A",
+            [
+                Evenement("Déjà classé", datetime(2026, 10, 1, 20, 0), categorie="arts"),
+                Evenement("Grand concert", datetime(2026, 10, 2, 20, 0)),
+                Evenement("Sans indice", datetime(2026, 10, 3, 20, 0)),
+            ],
+        )
+        a.categorie_defaut = "litt"
+        res = agreger([a], a_partir_de=SEUIL, lire_fiches=False)
+        self.assertEqual([e.categorie for e in res], ["arts", "musique", "litt"])
+
+    def test_categorie_par_la_fiche(self):
+        a = _SourceFactice(
+            "a",
+            "Salle A",
+            [Evenement("Sans indice", datetime(2026, 10, 3, 20, 0), lien="https://x/f")],
+        )
+        fiche = '<a rel="category" href="/c/">Danse</a>'
+        with mock.patch("culturecentro.categories.telecharger", return_value=fiche):
+            res = agreger([a], a_partir_de=SEUIL)
+        self.assertEqual(res[0].categorie, "danse")
+
     def test_deduplique_entre_salles(self):
         meme = datetime(2026, 10, 2, 20, 0)
         a = _SourceFactice("a", "Salle A", [Evenement("Doublon", meme)])
