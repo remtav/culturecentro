@@ -16,6 +16,7 @@ class TestRegistre(unittest.TestCase):
         self.assertIn("tremplin-16-30", sources.SOURCES)
         self.assertIn("mbas", sources.SOURCES)
         self.assertIn("sporobole", sources.SOURCES)
+        self.assertIn("le-grand-espace", sources.SOURCES)
 
     def test_toutes_sont_des_sources(self):
         for source in sources.toutes():
