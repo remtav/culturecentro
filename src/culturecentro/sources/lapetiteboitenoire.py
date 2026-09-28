@@ -26,6 +26,8 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Sequence
+from datetime import datetime
 from urllib.parse import urljoin
 
 import requests
@@ -165,12 +167,17 @@ class LaPetiteBoiteNoire(Source):
 SOURCE = LaPetiteBoiteNoire()
 
 
-def lister_evenements_a_venir(url: str = URL_EVENEMENTS, **kwargs) -> list[Evenement]:
+def lister_evenements_a_venir(
+    url: str = URL_EVENEMENTS,
+    *,
+    a_partir_de: datetime | None = None,
+    timeout: float = 20.0,
+) -> list[Evenement]:
     """Raccourci module vers :meth:`LaPetiteBoiteNoire.lister_evenements_a_venir`."""
-    return SOURCE.lister_evenements_a_venir(url, **kwargs)
+    return SOURCE.lister_evenements_a_venir(url, a_partir_de=a_partir_de, timeout=timeout)
 
 
-def main(argv=None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     return cli.executer(SOURCE, argv)
 
 

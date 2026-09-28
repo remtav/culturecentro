@@ -25,6 +25,8 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Sequence
+from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
@@ -228,12 +230,17 @@ class TheatreGranada(Source):
 SOURCE = TheatreGranada()
 
 
-def lister_evenements_a_venir(url: str = URL_PROGRAMMATION, **kwargs) -> list[Evenement]:
+def lister_evenements_a_venir(
+    url: str = URL_PROGRAMMATION,
+    *,
+    a_partir_de: datetime | None = None,
+    timeout: float = 20.0,
+) -> list[Evenement]:
     """Raccourci module vers :meth:`TheatreGranada.lister_evenements_a_venir`."""
-    return SOURCE.lister_evenements_a_venir(url, **kwargs)
+    return SOURCE.lister_evenements_a_venir(url, a_partir_de=a_partir_de, timeout=timeout)
 
 
-def main(argv=None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     return cli.executer(SOURCE, argv)
 
 

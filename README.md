@@ -195,6 +195,16 @@ La configuration de tous ces outils vit dans [`pyproject.toml`](pyproject.toml).
 GitHub Actions exécute, sur chaque `push` et *pull request*
 (voir [`.github/workflows/tests.yml`](.github/workflows/tests.yml)) :
 
-- **qualité** — `ruff check`, `ruff format --check`, `mypy` ;
+- **qualité** — `ruff check`, `ruff format --check`, `mypy --strict` ;
 - **tests** — `pytest` sur Python 3.10, 3.11 et 3.12 ;
 - **couverture** — mesure, seuil minimal et régénération du badge.
+
+## Documentation
+
+- [`docs/architecture.md`](docs/architecture.md) — vue d'ensemble du paquet et du flux de données.
+- [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md) — guide pour brancher une nouvelle salle.
+- [`docs/partenaires.md`](docs/partenaires.md) — partenaires culturels du centre-ville (feuille de route des sources).
+
+## Licence
+
+Sous licence [MIT](LICENSE).

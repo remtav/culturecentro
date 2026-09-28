@@ -8,14 +8,18 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
+from typing import Any
 
 from bs4 import BeautifulSoup
 
 from culturecentro.dates import parse_date_iso
 from culturecentro.models import Evenement
 
+#: Un nœud JSON-LD : dictionnaire à clés textuelles et valeurs arbitraires.
+Noeud = dict[str, Any]
 
-def iterer_noeuds(donnees: object) -> Iterable[dict]:
+
+def iterer_noeuds(donnees: object) -> Iterable[Noeud]:
     """Parcourt récursivement une structure JSON-LD et livre chaque dict."""
     if isinstance(donnees, dict):
         # Cas @graph : une liste d'objets sous une clé.
@@ -27,14 +31,14 @@ def iterer_noeuds(donnees: object) -> Iterable[dict]:
             yield from iterer_noeuds(element)
 
 
-def est_event(noeud: dict) -> bool:
+def est_event(noeud: Noeud) -> bool:
     """Vrai si le nœud JSON-LD est (ou dérive d')un ``Event``."""
     type_ = noeud.get("@type", "")
     types = type_ if isinstance(type_, list) else [type_]
     return any(isinstance(t, str) and "Event" in t for t in types)
 
 
-def extraire_lieu(noeud: dict) -> str | None:
+def extraire_lieu(noeud: Noeud) -> str | None:
     lieu = noeud.get("location")
     if isinstance(lieu, dict):
         return lieu.get("name")
@@ -43,7 +47,7 @@ def extraire_lieu(noeud: dict) -> str | None:
     return None
 
 
-def extraire_image(noeud: dict) -> str | None:
+def extraire_image(noeud: Noeud) -> str | None:
     image = noeud.get("image")
     if isinstance(image, list):
         image = image[0] if image else None
