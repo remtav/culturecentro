@@ -29,9 +29,13 @@ class TestFinaliser(unittest.TestCase):
             Evenement("Expo terminée", datetime(2026, 8, 1), date_fin=datetime(2026, 9, 30)),
             Evenement("Passé sans fin", datetime(2026, 9, 1)),
             Evenement("Futur", datetime(2026, 11, 1)),
+            Evenement("Jusqu'en décembre", None, date_fin=datetime(2026, 12, 31)),
+            Evenement("Jusqu'en septembre", None, date_fin=datetime(2026, 9, 30)),
         ]
         resultat = finaliser(brut, seuil)
-        self.assertEqual([e.titre for e in resultat], ["Expo en cours", "Futur"])
+        self.assertEqual(
+            [e.titre for e in resultat], ["Expo en cours", "Futur", "Jusqu'en décembre"]
+        )
 
     def test_seuil_est_minuit_jour_courant(self):
         # Un événement plus tôt aujourd'hui est conservé ; hier est exclu.

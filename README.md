@@ -18,6 +18,7 @@ logique d'extraction et à l'inscrire au registre.
 | [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `culturecentro.sources.lapetiteboitenoire` | billetterie Lepointdevente |
 | [Maison des arts de la parole](https://maisondesartsdelaparole.com/programmation/) | `culturecentro.sources.maisondesartsdelaparole` | calendrier EventON (AJAX mois par mois) |
 | [Le Tremplin 16-30](https://tremplin16-30.com/evenements/) | `culturecentro.sources.tremplin16_30` | blocs Gutenberg « média + texte » |
+| [Musée des beaux-arts de Sherbrooke](https://mbas.qc.ca/en-cours/) | `culturecentro.sources.mbas` | pages « en cours » + « à venir » (blocs `#rectangle`) |
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
 `titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`) : un
@@ -218,6 +219,29 @@ partagé `culturecentro.dates.plage_dates_fr` / `trouver_dates_fr` gère :
 
 Le texte des dates est repris en `sous_titre`. Repli JSON-LD si aucun bloc
 n'est trouvé.
+
+## Musée des beaux-arts de Sherbrooke (MBAS)
+
+Module `culturecentro.sources.mbas`, même interface et mêmes options :
+
+```bash
+python -m culturecentro.sources.mbas --format json
+```
+
+### Fonctionnement
+
+Les expositions sont réparties sur deux pages,
+[`/en-cours/`](https://mbas.qc.ca/en-cours/) (page par défaut) et
+[`/a-venir/`](https://mbas.qc.ca/a-venir/) (téléchargée en plus). Chaque
+exposition est un bloc `div#rectangle` : affiche `img`, titre `h2`, un
+paragraphe « type + période » (« EXPOSITION TEMPORAIRE / 15 octobre 2026 au
+21 mars 2027 », « EXPO-VENTE / Jusqu'en octobre 2026 », « EXPOSITION
+PERMANENTE »), parfois un sous-titre (thème, artiste invité), et un bouton
+« En savoir plus ». La période donne `date_debut` et `date_fin` : une
+exposition **déjà commencée** reste listée tant qu'elle n'est pas terminée ;
+une exposition permanente n'a pas de date (triée en fin de liste). Le
+`sous_titre` reprend le sous-titre du bloc, sinon le type d'exposition.
+Repli JSON-LD si aucun bloc n'est trouvé.
 
 ## Site web (`web/`) et feed
 

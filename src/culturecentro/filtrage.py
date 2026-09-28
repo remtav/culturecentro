@@ -27,8 +27,8 @@ def finaliser(evenements: Sequence[Evenement], a_partir_de: datetime) -> list[Ev
 
     Un événement est « à venir » si son début est postérieur au seuil **ou**
     s'il est encore en cours (``date_fin`` postérieure au seuil : exposition,
-    série…). Les événements sans date connue sont conservés et triés en fin
-    de liste.
+    série…) ; une fin connue et passée l'exclut même sans date de début. Les
+    événements sans aucune date connue sont conservés et triés en fin de liste.
     """
     vus: set[tuple[str, str]] = set()
     uniques: list[Evenement] = []
@@ -39,12 +39,13 @@ def finaliser(evenements: Sequence[Evenement], a_partir_de: datetime) -> list[Ev
             uniques.append(ev)
 
     def _est_a_venir(ev: Evenement) -> bool:
+        if ev.date_fin is not None:
+            # Fin connue : conservé tant qu'elle n'est pas passée (même si le
+            # début l'est déjà, ou est inconnu — « jusqu'en octobre »).
+            return _en_aware(ev.date_fin) >= a_partir_de
         if ev.date_debut is None:
             return True  # date inconnue : on ne l'exclut pas
-        if _en_aware(ev.date_debut) >= a_partir_de:
-            return True
-        # Déjà commencé : conservé tant que la fin n'est pas passée.
-        return ev.date_fin is not None and _en_aware(ev.date_fin) >= a_partir_de
+        return _en_aware(ev.date_debut) >= a_partir_de
 
     lointain = datetime.max.replace(tzinfo=timezone.utc)  # trie les dates inconnues en fin
 

@@ -14,7 +14,7 @@ existe pour ce lieu dans le dépôt, à l'état de la branche par défaut
 | --- | --- | --- | --- |
 | Théâtre Granada | Salle de spectacle | https://theatregranada.com/programmation-2/ | ✅ Implémenté (`theatre_granada.py`) |
 | Le Grand-Espace — Centre des arts de la scène Jean-Besré | Salle (théâtre / danse) | https://legrandespace.ca/public/grand-public/ | ❌ Non implémenté |
-| Musée des beaux-arts de Sherbrooke (MBAS) | Musée | https://mbas.qc.ca/en-cours/ | ❌ Non implémenté |
+| Musée des beaux-arts de Sherbrooke (MBAS) | Musée | https://mbas.qc.ca/en-cours/ | ✅ Implémenté (`mbas.py`) |
 | Sporobole | Centre en art actuel / galerie | https://sporobole.org/programmation/ | ❌ Non implémenté |
 | La Petite Boîte Noire | Salle indépendante | https://lapetiteboitenoire.com/evenements/ | ✅ Implémenté (`lapetiteboitenoire.py`) |
 | Café 440 | Café-spectacle | https://lecafe440sherbrooke.com/programmation | ❌ Non implémenté |
