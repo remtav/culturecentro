@@ -20,6 +20,10 @@ class TestStr(unittest.TestCase):
         ev = Evenement("Expo", datetime(2026, 10, 15), date_fin=datetime(2027, 3, 21))
         self.assertEqual(str(ev), "2026-10-15 00:00 → 2027-03-21 — Expo")
 
+    def test_str_fin_le_meme_jour_sans_fleche(self):
+        ev = Evenement("Soir", datetime(2026, 10, 15, 20), date_fin=datetime(2026, 10, 15, 22))
+        self.assertEqual(str(ev), "2026-10-15 20:00 — Soir")
+
 
 class TestToDict(unittest.TestCase):
     def test_date_fin_serialisee(self):

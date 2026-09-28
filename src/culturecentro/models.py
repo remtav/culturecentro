@@ -37,7 +37,9 @@ class Evenement:
 
     def __str__(self) -> str:
         quand = self.date_debut.strftime("%Y-%m-%d %H:%M") if self.date_debut else "date inconnue"
-        if self.date_fin:
+        if self.date_fin and (
+            self.date_debut is None or self.date_fin.date() != self.date_debut.date()
+        ):
             quand += " → " + self.date_fin.strftime("%Y-%m-%d")
         titre = self.titre + (f" — {self.sous_titre}" if self.sous_titre else "")
         return f"{quand} — {titre}" + (f" ({self.lien})" if self.lien else "")

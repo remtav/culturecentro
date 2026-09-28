@@ -10,11 +10,17 @@ from __future__ import annotations
 
 from culturecentro.sources.base import Source
 from culturecentro.sources.lapetiteboitenoire import LaPetiteBoiteNoire
+from culturecentro.sources.maisondesartsdelaparole import MaisonDesArtsDeLaParole
 from culturecentro.sources.theatre_granada import TheatreGranada
 
 #: Registre des sources disponibles, indexé par ``slug``.
 SOURCES: dict[str, Source] = {
-    source.slug: source for source in (TheatreGranada(), LaPetiteBoiteNoire())
+    source.slug: source
+    for source in (
+        TheatreGranada(),
+        LaPetiteBoiteNoire(),
+        MaisonDesArtsDeLaParole(),
+    )
 }
 
 
@@ -33,6 +39,7 @@ __all__ = [
     "SOURCES",
     "TheatreGranada",
     "LaPetiteBoiteNoire",
+    "MaisonDesArtsDeLaParole",
     "obtenir",
     "toutes",
 ]
