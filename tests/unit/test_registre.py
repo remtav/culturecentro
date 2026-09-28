@@ -12,6 +12,7 @@ class TestRegistre(unittest.TestCase):
     def test_sources_connues(self):
         self.assertIn("theatre-granada", sources.SOURCES)
         self.assertIn("la-petite-boite-noire", sources.SOURCES)
+        self.assertIn("maison-des-arts-de-la-parole", sources.SOURCES)
 
     def test_toutes_sont_des_sources(self):
         for source in sources.toutes():

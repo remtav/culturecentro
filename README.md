@@ -16,6 +16,7 @@ logique d'extraction et à l'inscrire au registre.
 | --- | --- | --- |
 | [Théâtre Granada](https://theatregranada.com/programmation-2/) | `culturecentro.sources.theatre_granada` | WPBakery (grille AJAX) |
 | [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `culturecentro.sources.lapetiteboitenoire` | billetterie Lepointdevente |
+| [Maison des arts de la parole](https://maisondesartsdelaparole.com/programmation/) | `culturecentro.sources.maisondesartsdelaparole` | calendrier EventON (AJAX mois par mois) |
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
 `titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`) : un
@@ -163,6 +164,32 @@ retirée et toute graphie du nom de la salle (casse, accents) est ramenée à
 Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
 puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
 via `logging`.
+
+## Maison des arts de la parole
+
+Module `culturecentro.sources.maisondesartsdelaparole`, même interface et mêmes
+options que les autres salles :
+
+```bash
+python -m culturecentro.sources.maisondesartsdelaparole --format json
+```
+
+### Fonctionnement
+
+La page [`/programmation/`](https://maisondesartsdelaparole.com/programmation/)
+affiche un calendrier **EventON** chargé mois par mois : le HTML initial ne
+contient que le mois courant, et le changement de mois passe par un appel AJAX
+(`admin-ajax.php` / `the_ajax_hook`) dont la requête reprend les réglages du
+calendrier (`.cal_arguments`, `.evo-data`, filtres actifs comme la saison) et
+un `nonce` inscrit dans la page. Le module lit le mois courant, puis rejoue
+l'appel « mois suivant » pour les 12 mois à venir. Chaque bloc
+`.eventon_list_event` fournit titre, sous-titre (distribution), dates de début
+et de fin (métadonnées schema.org), affiche, lieu (les spectacles se donnent
+souvent hors les murs : cafés, salles partenaires…) et lien de la fiche.
+
+Si le calendrier est introuvable, le module retombe sur les données JSON-LD de
+la page ; si un appel AJAX échoue, la boucle s'arrête avec les mois déjà
+chargés. Chaque repli émet un avertissement via `logging`.
 
 ## Site web (`web/`) et feed
 
