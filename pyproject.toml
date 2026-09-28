@@ -18,6 +18,12 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "coverage>=7",
+    "pytest>=8",
+    # ruff et mypy sont épinglés : leur formatage / leurs règles de typage
+    # évoluent d'une version à l'autre, donc une version figée garantit un CI
+    # reproductible (local == CI).
+    "ruff==0.16.9",
+    "mypy==2.3.1",
 ]
 
 [project.urls]
@@ -26,13 +32,39 @@ Homepage = "https://github.com/remtav/culturecentro"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Fragments HTML figés et gabarit SVG : lignes longues inhérentes aux
+# chaînes littérales, qu'on ne peut pas couper sans altérer la donnée.
+"tests/**" = ["E501"]
+"scripts/coverage_badge.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src"]
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+# Dépendances sans stubs fiables dans cet environnement. À resserrer (stubs
+# dédiés + vérification des tests) lorsque mypy passera en mode strict.
+module = ["requests.*", "bs4.*", "urllib3.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [tool.coverage.run]
 source = ["culturecentro"]
 
 [tool.coverage.report]
 show_missing = true
 exclude_lines = ["if __name__ == .__main__.:"]
-# Seuil mesuré sur l'ensemble du paquet. L'ancien .coveragerc ne couvrait que
-# theatre_granada (d'où 85 %) ; lapetiteboitenoire était ignoré. À remonter
-# vers 85 % lorsque le cœur partagé sera extrait et lapetiteboitenoire testé.
-fail_under = 70
+# Seuil mesuré sur l'ensemble du paquet (cœur partagé + sources).
+fail_under = 85

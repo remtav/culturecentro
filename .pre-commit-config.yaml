@@ -1,0 +1,16 @@
+# Hooks de pré-commit. Installation : pip install pre-commit && pre-commit install
+# Exécution manuelle sur tout le dépôt : pre-commit run --all-files
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.3.1
+    hooks:
+      - id: mypy
+        files: ^src/
+        additional_dependencies: []
