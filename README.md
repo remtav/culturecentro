@@ -19,6 +19,7 @@ logique d'extraction et à l'inscrire au registre.
 | [Maison des arts de la parole](https://maisondesartsdelaparole.com/programmation/) | `culturecentro.sources.maisondesartsdelaparole` | calendrier EventON (AJAX mois par mois) |
 | [Le Tremplin 16-30](https://tremplin16-30.com/evenements/) | `culturecentro.sources.tremplin16_30` | blocs Gutenberg « média + texte » |
 | [Musée des beaux-arts de Sherbrooke](https://mbas.qc.ca/en-cours/) | `culturecentro.sources.mbas` | pages « en cours » + « à venir » (blocs `#rectangle`) |
+| [Sporobole](https://sporobole.org/programmation/) | `culturecentro.sources.sporobole` | liste AJAX du thème (diffusions, paginée) |
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
 `titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`) : un
@@ -242,6 +243,28 @@ exposition **déjà commencée** reste listée tant qu'elle n'est pas terminée 
 une exposition permanente n'a pas de date (triée en fin de liste). Le
 `sous_titre` reprend le sous-titre du bloc, sinon le type d'exposition.
 Repli JSON-LD si aucun bloc n'est trouvé.
+
+## Sporobole
+
+Module `culturecentro.sources.sporobole`, même interface et mêmes options :
+
+```bash
+python -m culturecentro.sources.sporobole --format json
+```
+
+### Fonctionnement
+
+La page [`/programmation/`](https://sporobole.org/programmation/) ne contient
+aucun événement : la liste est injectée par un appel AJAX du thème
+(`admin-ajax.php` / `standish_select_refresh`), filtrable par type de contenu
+(« Diffusions », projets, créations, ateliers) et paginé. Seules les
+**diffusions** (expositions, lancements, résidences ouvertes…) portent des
+dates : le module les interroge page après page, tant que les événements
+restent en cours ou à venir (la liste est triée du plus récent au plus
+ancien). Chaque bloc `.standish-single-event` fournit l'affiche (fond CSS), la
+catégorie (`sous_titre`), le titre, le lien et la période (« Du 02 octobre
+2026 au 27 novembre 2026 » → `date_debut`/`date_fin`, « Le 23 octobre 2026 »).
+Repli JSON-LD si l'appel AJAX échoue.
 
 ## Site web (`web/`) et feed
 
