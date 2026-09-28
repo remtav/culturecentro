@@ -12,6 +12,114 @@ par un **cœur partagé** (`culturecentro.models`, `.http`, `.dates`, `.jsonld`,
 `.filtrage`, `.exporters`). Ajouter une salle se limite ainsi à écrire sa
 logique d'extraction et à l'inscrire au registre.
 
+## Sommaire
+
+- [Événements à venir — salles de spectacle](#événements-à-venir--salles-de-spectacle)
+  - [Démarrage rapide](#démarrage-rapide)
+  - [Structure du projet](#structure-du-projet)
+  - [Sources disponibles](#sources-disponibles)
+  - [Schéma d'événement](#schéma-dévénement)
+  - [Agrégation — CLI unifiée](#agrégation--cli-unifiée)
+  - [Installation](#installation)
+  - [Utilisation en ligne de commande](#utilisation-en-ligne-de-commande)
+  - [Utilisation en bibliothèque](#utilisation-en-bibliothèque)
+  - [Théâtre Granada](#théâtre-granada)
+  - [La Petite Boîte Noire](#la-petite-boîte-noire)
+  - [Maison des arts de la parole](#maison-des-arts-de-la-parole)
+  - [Le Tremplin 16-30](#le-tremplin-16-30)
+  - [Musée des beaux-arts de Sherbrooke (MBAS)](#musée-des-beaux-arts-de-sherbrooke-mbas)
+  - [Sporobole](#sporobole)
+  - [Le Grand-Espace](#le-grand-espace)
+  - [Site web (web/) et feed](#site-web-web-et-feed)
+  - [Développement](#développement)
+  - [Intégration continue](#intégration-continue)
+  - [Documentation](#documentation)
+  - [Licence](#licence)
+
+## Démarrage rapide
+
+Vous débarquez sur le projet ? Voici de quoi être opérationnel en quelques
+minutes. Prérequis : **Python ≥ 3.10** et `git`.
+
+```bash
+# 1. Cloner et entrer dans le dépôt
+git clone https://github.com/remtav/culturecentro.git
+cd culturecentro
+
+# 2. Créer un environnement virtuel (recommandé) et l'activer
+python -m venv .venv
+source .venv/bin/activate          # Windows : .venv\Scripts\activate
+
+# 3. Installer le paquet avec les outils de développement
+pip install -e ".[dev]"
+
+# 4. Vérifier que tout fonctionne (tests hors-ligne, aucun accès réseau requis)
+python -m pytest
+
+# 5. Agréger la programmation réelle (nécessite un accès réseau)
+culturecentro lister
+```
+
+Points de repère pour la suite :
+
+- **Explorer** les salles disponibles : `culturecentro sources`.
+- **Générer** le feed du site web : `python -m culturecentro lister --format json -o web/data/evenements.json`.
+- **Ouvrir** la page publique en local : ouvrir [`web/index.html`](web/index.html)
+  dans un navigateur (elle utilise un jeu de démonstration si le feed est absent).
+- **Ajouter une salle** : lire [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md).
+- **Comprendre l'architecture** : lire [`docs/architecture.md`](docs/architecture.md).
+
+Les tests, le lint et le typage tournent **hors-ligne** : aucune requête vers
+les sites des salles n'est faite en test (les réponses HTTP sont figées dans des
+fixtures). On peut donc développer sans accès réseau ; seule l'exécution réelle
+de la CLI (`culturecentro lister`) contacte les sites.
+
+## Structure du projet
+
+```
+culturecentro/
+├── src/culturecentro/          # le paquet Python (layout « src/ »)
+│   ├── models.py               # Evenement : le schéma unique d'un événement
+│   ├── http.py                 # session requests + telecharger() (en-têtes, reprises)
+│   ├── dates.py                # analyse des dates en français (« Mardi 29 septembre 2026 »)
+│   ├── jsonld.py               # repli sur les données schema.org (JSON-LD)
+│   ├── scraping.py             # utilitaires HTML partagés (url_image, premiere_image…)
+│   ├── categories.py           # classement artistique automatique
+│   ├── lieux.py                # noms canoniques + périmètre du centre-ville
+│   ├── filtrage.py             # déduplication, filtre temporel et tri
+│   ├── exporters.py            # sorties texte / CSV / JSON
+│   ├── aggregate.py            # agrège toutes les salles, tolérant aux pannes
+│   ├── cli.py                  # interfaces en ligne de commande
+│   └── sources/                # une source par salle, derrière une interface commune
+│       ├── base.py             # classe abstraite Source (orchestration partagée)
+│       ├── __init__.py         # registre SOURCES {slug: Source}
+│       ├── theatre_granada.py
+│       ├── lapetiteboitenoire.py
+│       ├── maisondesartsdelaparole.py
+│       ├── tremplin16_30.py
+│       ├── mbas.py
+│       ├── sporobole.py
+│       └── legrandespace.py
+├── tests/                      # tests pytest (hors-ligne)
+│   ├── unit/                   # cœur partagé (dates, filtrage, exports…)
+│   └── sources/                # une salle par fichier, sur des fixtures HTML
+├── web/                        # page publique autonome + feed généré
+│   ├── index.html
+│   └── data/evenements.json
+├── docs/                       # architecture, guide d'ajout de source, partenaires
+├── scripts/                    # utilitaires (ex. génération du badge de couverture)
+├── .github/workflows/          # intégration continue et publication GitHub Pages
+└── pyproject.toml              # métadonnées du paquet et config des outils
+```
+
+Le flux général : chaque `Source.extraire()` transforme le HTML d'une salle en
+`list[Evenement]`, `finaliser()` déduplique / filtre / trie, `agreger()`
+rassemble toutes les salles, et les `exporters` produisent la sortie (texte,
+CSV, JSON, ou le feed JSON du site). Voir [`docs/architecture.md`](docs/architecture.md)
+pour le schéma détaillé.
+
+## Sources disponibles
+
 | Salle | Module | Source |
 | --- | --- | --- |
 | [Théâtre Granada](https://theatregranada.com/programmation-2/) | `culturecentro.sources.theatre_granada` | WPBakery (grille AJAX) |
@@ -21,6 +129,11 @@ logique d'extraction et à l'inscrire au registre.
 | [Musée des beaux-arts de Sherbrooke](https://mbas.qc.ca/en-cours/) | `culturecentro.sources.mbas` | pages « en cours » + « à venir » (blocs `#rectangle`) |
 | [Sporobole](https://sporobole.org/programmation/) | `culturecentro.sources.sporobole` | liste AJAX du thème (diffusions, paginée) |
 | [Le Grand-Espace](https://legrandespace.ca/public/grand-public/) | `culturecentro.sources.legrandespace` | pages grand public + jeune public de l'édition en cours |
+
+Le registre faisant autorité est [`culturecentro.sources.SOURCES`](src/culturecentro/sources/__init__.py) ;
+`culturecentro sources` l'affiche (slug + nom).
+
+## Schéma d'événement
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
 `titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`,
@@ -37,6 +150,9 @@ l'utilitaire partagé `culturecentro.scraping.url_image` lit indifféremment
 `src`, les attributs de chargement différé (`data-src`, `srcset`…) et les fonds
 CSS (`background-image`), et `premiere_image` sert de repli sur tout le bloc de
 l'événement. La page web affiche cette affiche en vignette lorsqu'elle existe.
+
+Le détail des champs et de leur sérialisation est donné dans
+[Utilisation en bibliothèque](#utilisation-en-bibliothèque).
 
 ## Agrégation — CLI unifiée
 
@@ -90,7 +206,7 @@ pip install -e .          # ou : pip install -e ".[dev]" pour les outils de dév
 ```
 
 Le paquet `culturecentro` est installé (layout `src/`). Dépendances :
-`requests` et `beautifulsoup4`.
+`requests` et `beautifulsoup4`. Python **3.10 ou plus récent** est requis.
 
 ## Utilisation en ligne de commande
 
@@ -142,12 +258,21 @@ Chaque `Evenement` expose :
 | `image` | URL de l'affiche. |
 | `lieu` | Nom du lieu (`None` si c'est la salle du partenaire ; l'agrégation le complète). |
 | `partenaire` | Organisme qui programme l'événement (nom de la source ; renseigné par `Source`). |
-| `categorie` | Catégorie artistique (`theatre`, `musique`, `humour`, `danse`, `arts`, `litt`, `jeunesse`, `festival`), déterminée automatiquement à l'agrégation (voir ci-dessous). |
+| `categorie` | Catégorie artistique (`theatre`, `musique`, `humour`, `danse`, `arts`, `litt`, `jeunesse`, `festival`), déterminée automatiquement à l'agrégation (voir [Catégorie artistique automatique](#agrégation--cli-unifiée)). |
 
 `to_dict()` renvoie ces champs sérialisables (date au format ISO 8601), et
 les exports CSV/JSON reprennent les mêmes colonnes.
 
-## Fonctionnement
+## Théâtre Granada
+
+Module `culturecentro.sources.theatre_granada`, l'interface et les options
+communes décrites plus haut :
+
+```bash
+python -m culturecentro.sources.theatre_granada --format json
+```
+
+### Fonctionnement
 
 Le site est un WordPress construit avec **WPBakery Page Builder**. Les
 événements sont affichés dans une grille en mode « lazy » : le HTML initial
@@ -362,19 +487,29 @@ pre-commit install        # facultatif : lance ruff + mypy à chaque commit
 | --- | --- | --- |
 | **pytest** | `python -m pytest` | Tests (hors-ligne, aucun accès réseau) |
 | **ruff** | `ruff check .` / `ruff format .` | Lint + formatage |
-| **mypy** | `mypy` | Vérification de types (sur `src/`) |
+| **mypy** | `mypy` | Vérification de types stricte (sur `src/`) |
 | **coverage** | `python -m coverage run -m pytest && python -m coverage report` | Couverture |
 
-La configuration de tous ces outils vit dans [`pyproject.toml`](pyproject.toml).
+La configuration de tous ces outils vit dans [`pyproject.toml`](pyproject.toml)
+(y compris le mode strict de mypy et le seuil de couverture minimal, 85 %).
+`ruff` et `mypy` y sont **épinglés** à une version précise pour que le résultat
+local soit identique à celui de l'intégration continue.
+
+### Écrire un test de source
+
+Les tests de sources ([`tests/sources/`](tests/sources/)) ne touchent **jamais**
+le réseau : ils rejouent des réponses HTTP figées (fixtures HTML/JSON) pour
+vérifier l'extraction. Pour brancher une nouvelle salle et son test, suivre le
+guide [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md).
 
 ## Intégration continue
 
 GitHub Actions exécute, sur chaque `push` et *pull request*
 (voir [`.github/workflows/tests.yml`](.github/workflows/tests.yml)) :
 
-- **qualité** — `ruff check`, `ruff format --check`, `mypy --strict` ;
+- **qualité** — `ruff check`, `ruff format --check`, `mypy` (mode strict) ;
 - **tests** — `pytest` sur Python 3.10, 3.11 et 3.12 ;
-- **couverture** — mesure, seuil minimal et régénération du badge.
+- **couverture** — mesure, seuil minimal (85 %) et régénération du badge.
 
 ## Documentation
 
