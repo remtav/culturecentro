@@ -64,8 +64,27 @@ JSONLD = """
 
 TRIBE = """
 <div class="tribe-events-calendar-list__event">
+  <img class="tribe-events-calendar-list__event-featured-image" src="https://x/tribe.jpg">
   <a class="tribe-events-calendar-list__event-title-link" href="https://x/e/">Événement Tribe</a>
   <time datetime="2027-04-02T19:00:00">2 avril</time>
+</div>
+"""
+
+# Grille dont l'image est chargée à la demande (pixel dans src, URL dans data-src).
+FRAGMENT_GRILLE_LAZY = """
+<div class="vc_grid-item-mini vc_clearfix">
+  <img class="vc_gitem-zone-img" src="data:image/gif;base64,R0lGOD" data-src="https://theatregranada.com/img/lazy.jpg"/>
+  <div class="vc_gitem-zone-c">
+    <div class="vc_gitem-acf home-artist">dimanche 27 septembre 2026 à 20:00</div>
+    <div class="vc_custom_heading vc_gitem-post-data-source-post_title"><h4>Lazy</h4></div>
+  </div>
+</div>
+<div class="vc_grid-item-mini vc_clearfix">
+  <div class="vc_gitem-zone-a" style="background-image: url(https://theatregranada.com/img/fond.jpg)"></div>
+  <div class="vc_gitem-zone-c">
+    <div class="vc_gitem-acf home-artist">lundi 28 septembre 2026 à 20:00</div>
+    <div class="vc_custom_heading vc_gitem-post-data-source-post_title"><h4>Fond</h4></div>
+  </div>
 </div>
 """
 
@@ -106,6 +125,13 @@ class TestExtractionWPBakery(unittest.TestCase):
     def test_sous_titre(self):
         self.assertEqual(self.evenements[1].sous_titre, "Souper-spectacle des Fêtes")
 
+    def test_image_lazy_et_fond_css(self):
+        evs = _extraire_depuis_wpbakery(FRAGMENT_GRILLE_LAZY)
+        self.assertEqual(
+            [e.image for e in evs],
+            ["https://theatregranada.com/img/lazy.jpg", "https://theatregranada.com/img/fond.jpg"],
+        )
+
 
 class TestReplis(unittest.TestCase):
     def test_html_tribe(self):
@@ -113,6 +139,7 @@ class TestReplis(unittest.TestCase):
         self.assertEqual(len(evs), 1)
         self.assertEqual(evs[0].titre, "Événement Tribe")
         self.assertEqual(evs[0].lien, "https://x/e/")
+        self.assertEqual(evs[0].image, "https://x/tribe.jpg")
 
     def test_selection_repli_inline_quand_ajax_indisponible(self):
         with mock.patch.object(tg, "_charger_grille_complete", return_value=None):

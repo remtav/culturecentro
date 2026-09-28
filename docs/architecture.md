@@ -30,7 +30,7 @@ exporters          web/data/evenements.json  ──► web/index.html (GitHub Pa
 | `http.py` | Session `requests` et `telecharger()` (en-têtes, reprises). |
 | `dates.py` | Analyse ISO 8601 et dates françaises. |
 | `jsonld.py` | Extraction schema.org `Event` (repli commun). |
-| `scraping.py` | `attribut()` : accès normalisé aux attributs HTML. |
+| `scraping.py` | `attribut()`, `url_image()`, `premiere_image()` : accès normalisé aux attributs HTML et aux images (lazy, `srcset`, fonds CSS). |
 | `filtrage.py` | `finaliser()` (dédup/filtre/tri) et `minuit_utc()`. |
 | `exporters.py` | Exports texte / CSV / JSON. |
 | `aggregate.py` | `agreger()` : fusion multi-salles, tolérante aux pannes. |

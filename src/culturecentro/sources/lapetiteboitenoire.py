@@ -39,7 +39,7 @@ from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (A
 from culturecentro.http import telecharger
 from culturecentro.jsonld import extraire_depuis_jsonld
 from culturecentro.models import Evenement
-from culturecentro.scraping import attribut
+from culturecentro.scraping import attribut, premiere_image, url_image
 from culturecentro.sources.base import Source
 
 _LOG = logging.getLogger(__name__)
@@ -110,9 +110,8 @@ def _extraire_depuis_lepointdevente(html: str, url_base: str) -> list[Evenement]
         lieu_el = item.select_one(".feature-city")
         lieu = lieu_el.get_text(" ", strip=True) if lieu_el else None
 
-        # L'affiche : <img itemprop="image" src="..."> (repli sur toute <img>).
-        img_el = item.select_one("img[itemprop=image]") or item.select_one("img")
-        image = attribut(img_el, "src") if img_el else None
+        # L'affiche : <img itemprop="image" src="..."> (repli sur toute image).
+        image = url_image(item.select_one("img[itemprop=image]")) or premiere_image(item)
 
         # Pas d'ancre dans la carte : le lien de la fiche se reconstruit à
         # partir de l'identifiant ``data-tpos-event`` (ex. .../<slug>/529998).

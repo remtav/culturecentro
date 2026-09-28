@@ -36,7 +36,7 @@ from culturecentro.dates import parse_date_fr, parse_date_iso
 from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (API publique)
 from culturecentro.jsonld import extraire_depuis_jsonld
 from culturecentro.models import Evenement
-from culturecentro.scraping import attribut
+from culturecentro.scraping import attribut, premiere_image, url_image
 from culturecentro.sources.base import Source
 
 _LOG = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ def _charger_grille_complete(
             len(reponse.text),
         )
         return None
-    return reponse.text
+    return str(reponse.text)
 
 
 def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
@@ -134,8 +134,7 @@ def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
                 sous_titre = texte
                 break
 
-        image_el = item.select_one("img.vc_gitem-zone-img")
-        image = attribut(image_el, "src") if image_el else None
+        image = url_image(item.select_one("img.vc_gitem-zone-img")) or premiere_image(item)
 
         evenements.append(
             Evenement(
@@ -177,6 +176,7 @@ def _extraire_depuis_html(html: str) -> list[Evenement]:
                 titre=titre,
                 date_debut=date_debut,
                 lien=attribut(lien_titre, "href") if lien_titre else None,
+                image=premiere_image(article),
             )
         )
     return evenements

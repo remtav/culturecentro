@@ -173,6 +173,7 @@
   .event:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(22,22,46,.08), 0 16px 34px rgba(22,22,46,.1); }
   .cover { position: relative; min-height: 132px; color: #fff; overflow: hidden; background: #1a1a24; }
   .cover .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .cover img.scene { object-fit: cover; }
   .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.04) 42%, rgba(0,0,0,0.3)); }
   .cover .date-badge {
     position: absolute; top: 12px; left: 12px; z-index: 2;
@@ -653,6 +654,21 @@
   }
 
   // Pastille de date : jour, plage, ou « jusqu'au » pour le continu
+  // Vignette : l'affiche fournie par la salle (champ « image » du feed) si
+  // disponible, sinon la scène illustrée de la discipline.
+  function coverHtml(ev, uid){
+    var scene = SCENES[ev.d](uid);
+    if (ev.image){
+      // L'affiche recouvre la scène ; si elle ne charge pas, la scène reste visible.
+      return scene + '<img class="scene" src="' + escapeAttr(ev.image) + '" alt="" loading="lazy" ' +
+             'onerror="this.remove()">';
+    }
+    return scene;
+  }
+  function escapeAttr(s){
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
   function badgeHtml(ev, cont){
     var s = parseD(ev.date), e = endOf(ev);
     if (cont){
@@ -737,7 +753,7 @@
     if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
     a.style.setProperty("--dc", d.pill);
     a.innerHTML =
-      '<div class="cover">' + SCENES[ev.d](uid) + badgeHtml(ev, cont) + '</div>' +
+      '<div class="cover">' + coverHtml(ev, uid) + badgeHtml(ev, cont) + '</div>' +
       '<div class="body">' +
         '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>' +
         '<h3>'+ ev.title +'</h3>' +
@@ -943,7 +959,8 @@
             date: (iso || "").slice(0, 10),
             time: heure,
             desc: e.sous_titre || "",
-            lien: e.lien || null
+            lien: e.lien || null,
+            image: e.image || null
           };
         }).filter(function(e){ return /^\d{4}-\d{2}-\d{2}$/.test(e.date); });
         if (!mapped.length) return;

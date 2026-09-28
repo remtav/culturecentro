@@ -22,6 +22,12 @@ Toutes les sources produisent le **même schéma** d'événement (colonnes
 exposé par une salle vaut simplement `None` (p. ex. `sous_titre` pour
 La Petite Boîte Noire).
 
+Chaque source récupère l'**affiche** (`image`) dès que le site en expose une :
+l'utilitaire partagé `culturecentro.scraping.url_image` lit indifféremment
+`src`, les attributs de chargement différé (`data-src`, `srcset`…) et les fonds
+CSS (`background-image`), et `premiere_image` sert de repli sur tout le bloc de
+l'événement. La page web affiche cette affiche en vignette lorsqu'elle existe.
+
 ## Agrégation — CLI unifiée
 
 La commande `culturecentro` (ou `python -m culturecentro`) agrège toutes les
