@@ -34,6 +34,7 @@ from culturecentro.dates import parse_date_fr, parse_date_iso
 from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (API publique)
 from culturecentro.jsonld import extraire_depuis_jsonld
 from culturecentro.models import Evenement
+from culturecentro.scraping import attribut
 from culturecentro.sources.base import Source
 
 _LOG = logging.getLogger(__name__)
@@ -59,14 +60,14 @@ def _charger_grille_complete(
         return None
 
     try:
-        reglages = json.loads(conteneur.get("data-vc-grid-settings") or "{}")
+        reglages = json.loads(attribut(conteneur, "data-vc-grid-settings") or "{}")
     except (json.JSONDecodeError, TypeError):
         _LOG.debug("Réglages de grille WPBakery illisibles.")
         return None
 
-    url_ajax = conteneur.get("data-vc-request")
-    nonce = conteneur.get("data-vc-public-nonce")
-    post_id = conteneur.get("data-vc-post-id")
+    url_ajax = attribut(conteneur, "data-vc-request")
+    nonce = attribut(conteneur, "data-vc-public-nonce")
+    post_id = attribut(conteneur, "data-vc-post-id")
     if not url_ajax or not reglages:
         _LOG.debug("Grille WPBakery : URL AJAX ou réglages manquants.")
         return None
@@ -120,7 +121,7 @@ def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
         date_debut = parse_date_fr(date_el.get_text(" ", strip=True)) if date_el else None
 
         lien_el = item.select_one("a.vc_gitem-link")
-        lien = lien_el.get("href") if lien_el else None
+        lien = attribut(lien_el, "href") if lien_el else None
 
         # Sous-titre : plusieurs champs .home-soustitre par bloc (avant/après le
         # titre) ; on garde le premier non vide.
@@ -132,7 +133,7 @@ def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
                 break
 
         image_el = item.select_one("img.vc_gitem-zone-img")
-        image = image_el.get("src") if image_el else None
+        image = attribut(image_el, "src") if image_el else None
 
         evenements.append(
             Evenement(
@@ -165,7 +166,7 @@ def _extraire_depuis_html(html: str) -> list[Evenement]:
         balise_date = article.select_one("time[datetime], .tribe-event-date-start, time")
         date_debut = None
         if balise_date is not None:
-            date_debut = parse_date_iso(balise_date.get("datetime")) or parse_date_iso(
+            date_debut = parse_date_iso(attribut(balise_date, "datetime")) or parse_date_iso(
                 balise_date.get_text(strip=True)
             )
 
@@ -173,7 +174,7 @@ def _extraire_depuis_html(html: str) -> list[Evenement]:
             Evenement(
                 titre=titre,
                 date_debut=date_debut,
-                lien=lien_titre.get("href") if lien_titre else None,
+                lien=attribut(lien_titre, "href") if lien_titre else None,
             )
         )
     return evenements

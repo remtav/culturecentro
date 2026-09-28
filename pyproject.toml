@@ -19,8 +19,11 @@ dependencies = [
 dev = [
     "coverage>=7",
     "pytest>=8",
-    "ruff>=0.6",
-    "mypy>=1.11",
+    # ruff et mypy sont épinglés : leur formatage / leurs règles de typage
+    # évoluent d'une version à l'autre, donc une version figée garantit un CI
+    # reproductible (local == CI).
+    "ruff==0.16.9",
+    "mypy==2.3.1",
 ]
 
 [project.urls]

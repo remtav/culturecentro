@@ -37,6 +37,7 @@ from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (A
 from culturecentro.http import telecharger
 from culturecentro.jsonld import extraire_depuis_jsonld
 from culturecentro.models import Evenement
+from culturecentro.scraping import attribut
 from culturecentro.sources.base import Source
 
 _LOG = logging.getLogger(__name__)
@@ -61,14 +62,14 @@ def _trouver_url_billetterie(page_html: str, timeout: float, session: requests.S
 
     # 1. Un lien direct vers la liste (« Programmation complète »).
     for lien in soup.find_all("a", href=True):
-        href = lien["href"]
-        if "lepointdevente.com/billets/" in href:
+        href = attribut(lien, "href")
+        if href and "lepointdevente.com/billets/" in href:
             return href.split("?", 1)[0]
 
     # 2. Le widget : on lit ``widget.js`` pour en extraire l'URL de l'iframe.
     for balise in soup.find_all("script", src=True):
-        src = balise["src"]
-        if "lepointdevente.com/plugins/widget.js" not in src:
+        src = attribut(balise, "src")
+        if not src or "lepointdevente.com/plugins/widget.js" not in src:
             continue
         try:
             script = telecharger(src, timeout, session=session)
@@ -109,11 +110,11 @@ def _extraire_depuis_lepointdevente(html: str, url_base: str) -> list[Evenement]
 
         # L'affiche : <img itemprop="image" src="..."> (repli sur toute <img>).
         img_el = item.select_one("img[itemprop=image]") or item.select_one("img")
-        image = img_el.get("src") if img_el else None
+        image = attribut(img_el, "src") if img_el else None
 
         # Pas d'ancre dans la carte : le lien de la fiche se reconstruit à
         # partir de l'identifiant ``data-tpos-event`` (ex. .../<slug>/529998).
-        event_id = item.get("data-tpos-event")
+        event_id = attribut(item, "data-tpos-event")
         lien = urljoin(url_base.rstrip("/") + "/", event_id) if event_id else None
 
         evenements.append(

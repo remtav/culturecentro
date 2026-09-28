@@ -65,7 +65,7 @@ from culturecentro.sources.theatre_granada import (
 
 evenements = lister_evenements_a_venir()
 for ev in evenements:
-    print(ev)                     # 2026-09-27 20:00 — Jesse Cook (https://…)
+    print(ev)  # 2026-09-27 20:00 — Jesse Cook (https://…)
 
 exporter_json(evenements, "evenements.json")
 exporter_csv(evenements, "evenements.csv")
