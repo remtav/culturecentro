@@ -115,12 +115,22 @@ def _charger_grille_complete(
     return str(reponse.text)
 
 
+def _classes(element: Tag) -> list[str]:
+    """Classes CSS d'un élément, toujours sous forme de liste de chaînes."""
+    valeur = element.get("class")
+    if isinstance(valeur, str):
+        return valeur.split()
+    if isinstance(valeur, list):
+        return [c for c in valeur if isinstance(c, str)]
+    return []
+
+
 def _termes_de_la_grille(html: str) -> set[int]:
     """Identifiants des termes (``vc_grid-term-N``) présents dans la grille."""
     soup = BeautifulSoup(html, "html.parser")
     termes: set[int] = set()
     for item in soup.select(".vc_grid-item"):
-        for classe in item.get("class", []) or []:
+        for classe in _classes(item):
             m = _TERME.match(classe)
             if m:
                 termes.add(int(m.group(1)))
@@ -140,7 +150,7 @@ def _noms_des_termes(
     try:
         reponse = session.get(
             URL_CATEGORIES,
-            params={"include": ",".join(str(i) for i in sorted(identifiants)), "per_page": 100},
+            params={"include": ",".join(str(i) for i in sorted(identifiants)), "per_page": "100"},
             timeout=timeout,
         )
         reponse.raise_for_status()
@@ -164,7 +174,7 @@ def _categorie_du_bloc(item: Tag, noms: dict[int, str]) -> str | None:
     )
     if conteneur is None:
         return None
-    for classe in conteneur.get("class", []) or []:
+    for classe in _classes(conteneur):
         m = _TERME.match(classe)
         if m:
             categorie = depuis_libelle(noms.get(int(m.group(1))))
