@@ -54,6 +54,9 @@ class Source(ABC):
     ) -> list[Evenement]:
         """Retourne les événements à venir, dédupliqués et triés par date.
 
+        Le ``partenaire`` de chaque événement est renseigné avec :attr:`nom`
+        s'il ne l'est pas déjà.
+
         Args:
             url: page à analyser (défaut : :attr:`url_defaut`).
             a_partir_de: seuil temporel ; par défaut minuit du jour courant
@@ -75,4 +78,7 @@ class Source(ABC):
         finally:
             session.close()
 
+        for ev in evenements:
+            if not ev.partenaire:
+                ev.partenaire = self.nom
         return finaliser(evenements, a_partir_de)

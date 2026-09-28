@@ -23,9 +23,11 @@ logique d'extraction et à l'inscrire au registre.
 | [Le Grand-Espace](https://legrandespace.ca/public/grand-public/) | `culturecentro.sources.legrandespace` | pages grand public + jeune public de l'édition en cours |
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
-`titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`) : un
-champ non exposé par une salle vaut simplement `None` (p. ex. `sous_titre`
-pour La Petite Boîte Noire). `date_fin` n'est renseignée que pour ce qui
+`titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`,
+`partenaire`) : un champ non exposé par une salle vaut simplement `None`
+(p. ex. `sous_titre` pour La Petite Boîte Noire). `partenaire` est l'organisme
+qui programme l'événement (le nom de la source) ; `lieu` est l'endroit où il
+se tient, qui peut différer (programmation hors les murs). `date_fin` n'est renseignée que pour ce qui
 s'étale dans le temps (exposition, série d'ateliers, spectacle à l'affiche
 plusieurs jours) ; un tel événement **déjà commencé** reste listé tant que sa
 fin n'est pas passée.
@@ -39,9 +41,16 @@ l'événement. La page web affiche cette affiche en vignette lorsqu'elle existe.
 ## Agrégation — CLI unifiée
 
 La commande `culturecentro` (ou `python -m culturecentro`) agrège toutes les
-salles enregistrées en une seule liste, dédupliquée et triée par date ; le
-`lieu` manquant est renseigné avec le nom de la salle. Une salle indisponible
-est ignorée avec un avertissement (les autres sont conservées).
+salles enregistrées en une seule liste, dédupliquée et triée par date. Le
+`partenaire` et, s'il manque, le `lieu` sont renseignés avec le nom de la
+salle ; les lieux sont ramenés à leur **nom canonique** (« Le Grand Espace »
+→ « Le Grand-Espace », « Salle multifonctionnelle du Tremplin » → « Le
+Tremplin 16-30 »…) et les événements **hors du centre-ville** (autre
+municipalité, campus, quartier périphérique) sont écartés — voir
+`culturecentro.lieux`, dont les listes de lieux connus, de rues du
+centre-ville et de marqueurs hors périmètre sont la « carte » éditable du
+projet. Une salle indisponible est ignorée avec un avertissement (les autres
+sont conservées).
 
 ```bash
 culturecentro sources                     # liste les salles enregistrées
@@ -108,7 +117,8 @@ Chaque `Evenement` expose :
 | `date_fin` | `datetime` de fin (exposition, série…) ou `None`. |
 | `lien` | URL de la fiche de l'événement. |
 | `image` | URL de l'affiche. |
-| `lieu` | Nom du lieu (généralement `None` : toujours le Théâtre Granada). |
+| `lieu` | Nom du lieu (`None` si c'est la salle du partenaire ; l'agrégation le complète). |
+| `partenaire` | Organisme qui programme l'événement (nom de la source ; renseigné par `Source`). |
 
 `to_dict()` renvoie ces champs sérialisables (date au format ISO 8601), et
 les exports CSV/JSON reprennent les mêmes colonnes.
@@ -299,7 +309,9 @@ fil chronologique par mois, bande « En ce moment ».
 
 La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
 est présent et non vide ; sinon elle retombe sur un jeu de données de
-démonstration (utile pour l'ouvrir localement). On génère le feed avec la CLI :
+démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
+le **partenaire** ; chaque carte affiche le partenaire et, s'il diffère, le
+lieu. On génère le feed avec la CLI :
 
 ```bash
 python -m culturecentro lister --format json -o web/data/evenements.json

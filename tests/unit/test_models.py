@@ -35,6 +35,11 @@ class TestToDict(unittest.TestCase):
     def test_date_fin_absente_vaut_none(self):
         self.assertIsNone(Evenement("Titre", None).to_dict()["date_fin"])
 
+    def test_partenaire_serialise(self):
+        d = Evenement("Titre", None, lieu="Café 440", partenaire="Maison des arts").to_dict()
+        self.assertEqual((d["lieu"], d["partenaire"]), ("Café 440", "Maison des arts"))
+        self.assertIsNone(Evenement("Titre", None).to_dict()["partenaire"])
+
 
 if __name__ == "__main__":
     unittest.main()

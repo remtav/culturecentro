@@ -192,6 +192,7 @@
   }
   .event h3 { font-size: 19px; font-weight: 700; }
   .event .venue { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
+  .event .venue.partner + .venue { font-weight: 500; color: var(--ink-faint); margin-top: -4px; }
   .event .venue svg { color: var(--ink-faint); flex: none; }
   .event .when { font-size: 13px; color: var(--ink-faint); font-weight: 500; }
   .event .desc { font-size: 13.5px; color: var(--ink-soft); margin-top: 1px; }
@@ -351,10 +352,10 @@
       <button type="button" data-p="week">Cette semaine</button>
       <button type="button" data-p="month">Ce mois-ci</button>
     </div>
-    <div class="venue-wrap"><select id="venue" aria-label="Filtrer par lieu"></select></div>
+    <div class="venue-wrap"><select id="venue" aria-label="Filtrer par partenaire"></select></div>
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Rechercher…" aria-label="Rechercher un événement ou un lieu">
+      <input id="q" type="search" placeholder="Rechercher…" aria-label="Rechercher un événement, un partenaire ou un lieu">
     </div>
   </div>
 </div>
@@ -715,13 +716,15 @@
     });
   });
 
-  // Filtre par lieu (partenaire)
+  // Filtre par partenaire (l'organisme qui programme l'événement). Le lieu,
+  // parfois différent (programmation hors les murs), reste affiché sur la carte.
   var venueEl = document.getElementById("venue");
+  function partnerOf(ev){ return ev.partner || ev.venue; }
   function populateVenues(){
-    var venues = EVENTS.map(function(e){ return e.venue; }).filter(function(v, i, a){ return a.indexOf(v) === i; })
+    var partners = EVENTS.map(partnerOf).filter(function(v, i, a){ return v && a.indexOf(v) === i; })
       .sort(function(a, b){ return a.localeCompare(b, "fr"); });
-    venueEl.innerHTML = '<option value="all">Tous les lieux</option>' +
-      venues.map(function(v){ return '<option value="' + v.replace(/"/g, "&quot;") + '">' + v + '</option>'; }).join("");
+    venueEl.innerHTML = '<option value="all">Tous les partenaires</option>' +
+      partners.map(function(v){ return '<option value="' + v.replace(/"/g, "&quot;") + '">' + v + '</option>'; }).join("");
   }
   populateVenues();
   venueEl.addEventListener("change", function(){
@@ -736,6 +739,16 @@
     if (!ev.image || !/^https?:\/\//i.test(ev.image)) return "";
     var src = ev.image.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
     return '<img class="photo" src="' + src + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">';
+  }
+
+  // Partenaire (organisme) et lieu : « Maison des arts de la parole · Café 440 ».
+  // Quand l'événement se tient chez le partenaire, une seule mention.
+  var HOUSE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>';
+  function placeHtml(ev){
+    var partner = partnerOf(ev);
+    var html = '<span class="venue partner">' + HOUSE + ' ' + partner + '</span>';
+    if (ev.venue && ev.venue !== partner) html += '<span class="venue">' + PIN + ' ' + ev.venue + '</span>';
+    return html;
   }
 
   function card(ev, uid, cont){
@@ -754,7 +767,7 @@
       '<div class="body">' +
         '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>' +
         '<h3>'+ ev.title +'</h3>' +
-        '<span class="venue">'+ PIN +' '+ ev.venue +'</span>' +
+        placeHtml(ev) +
         '<span class="when">'+ whenLine(ev, cont) +'</span>' +
         '<span class="desc">'+ ev.desc +'</span>' +
       '</div>';
@@ -766,9 +779,9 @@
   function render(){
     var base = EVENTS.filter(function(ev){
       if (state.disc !== "all" && ev.d !== state.disc) return false;
-      if (state.venue !== "all" && ev.venue !== state.venue) return false;
+      if (state.venue !== "all" && partnerOf(ev) !== state.venue) return false;
       if (state.q){
-        var hay = (ev.title + " " + ev.venue + " " + DISC[ev.d].label + " " + ev.desc).toLowerCase();
+        var hay = (ev.title + " " + partnerOf(ev) + " " + ev.venue + " " + DISC[ev.d].label + " " + ev.desc).toLowerCase();
         if (hay.indexOf(state.q) === -1) return false;
       }
       return inPeriod(ev);
@@ -961,6 +974,7 @@
             d: DISC_LIEU[e.lieu] || "musique",
             title: e.titre || "Sans titre",
             venue: e.lieu || "",
+            partner: e.partenaire || e.lieu || "",
             date: (iso || "").slice(0, 10),
             dateEnd: e.date_fin ? String(e.date_fin).slice(0, 10) : undefined,
             time: heure,

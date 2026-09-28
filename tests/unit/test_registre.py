@@ -25,6 +25,21 @@ class TestRegistre(unittest.TestCase):
     def test_obtenir_par_slug(self):
         self.assertEqual(sources.obtenir("theatre-granada").slug, "theatre-granada")
 
+    def test_lister_renseigne_le_partenaire(self):
+        from unittest import mock
+
+        from culturecentro.models import Evenement
+
+        source = sources.obtenir("theatre-granada")
+        with (
+            mock.patch("culturecentro.sources.base.telecharger", return_value="<p></p>"),
+            mock.patch.object(
+                source, "extraire", return_value=[Evenement("X", None, lieu="Ailleurs")]
+            ),
+        ):
+            evs = source.lister_evenements_a_venir()
+        self.assertEqual((evs[0].partenaire, evs[0].lieu), ("Théâtre Granada", "Ailleurs"))
+
     def test_obtenir_inconnu(self):
         with self.assertRaises(KeyError):
             sources.obtenir("salle-inexistante")

@@ -85,6 +85,19 @@ FRAGMENT_OCTOBRE = """
   </a></p>
   <div class="event_description"><img src="https://x/5a7.png"></div>
 </div>
+<div class="eventon_list_event" data-time="1792256400-1792260000">
+  <div class="evo_event_schema" style="display:none">
+    <a href="https://x/richmond/" itemprop="url"></a><span itemprop="name">En région</span>
+    <meta itemprop="startDate" content="2026-10-17T20:00"/>
+    <item itemprop="location"><span itemprop="name">Centre d'art de Richmond</span>
+      <span itemprop="address"><item itemprop="streetAddress">1010 rue Principale Nord, Richmond</item></span></item>
+  </div>
+  <p class="desc_trig_outter"><a class="desc_trig evcal_list_a" href="#">
+    <span class="evcal_desc evo_info" data-location_name="Centre d'art de Richmond" data-location_address="1010 rue Principale Nord, Richmond">
+      <span class="evcal_desc2 evcal_event_title">En région</span>
+    </span>
+  </a></p>
+</div>
 <div class="eventon_list_event"><p class="no_events">Aucun événement</p></div>
 """
 
@@ -176,6 +189,7 @@ class TestExtractionEventon(unittest.TestCase):
         self.evenements = _extraire_depuis_eventon(FRAGMENT_OCTOBRE)
 
     def test_nombre_et_titres(self):
+        # « En région » (Richmond) est hors du centre-ville : écarté.
         self.assertEqual([e.titre for e in self.evenements], ["Bal chanté", "5@7"])
 
     def test_champs_complets(self):

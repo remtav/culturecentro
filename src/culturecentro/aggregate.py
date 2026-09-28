@@ -1,8 +1,10 @@
 """Agrégation de la programmation de plusieurs salles.
 
 Interroge chaque source indépendamment, tolère qu'une salle échoue (réseau,
-structure modifiée) sans faire échouer les autres, renseigne le lieu manquant
-avec le nom de la salle, puis déduplique et trie l'ensemble.
+structure modifiée) sans faire échouer les autres, renseigne le partenaire et
+le lieu manquant avec le nom de la salle, ramène les lieux à leur nom
+canonique, écarte les événements hors du centre-ville, puis déduplique et
+trie l'ensemble.
 """
 
 from __future__ import annotations
@@ -14,6 +16,7 @@ from datetime import datetime
 import requests
 
 from culturecentro.filtrage import finaliser, minuit_utc
+from culturecentro.lieux import est_centre_ville, normaliser_lieu
 from culturecentro.models import Evenement
 from culturecentro.sources import Source, toutes
 
@@ -34,8 +37,12 @@ def agreger(
         timeout: délai d'attente réseau par salle, en secondes.
 
     Returns:
-        La liste fusionnée, dédupliquée et triée par date. Le champ ``lieu``
-        est renseigné avec le nom de la salle lorsqu'il est absent.
+        La liste fusionnée, dédupliquée et triée par date. ``partenaire`` et,
+        s'il est absent, ``lieu`` sont renseignés avec le nom de la salle ;
+        les lieux sont ramenés à leur nom canonique
+        (:func:`~culturecentro.lieux.normaliser_lieu`) et les événements hors
+        du centre-ville (:func:`~culturecentro.lieux.est_centre_ville`) sont
+        écartés.
 
     Une salle qui échoue (``requests.RequestException``) est ignorée avec un
     avertissement : l'agrégation renvoie les événements des autres salles.
@@ -52,10 +59,20 @@ def agreger(
         except requests.RequestException as exc:
             _LOG.warning("Salle « %s » indisponible : %s", source.nom, exc)
             continue
+        conserves: list[Evenement] = []
         for ev in evs:
-            if not ev.lieu:
-                ev.lieu = source.nom
-        _LOG.info("Salle « %s » : %d événements.", source.nom, len(evs))
-        evenements.extend(evs)
+            ev.partenaire = ev.partenaire or source.nom
+            ev.lieu = normaliser_lieu(ev.lieu) or source.nom
+            if not est_centre_ville(ev.lieu):
+                _LOG.debug("Hors centre-ville, écarté : %s (%s)", ev.titre, ev.lieu)
+                continue
+            conserves.append(ev)
+        _LOG.info(
+            "Salle « %s » : %d événements (%d hors centre-ville écartés).",
+            source.nom,
+            len(conserves),
+            len(evs) - len(conserves),
+        )
+        evenements.extend(conserves)
 
     return finaliser(evenements, a_partir_de)
