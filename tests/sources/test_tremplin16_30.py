@@ -146,7 +146,7 @@ class TestExtractionBlocs(unittest.TestCase):
         self.assertEqual(ev.date_debut, datetime(2026, 9, 29, 17, 0))
         self.assertIsNone(ev.date_fin)
         self.assertEqual(ev.lien, "https://tremplin16-30.com/evenements/souper-mali/")
-        self.assertEqual(ev.lieu, "Salle multifonctionnelle du Tremplin")
+        self.assertIsNone(ev.lieu)  # salle du Tremplin : le nom de la source fera foi
         self.assertEqual(ev.image, "https://x/mali.png")
         self.assertEqual(ev.sous_titre, "Mardi 29 septembre 2026 - 17h")
 
@@ -154,7 +154,7 @@ class TestExtractionBlocs(unittest.TestCase):
         ev = self.evenements[5]
         self.assertEqual(ev.date_debut, datetime(2026, 9, 9, 18, 30))
         self.assertEqual(ev.date_fin, datetime(2026, 12, 16))
-        self.assertEqual(ev.lieu, "Salle multifonctionnelle du Tremplin")
+        self.assertIsNone(ev.lieu)
         self.assertEqual(ev.image, "https://x/ruches.png")
         self.assertEqual(
             ev.lien,
@@ -167,6 +167,14 @@ class TestExtractionBlocs(unittest.TestCase):
             liens, {"https://tremplin16-30.com/evenements/jamlab-du-tremplin-automne-2026/"}
         )
         self.assertEqual({e.image for e in self.evenements[:4]}, {"https://x/jams.png"})
+
+    def test_lieu_externe_conserve(self):
+        html = (
+            '<div class="wp-block-media-text"><h2>Ailleurs</h2>'
+            '<p class="event-data">Lundi 5 octobre 2026 - 19h</p>'
+            '<p class="event-data"><a href="https://goo.gl/maps/x">Café 440</a></p></div>'
+        )
+        self.assertEqual(_extraire_depuis_blocs(html, AUJOURDHUI)[0].lieu, "Café 440")
 
     def test_bloc_sans_date_conserve_sans_date(self):
         html = '<div class="wp-block-media-text"><h2>Sans date</h2><p class="event-data">Gratuit</p></div>'

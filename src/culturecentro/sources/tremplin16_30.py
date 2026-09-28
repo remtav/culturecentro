@@ -151,14 +151,25 @@ def _extraire_depuis_blocs(html: str, aujourdhui: datetime | None = None) -> lis
 
 
 def _lieu(bloc: Tag, donnees: list[str]) -> str | None:
-    """Le lieu : le paragraphe portant un lien de carte, sinon le deuxième."""
+    """Le lieu : le paragraphe portant un lien de carte, sinon le deuxième.
+
+    La salle du Tremplin lui-même (« Salle multifonctionnelle du Tremplin »)
+    donne ``None`` : l'agrégation renseigne alors le nom de la source, pour
+    qu'un seul lieu apparaisse dans le filtre du site.
+    """
+    lieu: str | None = None
     for p in bloc.select("p.event-data"):
         lien = p.select_one("a[href*='maps'], a[href*='goo.gl']")
         if lien:
             texte = str(lien.get_text(" ", strip=True))
             if texte:
-                return texte
-    return donnees[1] if len(donnees) > 1 else None
+                lieu = texte
+                break
+    if lieu is None and len(donnees) > 1:
+        lieu = donnees[1]
+    if lieu and "tremplin" in lieu.lower():
+        return None
+    return lieu
 
 
 def _extraire_evenements(html: str, timeout: float, session: requests.Session) -> list[Evenement]:
