@@ -12,6 +12,7 @@ from culturecentro.sources.base import Source
 from culturecentro.sources.lapetiteboitenoire import LaPetiteBoiteNoire
 from culturecentro.sources.maisondesartsdelaparole import MaisonDesArtsDeLaParole
 from culturecentro.sources.theatre_granada import TheatreGranada
+from culturecentro.sources.tremplin16_30 import Tremplin1630
 
 #: Registre des sources disponibles, indexé par ``slug``.
 SOURCES: dict[str, Source] = {
@@ -20,6 +21,7 @@ SOURCES: dict[str, Source] = {
         TheatreGranada(),
         LaPetiteBoiteNoire(),
         MaisonDesArtsDeLaParole(),
+        Tremplin1630(),
     )
 }
 
@@ -40,6 +42,7 @@ __all__ = [
     "TheatreGranada",
     "LaPetiteBoiteNoire",
     "MaisonDesArtsDeLaParole",
+    "Tremplin1630",
     "obtenir",
     "toutes",
 ]

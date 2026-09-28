@@ -28,7 +28,7 @@ exporters          web/data/evenements.json  ──► web/index.html (GitHub Pa
 | --- | --- |
 | `models.py` | `Evenement` (schéma unique) et `CHAMPS`. |
 | `http.py` | Session `requests` et `telecharger()` (en-têtes, reprises). |
-| `dates.py` | Analyse ISO 8601 et dates françaises. |
+| `dates.py` | Analyse ISO 8601 et dates françaises : date simple, heure, listes de dates et plages (« du 7 au 17 octobre 2026 », « jusqu'en mai »). |
 | `jsonld.py` | Extraction schema.org `Event` (repli commun). |
 | `scraping.py` | `attribut()`, `url_image()`, `premiere_image()` : accès normalisé aux attributs HTML et aux images (lazy, `srcset`, fonds CSS). |
 | `filtrage.py` | `finaliser()` (dédup/filtre/tri) et `minuit_utc()`. |
