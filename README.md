@@ -22,7 +22,20 @@ Toutes les sources produisent le **même schéma** d'événement (colonnes
 exposé par une salle vaut simplement `None` (p. ex. `sous_titre` pour
 La Petite Boîte Noire).
 
-## Théâtre Granada
+## Agrégation — CLI unifiée
+
+La commande `culturecentro` (ou `python -m culturecentro`) agrège toutes les
+salles enregistrées en une seule liste, dédupliquée et triée par date ; le
+`lieu` manquant est renseigné avec le nom de la salle. Une salle indisponible
+est ignorée avec un avertissement (les autres sont conservées).
+
+```bash
+culturecentro sources                     # liste les salles enregistrées
+culturecentro lister                      # agrège toutes les salles (texte)
+culturecentro lister --format json        # agrège en JSON
+culturecentro lister --source theatre-granada --format csv -o prog.csv
+python -m culturecentro lister            # équivalent sans le script installé
+```
 
 ## Installation
 
