@@ -4,14 +4,23 @@
 ![Couverture](coverage.svg)
 
 Récupère la liste des **événements à venir** de la programmation de salles de
-spectacle et permet de les exporter en texte, CSV ou JSON. Deux salles sont
-prises en charge, chacune dans son propre module partageant la même interface
-(`lister_evenements_a_venir`, `exporter_json`, `exporter_csv`) :
+spectacle et permet de les exporter en texte, CSV ou JSON. Chaque salle est
+une **source** (`culturecentro.sources`) qui n'implémente que l'extraction
+propre à son site ; tout le reste — client HTTP, analyse des dates françaises,
+repli JSON-LD, modèle d'événement, déduplication, exports et CLI — est fourni
+par un **cœur partagé** (`culturecentro.models`, `.http`, `.dates`, `.jsonld`,
+`.filtrage`, `.exporters`). Ajouter une salle se limite ainsi à écrire sa
+logique d'extraction et à l'inscrire au registre.
 
 | Salle | Module | Source |
 | --- | --- | --- |
 | [Théâtre Granada](https://theatregranada.com/programmation-2/) | `culturecentro.sources.theatre_granada` | WPBakery (grille AJAX) |
 | [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `culturecentro.sources.lapetiteboitenoire` | billetterie Lepointdevente |
+
+Toutes les sources produisent le **même schéma** d'événement (colonnes
+`titre`, `sous_titre`, `date_debut`, `lien`, `image`, `lieu`) : un champ non
+exposé par une salle vaut simplement `None` (p. ex. `sous_titre` pour
+La Petite Boîte Noire).
 
 ## Théâtre Granada
 
@@ -111,10 +120,9 @@ exporter_json(evenements, "evenements.json")
 ```
 
 Les options (`--url`, `--format`, `-o/--sortie`, `--timeout`, `-v`) sont
-identiques à celles du Théâtre Granada. Chaque `Evenement` expose `titre`,
-`date_debut`, `image`, `lien` et `lieu` (plus `to_dict()`). Le champ `image`
-(URL de l'affiche) est **obligatoire** dans le modèle : il est toujours
-présent, avec la valeur `None` si la source n'expose aucune affiche.
+identiques à celles du Théâtre Granada. Les événements suivent le schéma commun
+décrit plus haut ; La Petite Boîte Noire n'expose pas de `sous_titre` (toujours
+`None`), et `image` (URL de l'affiche) vaut `None` si la source n'en fournit pas.
 
 ### Fonctionnement
 

@@ -63,7 +63,5 @@ source = ["culturecentro"]
 [tool.coverage.report]
 show_missing = true
 exclude_lines = ["if __name__ == .__main__.:"]
-# Seuil mesuré sur l'ensemble du paquet. L'ancien .coveragerc ne couvrait que
-# theatre_granada (d'où 85 %) ; lapetiteboitenoire était ignoré. À remonter
-# vers 85 % lorsque le cœur partagé sera extrait et lapetiteboitenoire testé.
-fail_under = 70
+# Seuil mesuré sur l'ensemble du paquet (cœur partagé + sources).
+fail_under = 85
