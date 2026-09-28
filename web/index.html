@@ -637,15 +637,17 @@
     { d:"litt",     title:"Rendez-vous polar",                venue:"Bibliothèque Éva-Senécal",  date:"2028-01-28", time:"19 h 00", desc:"Une soirée noire : auteurs de romans policiers de la région." }
   ];
 
+  // Lieux partenaires : les organismes du centre-ville dont la programmation
+  // est agrégée par un extracteur (voir docs/partenaires.md et
+  // src/culturecentro/sources/). Noms et sites repris des sources scrapées.
   var PARTNERS = [
-    { name:"Théâtre Granada",            kind:"Salle patrimoniale",           d:"theatre",  url:"https://theatregranada.com" },
-    { name:"Maison des arts de la parole", kind:"Contes · Arts de la parole", d:"litt",     url:"https://maisondesartsdelaparole.com" },
-    { name:"Musée des beaux-arts",       kind:"Arts visuels",                 d:"arts",     url:"https://mbas.qc.ca" },
-    { name:"Sporobole",                  kind:"Centre en art actuel",         d:"arts",     url:"https://sporobole.org" },
-    { name:"La Petite Boîte Noire",      kind:"Salle de musique",             d:"musique",  url:"https://lapetiteboitenoire.com" },
-    { name:"Bibliothèque Éva-Senécal",   kind:"Littérature · Médiation",      d:"litt",     url:"https://bibliotheques.sherbrooke.ca" },
-    { name:"Théâtre Léonard-St-Laurent", kind:"Danse · Théâtre",              d:"danse",    url:"https://www.seminaire-sherbrooke.qc.ca" },
-    { name:"Le Tremplin",                kind:"Diffusion de la relève",       d:"musique",  url:"https://salleletremplin.org" }
+    { name:"Théâtre Granada",                    kind:"Salle patrimoniale",         d:"theatre",  url:"https://theatregranada.com" },
+    { name:"Le Grand-Espace",                    kind:"Arts de la scène",           d:"theatre",  url:"https://legrandespace.ca" },
+    { name:"Musée des beaux-arts de Sherbrooke", kind:"Arts visuels",               d:"arts",     url:"https://mbas.qc.ca" },
+    { name:"Sporobole",                          kind:"Centre en art actuel",       d:"arts",     url:"https://sporobole.org" },
+    { name:"La Petite Boîte Noire",              kind:"Salle de musique",           d:"musique",  url:"https://lapetiteboitenoire.com" },
+    { name:"Le Tremplin 16-30",                  kind:"Diffusion de la relève",     d:"musique",  url:"https://tremplin16-30.com" },
+    { name:"Maison des arts de la parole",       kind:"Contes · Arts de la parole", d:"litt",     url:"https://maisondesartsdelaparole.com" }
   ];
 
   var PIN = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>';
@@ -918,7 +920,9 @@
   // Partenaires
   var partnersEl = document.getElementById("partners");
   PARTNERS.forEach(function(p){
-    var initials = p.name.replace(/^(Le |La |L')/,"").split(/\s|-/).slice(0,2).map(function(w){ return w[0]; }).join("").toUpperCase();
+    var initials = p.name.replace(/^(Le |La |L')/,"").split(/[\s-]+/)
+      .filter(function(w){ return /^[A-Za-zÀ-ÿ]/.test(w); })
+      .slice(0,2).map(function(w){ return w[0]; }).join("").toUpperCase();
     var el = document.createElement("a");
     el.className = "partner";
     el.href = p.url;
