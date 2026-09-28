@@ -44,6 +44,42 @@ class TestAgreger(unittest.TestCase):
         self.assertEqual(res[0].lieu, "Ailleurs")  # lieu existant conservé
         self.assertEqual(res[1].lieu, "Salle A")  # lieu manquant renseigné
 
+    def test_partenaire_et_lieu_canonique(self):
+        a = _SourceFactice(
+            "a",
+            "Maison des arts",
+            [
+                Evenement("Hors les murs", datetime(2026, 10, 1, 20, 0), lieu="Le Grand Espace"),
+                Evenement("Chez nous", datetime(2026, 10, 2, 20, 0)),
+                Evenement(
+                    "Déjà attribué", datetime(2026, 10, 3, 20, 0), partenaire="Autre organisme"
+                ),
+            ],
+        )
+        res = agreger([a], a_partir_de=SEUIL)
+        self.assertEqual([e.partenaire for e in res], ["Maison des arts"] * 2 + ["Autre organisme"])
+        self.assertEqual(res[0].lieu, "Le Grand-Espace")  # alias ramené au nom canonique
+        self.assertEqual(res[1].lieu, "Maison des arts")  # lieu manquant = partenaire
+
+    def test_hors_centre_ville_ecarte(self):
+        a = _SourceFactice(
+            "a",
+            "Salle A",
+            [
+                Evenement("Au centre", datetime(2026, 10, 1, 20, 0), lieu="Café 440"),
+                Evenement(
+                    "En région", datetime(2026, 10, 2, 20, 0), lieu="Centre d'art de Richmond"
+                ),
+                Evenement(
+                    "Sur le campus",
+                    datetime(2026, 10, 3, 20, 0),
+                    lieu="Centre culturel de l'Université de Sherbrooke",
+                ),
+            ],
+        )
+        res = agreger([a], a_partir_de=SEUIL)
+        self.assertEqual([e.titre for e in res], ["Au centre"])
+
     def test_deduplique_entre_salles(self):
         meme = datetime(2026, 10, 2, 20, 0)
         a = _SourceFactice("a", "Salle A", [Evenement("Doublon", meme)])

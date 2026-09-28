@@ -41,7 +41,16 @@ class TestExports(unittest.TestCase):
         lecteur = csv.DictReader(io.StringIO(exporter_csv(self.evenements)))
         self.assertEqual(
             lecteur.fieldnames,
-            ["titre", "sous_titre", "date_debut", "date_fin", "lien", "image", "lieu"],
+            [
+                "titre",
+                "sous_titre",
+                "date_debut",
+                "date_fin",
+                "lien",
+                "image",
+                "lieu",
+                "partenaire",
+            ],
         )
         lignes = list(lecteur)
         self.assertEqual(len(lignes), 2)

@@ -12,6 +12,11 @@ On lit donc le mois courant dans la page, puis on rejoue l'appel AJAX
 ``.eventon_list_event`` fournit titre, sous-titre, dates (``itemprop``
 schema.org), affiche, lieu et lien de la fiche.
 
+La programmation se donne en partie hors les murs, jusqu'en région
+(festival) : les événements dont le lieu ou l'adresse n'est pas au
+centre-ville de Sherbrooke (:func:`culturecentro.lieux.est_centre_ville`)
+sont écartés.
+
 Si le calendrier est introuvable, on retombe sur les données schema.org
 ``Event`` (JSON-LD) de la page. Chaque repli émet un avertissement via
 ``logging``.
@@ -42,6 +47,7 @@ from culturecentro import cli
 from culturecentro.dates import parse_date_iso
 from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (API publique)
 from culturecentro.jsonld import extraire_depuis_jsonld
+from culturecentro.lieux import est_centre_ville
 from culturecentro.models import Evenement
 from culturecentro.scraping import attribut, premiere_image, url_image
 from culturecentro.sources.base import Source
@@ -245,9 +251,19 @@ def _extraire_depuis_eventon(html: str) -> list[Evenement]:
             "[itemprop=location] [itemprop=name]"
         )
         lieu = lieu_el.get_text(" ", strip=True) if lieu_el else None
+        desc = bloc.select_one("[data-location_name]")
         if not lieu:
-            desc = bloc.select_one("[data-location_name]")
             lieu = attribut(desc, "data-location_name") if desc else None
+        adresse = attribut(desc, "data-location_address") if desc else None
+        if adresse is None:
+            adresse_el = bloc.select_one("[itemprop=location] [itemprop=streetAddress]")
+            adresse = adresse_el.get_text(" ", strip=True) if adresse_el else None
+
+        # Programmation en partie hors les murs, jusqu'en région : seuls les
+        # rendez-vous au centre-ville de Sherbrooke sont conservés.
+        if not est_centre_ville(lieu, adresse):
+            _LOG.debug("Hors centre-ville, écarté : %s (%s, %s)", titre, lieu, adresse)
+            continue
 
         image = (
             _contenu_meta(bloc, "image")
