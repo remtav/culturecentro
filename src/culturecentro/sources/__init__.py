@@ -11,6 +11,7 @@ from __future__ import annotations
 from culturecentro.sources.base import Source
 from culturecentro.sources.lapetiteboitenoire import LaPetiteBoiteNoire
 from culturecentro.sources.maisondesartsdelaparole import MaisonDesArtsDeLaParole
+from culturecentro.sources.mbas import MuseeDesBeauxArts
 from culturecentro.sources.theatre_granada import TheatreGranada
 from culturecentro.sources.tremplin16_30 import Tremplin1630
 
@@ -22,6 +23,7 @@ SOURCES: dict[str, Source] = {
         LaPetiteBoiteNoire(),
         MaisonDesArtsDeLaParole(),
         Tremplin1630(),
+        MuseeDesBeauxArts(),
     )
 }
 
@@ -43,6 +45,7 @@ __all__ = [
     "LaPetiteBoiteNoire",
     "MaisonDesArtsDeLaParole",
     "Tremplin1630",
+    "MuseeDesBeauxArts",
     "obtenir",
     "toutes",
 ]
