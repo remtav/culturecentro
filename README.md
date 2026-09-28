@@ -10,26 +10,29 @@ prises en charge, chacune dans son propre module partageant la même interface
 
 | Salle | Module | Source |
 | --- | --- | --- |
-| [Théâtre Granada](https://theatregranada.com/programmation-2/) | `theatre_granada.py` | WPBakery (grille AJAX) |
-| [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `lapetiteboitenoire.py` | billetterie Lepointdevente |
+| [Théâtre Granada](https://theatregranada.com/programmation-2/) | `culturecentro.sources.theatre_granada` | WPBakery (grille AJAX) |
+| [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `culturecentro.sources.lapetiteboitenoire` | billetterie Lepointdevente |
 
 ## Théâtre Granada
 
 ## Installation
 
 ```bash
-pip install -r requirements.txt
+pip install -e .          # ou : pip install -e ".[dev]" pour les outils de dév
 ```
 
-Dépendances : `requests` et `beautifulsoup4`.
+Le paquet `culturecentro` est installé (layout `src/`). Dépendances :
+`requests` et `beautifulsoup4`.
 
 ## Utilisation en ligne de commande
 
+Chaque source s'exécute comme un module du paquet :
+
 ```bash
-python theatre_granada.py                        # liste texte sur la sortie standard
-python theatre_granada.py --format json          # JSON
-python theatre_granada.py --format csv -o evenements.csv
-python theatre_granada.py -v                      # journalisation détaillée (DEBUG)
+python -m culturecentro.sources.theatre_granada                     # liste texte
+python -m culturecentro.sources.theatre_granada --format json       # JSON
+python -m culturecentro.sources.theatre_granada --format csv -o evenements.csv
+python -m culturecentro.sources.theatre_granada -v                  # journalisation DEBUG
 ```
 
 Options principales :
@@ -45,7 +48,11 @@ Options principales :
 ## Utilisation en bibliothèque
 
 ```python
-from theatre_granada import lister_evenements_a_venir, exporter_json, exporter_csv
+from culturecentro.sources.theatre_granada import (
+    lister_evenements_a_venir,
+    exporter_json,
+    exporter_csv,
+)
 
 evenements = lister_evenements_a_venir()
 for ev in evenements:
@@ -85,16 +92,19 @@ structurées schema.org `Event` (JSON-LD), puis les sélecteurs du plugin
 
 ## La Petite Boîte Noire
 
-Même interface, dans le module `lapetiteboitenoire.py` :
+Même interface, dans le module `culturecentro.sources.lapetiteboitenoire` :
 
 ```bash
-python lapetiteboitenoire.py                       # liste texte
-python lapetiteboitenoire.py --format json
-python lapetiteboitenoire.py --format csv -o evenements.csv
+python -m culturecentro.sources.lapetiteboitenoire                     # liste texte
+python -m culturecentro.sources.lapetiteboitenoire --format json
+python -m culturecentro.sources.lapetiteboitenoire --format csv -o evenements.csv
 ```
 
 ```python
-from lapetiteboitenoire import lister_evenements_a_venir, exporter_json
+from culturecentro.sources.lapetiteboitenoire import (
+    lister_evenements_a_venir,
+    exporter_json,
+)
 
 evenements = lister_evenements_a_venir()
 exporter_json(evenements, "evenements.json")

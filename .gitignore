@@ -2,6 +2,11 @@ __pycache__/
 *.pyc
 .venv/
 
+# Artefacts de packaging (build editable / sdist / wheel)
+*.egg-info/
+build/
+dist/
+
 # Artefacts de couverture (le badge coverage.svg reste versionné)
 .coverage
 .coverage.*

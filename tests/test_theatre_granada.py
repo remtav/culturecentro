@@ -16,16 +16,13 @@ import csv
 import io
 import json
 import os
-import sys
 import tempfile
 import unittest
 from datetime import datetime, timezone
 from unittest import mock
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import theatre_granada as tg  # noqa: E402
-from theatre_granada import (  # noqa: E402
+from culturecentro.sources import theatre_granada as tg
+from culturecentro.sources.theatre_granada import (
     Evenement,
     _extraire_depuis_html,
     _extraire_depuis_jsonld,
