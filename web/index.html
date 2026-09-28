@@ -1001,13 +1001,19 @@
           var iso = e.date_debut || "";
           var m = iso.match(/T(\d{2}):(\d{2})/);
           var heure = m && !(m[1] === "00" && m[2] === "00") ? m[1] + " h " + m[2] : "";
+          var debut = (iso || "").slice(0, 10);
+          // date_fin peut valoir l'heure de fin d'un événement d'une seule
+          // journée : le même jour que date_debut n'est pas une plage. On ne
+          // garde dateEnd que si le dernier jour diffère, sinon on afficherait
+          // « Du 15 au 15 oct. » au lieu de la date simple.
+          var fin = e.date_fin ? String(e.date_fin).slice(0, 10) : "";
           return {
             d: (e.categorie && DISC[e.categorie]) ? e.categorie : (DISC_PARTENAIRE[e.partenaire] || "musique"),
             title: e.titre || "Sans titre",
             venue: e.lieu || "",
             partner: e.partenaire || e.lieu || "",
-            date: (iso || "").slice(0, 10),
-            dateEnd: e.date_fin ? String(e.date_fin).slice(0, 10) : undefined,
+            date: debut,
+            dateEnd: (fin && fin !== debut) ? fin : undefined,
             time: heure,
             desc: e.sous_titre || "",
             lien: e.lien || null,
