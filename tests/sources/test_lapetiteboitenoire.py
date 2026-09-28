@@ -22,6 +22,7 @@ from culturecentro.sources.lapetiteboitenoire import (
     _extraire_evenements,
     _trouver_url_billetterie,
     main,
+    normaliser_lieu,
 )
 
 FRAGMENT_LISTE = """
@@ -106,7 +107,7 @@ class TestExtractionLepointdevente(unittest.TestCase):
         ev = self.evenements[0]
         self.assertEqual(ev.date_debut, datetime(2026, 9, 30, 20, 0))
         self.assertEqual(ev.lien, "https://lepointdevente.com/billets/programmationavenir/529998")
-        self.assertEqual(ev.lieu, "La Petite boite noire, Sherbrooke, QC")
+        self.assertEqual(ev.lieu, "La Petite Boîte Noire")  # ville retirée, graphie unifiée
         self.assertEqual(
             ev.image,
             "https://tpos.s3.amazonaws.com/events/PBN/26/09/30/001/pbn260930001-1152x648-fr.png",
@@ -132,6 +133,34 @@ class TestExtractionLepointdevente(unittest.TestCase):
         """
         evs = _extraire_depuis_lepointdevente(fragment, URL_BASE)
         self.assertEqual(evs[0].image, "https://x/fond.png")
+
+
+class TestNormaliserLieu(unittest.TestCase):
+    """Le lieu Lepointdevente varie en casse/accents et porte un suffixe de ville."""
+
+    def test_variantes_ramenees_au_nom_canonique(self):
+        for variante in (
+            "La Petite boite noire, Sherbrooke, QC",
+            "La Petite Boite Noire, Sherbrooke, QC",
+            "La Petite Boîte Noire, Sherbrooke, QC",
+            "LA PETITE BOÎTE NOIRE , Sherbrooke",
+            "  La  Petite   boite noire  ",
+            "La Petite Boîte Noire",
+        ):
+            with self.subTest(variante=variante):
+                self.assertEqual(normaliser_lieu(variante), "La Petite Boîte Noire")
+
+    def test_autre_lieu_conserve_sans_ville(self):
+        self.assertEqual(normaliser_lieu("Lieu à confirmer"), "Lieu à confirmer")
+        self.assertEqual(normaliser_lieu("Salle du Parvis, Sherbrooke, QC"), "Salle du Parvis")
+
+    def test_vide_vaut_none(self):
+        self.assertIsNone(normaliser_lieu(None))
+        self.assertIsNone(normaliser_lieu(""))
+        self.assertIsNone(normaliser_lieu("  , Sherbrooke, QC"))
+
+    def test_nom_canonique_est_celui_de_la_source(self):
+        self.assertEqual(normaliser_lieu("la petite boite noire"), LaPetiteBoiteNoire.nom)
 
 
 class TestExtraireEvenements(unittest.TestCase):
