@@ -14,16 +14,12 @@ from __future__ import annotations
 import csv
 import io
 import json
-import os
-import sys
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest import mock
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import lapetiteboitenoire as lpbn  # noqa: E402
-from lapetiteboitenoire import (  # noqa: E402
+from culturecentro.sources import lapetiteboitenoire as lpbn
+from culturecentro.sources.lapetiteboitenoire import (
     URL_BILLETTERIE_DEFAUT,
     Evenement,
     _extraire_depuis_lepointdevente,
