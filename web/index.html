@@ -173,6 +173,8 @@
   .event:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(22,22,46,.08), 0 16px 34px rgba(22,22,46,.1); }
   .cover { position: relative; min-height: 132px; color: #fff; overflow: hidden; background: #1a1a24; }
   .cover .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  /* Affiche fournie par la salle (feed) : recouvre la scène illustrée, qui reste en repli si l'image échoue. */
+  .cover .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #1a1a24; }
   .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.04) 42%, rgba(0,0,0,0.3)); }
   .cover .date-badge {
     position: absolute; top: 12px; left: 12px; z-index: 2;
@@ -296,16 +298,19 @@
   .partner span { font-size: 12px; color: var(--ink-faint); }
 
   /* ---------- Footer ---------- */
-  footer.site { background: var(--ink); color: color-mix(in srgb, var(--paper) 86%, transparent); padding-block: 34px 28px; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer.site { background: #0C0C18; } }
-  :root[data-theme="dark"] footer.site { background: #0C0C18; }
+  /* Le pied de page est toujours sombre : ses couleurs de texte sont fixes (claires) et ne
+     suivent pas --paper / --ink, qui s'inversent en mode sombre et rendraient les liens invisibles. */
+  footer.site { --f-bg: #16162E; --f-fg: #FBF7F0; background: var(--f-bg); color: color-mix(in srgb, var(--f-fg) 86%, transparent); padding-block: 34px 28px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer.site { --f-bg: #0C0C18; } }
+  :root[data-theme="dark"] footer.site { --f-bg: #0C0C18; }
   footer.site .cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,.14); }
-  footer .mark { background: var(--paper); color: var(--ink); }
-  footer h4 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 11px; color: color-mix(in srgb, var(--paper) 58%, transparent); font-family: "Instrument Sans", sans-serif; font-weight: 600; }
-  footer a { color: color-mix(in srgb, var(--paper) 82%, transparent); text-decoration: none; display: block; margin-bottom: 7px; font-size: 14px; }
+  footer .mark { background: var(--f-fg); color: var(--f-bg); }
+  footer .brand-txt strong { color: var(--f-fg); }
+  footer h4 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 11px; color: color-mix(in srgb, var(--f-fg) 58%, transparent); font-family: "Instrument Sans", sans-serif; font-weight: 600; }
+  footer a { color: color-mix(in srgb, var(--f-fg) 82%, transparent); text-decoration: none; display: block; margin-bottom: 7px; font-size: 14px; }
   footer a:hover { color: #fff; }
-  footer .lede { font-size: 13.5px; max-width: 36ch; margin: 12px 0 0; color: color-mix(in srgb, var(--paper) 68%, transparent); }
-  footer .fine { padding-top: 18px; font-size: 12.5px; color: color-mix(in srgb, var(--paper) 54%, transparent); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  footer .lede { font-size: 13.5px; max-width: 36ch; margin: 12px 0 0; color: color-mix(in srgb, var(--f-fg) 68%, transparent); }
+  footer .fine { padding-top: 18px; font-size: 12.5px; color: color-mix(in srgb, var(--f-fg) 54%, transparent); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
   @media (max-width: 680px) { footer.site .cols { grid-template-columns: 1fr; gap: 20px; } }
 
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
@@ -392,7 +397,7 @@
       <div>
         <a class="brand" href="#">
           <span class="mark">CC</span>
-          <span class="brand-txt"><strong style="color:var(--paper)">Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
+          <span class="brand-txt"><strong>Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
         </a>
         <p class="lede">Le guichet unique, gratuit et public, de la programmation culturelle du cœur de Sherbrooke. Données de démonstration fictives.</p>
       </div>
@@ -725,6 +730,14 @@
     render();
   });
 
+  // Affiche fournie par la salle (champ « image » du feed). Elle recouvre la scène
+  // illustrée ; si le téléchargement échoue, l'image est retirée et la scène reste visible.
+  function photoHtml(ev){
+    if (!ev.image || !/^https?:\/\//i.test(ev.image)) return "";
+    var src = ev.image.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    return '<img class="photo" src="' + src + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">';
+  }
+
   function card(ev, uid, cont){
     var d = DISC[ev.d];
     var started = parseD(ev.date) <= NOW;
@@ -737,7 +750,7 @@
     if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
     a.style.setProperty("--dc", d.pill);
     a.innerHTML =
-      '<div class="cover">' + SCENES[ev.d](uid) + badgeHtml(ev, cont) + '</div>' +
+      '<div class="cover">' + SCENES[ev.d](uid) + photoHtml(ev) + badgeHtml(ev, cont) + '</div>' +
       '<div class="body">' +
         '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>' +
         '<h3>'+ ev.title +'</h3>' +
@@ -943,7 +956,8 @@
             date: (iso || "").slice(0, 10),
             time: heure,
             desc: e.sous_titre || "",
-            lien: e.lien || null
+            lien: e.lien || null,
+            image: e.image || null
           };
         }).filter(function(e){ return /^\d{4}-\d{2}-\d{2}$/.test(e.date); });
         if (!mapped.length) return;

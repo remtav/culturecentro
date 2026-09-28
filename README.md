@@ -144,8 +144,11 @@ pas elle-même les spectacles : elle charge un **widget de la billetterie
 [Lepointdevente.com](https://lepointdevente.com)**. Le module télécharge la
 page, y découvre l'URL de la liste Lepointdevente (lien « Programmation
 complète » ou, à défaut, `widget.js`), télécharge cette liste et analyse
-chaque carte `.feature-col[data-tpos-event]` (titre, date en français, lieu).
-Le lien de la fiche est reconstruit à partir de l'identifiant de l'événement.
+chaque carte `.feature-col[data-tpos-event]` (titre, date en français, lieu,
+affiche). Le lien de la fiche est reconstruit à partir de l'identifiant de
+l'événement. Le lieu « <salle>, Sherbrooke, QC » est normalisé : la ville est
+retirée et toute graphie du nom de la salle (casse, accents) est ramenée à
+« La Petite Boîte Noire », pour qu'un seul lieu apparaisse dans l'agrégation.
 
 Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
 puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
