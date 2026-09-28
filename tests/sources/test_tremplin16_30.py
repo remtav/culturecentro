@@ -148,7 +148,9 @@ class TestExtractionBlocs(unittest.TestCase):
         self.assertEqual(ev.lien, "https://tremplin16-30.com/evenements/souper-mali/")
         self.assertIsNone(ev.lieu)  # salle du Tremplin : le nom de la source fera foi
         self.assertEqual(ev.image, "https://x/mali.png")
-        self.assertEqual(ev.sous_titre, "Mardi 29 septembre 2026 - 17h")
+        # Le paragraphe de dates ne doit pas devenir un sous-titre : il
+        # doublonnerait la date déjà affichée par la page publique.
+        self.assertIsNone(ev.sous_titre)
 
     def test_serie_avec_date_fin_lieu_texte_et_img(self):
         ev = self.evenements[5]

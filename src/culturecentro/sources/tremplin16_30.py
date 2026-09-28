@@ -142,7 +142,11 @@ def _extraire_depuis_blocs(html: str, aujourdhui: datetime | None = None) -> lis
                     date_fin=fin,
                     lien=lien,
                     lieu=lieu,
-                    sous_titre=texte_dates or None,
+                    # Le paragraphe de dates ne sert qu'à déduire date_debut/date_fin :
+                    # le réinscrire en sous-titre doublonnait la date déjà affichée
+                    # (« mardi 29 sept. · 17 h 00 » + « Mardi 29 septembre 2026 - 17h »).
+                    # Le Tremplin n'expose pas de véritable sous-titre.
+                    sous_titre=None,
                     image=image,
                 )
             )
