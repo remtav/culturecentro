@@ -31,6 +31,12 @@ class Source(ABC):
     nom: str
     #: Page de programmation analysée par défaut.
     url_defaut: str
+    #: Catégorie artistique retenue quand rien ne permet d'en déterminer une
+    #: (clé de :data:`culturecentro.categories.CATEGORIES`).
+    categorie_defaut: str | None = None
+    #: Faux si la fiche d'un événement (``lien``) n'apporte rien pour le
+    #: classement (ex. : lien vers la liste de la billetterie).
+    fiche_categorisable: bool = True
 
     @property
     def description(self) -> str:

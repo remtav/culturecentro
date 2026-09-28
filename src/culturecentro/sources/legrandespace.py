@@ -78,8 +78,12 @@ def _sous_titre(bloc: Tag) -> str | None:
     return " — ".join(morceaux) if morceaux else None
 
 
-def _extraire_depuis_liste(html: str) -> list[Evenement]:
-    """Analyse les blocs ``.spectacle`` de la liste (ceux qui ont un vrai lien)."""
+def _extraire_depuis_liste(html: str, categorie: str | None = None) -> list[Evenement]:
+    """Analyse les blocs ``.spectacle`` de la liste (ceux qui ont un vrai lien).
+
+    ``categorie`` est attribuée à tous les spectacles de la page (ex. la page
+    « jeune public » donne ``"jeunesse"``).
+    """
     soup = BeautifulSoup(html, "html.parser")
     conteneur = soup.select_one(".liste_spectacle_block") or soup
     evenements: list[Evenement] = []
@@ -115,6 +119,7 @@ def _extraire_depuis_liste(html: str) -> list[Evenement]:
                     lien=lien,
                     sous_titre=sous_titre,
                     image=image,
+                    categorie=categorie,
                 )
             )
 
@@ -122,7 +127,7 @@ def _extraire_depuis_liste(html: str) -> list[Evenement]:
 
 
 def _extraire_evenements(html: str, timeout: float, session: requests.Session) -> list[Evenement]:
-    """Grand public (page par défaut) + jeune public, sinon repli JSON-LD."""
+    """Grand public (page par défaut) + jeune public (catégorie « jeunesse »), sinon JSON-LD."""
     evenements = _extraire_depuis_liste(html)
     _LOG.info("Grand public : %d spectacles.", len(evenements))
 
@@ -132,7 +137,7 @@ def _extraire_evenements(html: str, timeout: float, session: requests.Session) -
     except requests.RequestException as exc:
         _LOG.warning("Téléchargement de %s échoué : %s", url_jeune, exc)
     else:
-        jeune = _extraire_depuis_liste(page)
+        jeune = _extraire_depuis_liste(page, categorie="jeunesse")
         _LOG.info("Jeune public : %d spectacles.", len(jeune))
         evenements.extend(jeune)
 
@@ -154,6 +159,7 @@ def _extraire_evenements(html: str, timeout: float, session: requests.Session) -
 class LeGrandEspace(Source):
     slug = "le-grand-espace"
     nom = "Le Grand-Espace"
+    categorie_defaut = "theatre"
     description = "Liste les spectacles à venir du Grand-Espace (grand public et jeune public)."
 
     @property

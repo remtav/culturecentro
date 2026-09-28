@@ -328,6 +328,7 @@ class MaisonDesArtsDeLaParole(Source):
     slug = "maison-des-arts-de-la-parole"
     nom = "Maison des arts de la parole"
     url_defaut = URL_PROGRAMMATION
+    categorie_defaut = "litt"
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:
         return _extraire_evenements(html, timeout, session)

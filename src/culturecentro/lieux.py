@@ -151,8 +151,9 @@ MARQUEURS_HORS_CENTRE_VILLE = (
 
 def cle(texte: str) -> str:
     """Clé de comparaison : minuscules, sans accents, espaces et tirets unifiés."""
+    texte = texte.replace("’", "'").replace("œ", "oe").replace("Œ", "OE")
     sans_accents = unicodedata.normalize("NFKD", texte).encode("ascii", "ignore").decode()
-    sans_accents = sans_accents.casefold().replace("’", "'")
+    sans_accents = sans_accents.casefold()
     sans_accents = re.sub(r"\s*-\s*", "-", sans_accents)
     return " ".join(sans_accents.split())
 

@@ -175,6 +175,8 @@ class TestExtraireEvenements(unittest.TestCase):
             [e.titre for e in evs],
             ["Ismène", "ImproDanse", "Le goût des mots", "Sans date ni genre"],
         )
+        # La page « jeune public » impose la catégorie ; le grand public reste à classer.
+        self.assertEqual([e.categorie for e in evs], [None, None, "jeunesse", "jeunesse"])
 
     def test_jeune_public_en_echec_ignore(self):
         with mock.patch.object(ge, "telecharger", side_effect=requests.ConnectionError("x")):

@@ -25,13 +25,15 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from collections.abc import Sequence
 from datetime import datetime
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from culturecentro import cli
+from culturecentro.categories import depuis_libelle
 from culturecentro.dates import parse_date_fr, parse_date_iso
 from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (API publique)
 from culturecentro.jsonld import extraire_depuis_jsonld
@@ -42,6 +44,11 @@ from culturecentro.sources.base import Source
 _LOG = logging.getLogger(__name__)
 
 URL_PROGRAMMATION = "https://theatregranada.com/programmation-2/"
+
+#: API REST WordPress : noms des catégories (termes) de la grille.
+URL_CATEGORIES = "https://theatregranada.com/wp-json/wp/v2/categories"
+
+_TERME = re.compile(r"^vc_grid-term-(\d+)$")
 
 
 # --------------------------------------------------------------------------- #
@@ -108,10 +115,85 @@ def _charger_grille_complete(
     return str(reponse.text)
 
 
-def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
-    """Analyse la grille WPBakery de la page de programmation."""
+def _classes(element: Tag) -> list[str]:
+    """Classes CSS d'un élément, toujours sous forme de liste de chaînes."""
+    valeur = element.get("class")
+    if isinstance(valeur, str):
+        return valeur.split()
+    if isinstance(valeur, list):
+        return [c for c in valeur if isinstance(c, str)]
+    return []
+
+
+def _termes_de_la_grille(html: str) -> set[int]:
+    """Identifiants des termes (``vc_grid-term-N``) présents dans la grille."""
+    soup = BeautifulSoup(html, "html.parser")
+    termes: set[int] = set()
+    for item in soup.select(".vc_grid-item"):
+        for classe in _classes(item):
+            m = _TERME.match(classe)
+            if m:
+                termes.add(int(m.group(1)))
+    return termes
+
+
+def _noms_des_termes(
+    identifiants: set[int], timeout: float, session: requests.Session
+) -> dict[int, str]:
+    """Nom de chaque terme WordPress (« Musique », « Humour »…) via l'API REST.
+
+    Un seul appel ; en cas d'échec, dictionnaire vide (les événements seront
+    classés par mots-clés ou par la fiche).
+    """
+    if not identifiants:
+        return {}
+    try:
+        reponse = session.get(
+            URL_CATEGORIES,
+            params={"include": ",".join(str(i) for i in sorted(identifiants)), "per_page": "100"},
+            timeout=timeout,
+        )
+        reponse.raise_for_status()
+        donnees = reponse.json()
+    except (requests.RequestException, ValueError) as exc:
+        _LOG.debug("Catégories WordPress indisponibles : %s", exc)
+        return {}
+    noms: dict[int, str] = {}
+    for terme in donnees if isinstance(donnees, list) else []:
+        if isinstance(terme, dict) and isinstance(terme.get("id"), int):
+            noms[terme["id"]] = str(terme.get("name", ""))
+    return noms
+
+
+def _categorie_du_bloc(item: Tag, noms: dict[int, str]) -> str | None:
+    """Catégorie d'un bloc d'après ses termes WordPress (« Musique » → musique)."""
+    conteneur = (
+        item
+        if "vc_grid-item" in (item.get("class") or [])
+        else item.find_parent(class_="vc_grid-item")
+    )
+    if conteneur is None:
+        return None
+    for classe in _classes(conteneur):
+        m = _TERME.match(classe)
+        if m:
+            categorie = depuis_libelle(noms.get(int(m.group(1))))
+            if categorie:
+                return categorie
+    return None
+
+
+def _extraire_depuis_wpbakery(
+    html: str, noms_termes: dict[int, str] | None = None
+) -> list[Evenement]:
+    """Analyse la grille WPBakery de la page de programmation.
+
+    ``noms_termes`` (identifiant → nom de catégorie WordPress) permet de
+    renseigner ``categorie`` d'après la taxonomie du site.
+    """
     soup = BeautifulSoup(html, "html.parser")
     evenements: list[Evenement] = []
+    noms_termes = noms_termes or {}
 
     for item in soup.select(".vc_grid-item-mini"):
         titre_el = item.select_one(".vc_gitem-post-data-source-post_title")
@@ -143,6 +225,7 @@ def _extraire_depuis_wpbakery(html: str) -> list[Evenement]:
                 lien=lien,
                 sous_titre=sous_titre,
                 image=image,
+                categorie=_categorie_du_bloc(item, noms_termes),
             )
         )
 
@@ -186,12 +269,15 @@ def _extraire_evenements(html: str, timeout: float, session: requests.Session) -
     """Choisit la meilleure source disponible et renvoie les événements bruts."""
     fragment = _charger_grille_complete(html, timeout, session)
     if fragment:
-        evenements = _extraire_depuis_wpbakery(fragment)
+        noms = _noms_des_termes(_termes_de_la_grille(fragment), timeout, session)
+        evenements = _extraire_depuis_wpbakery(fragment, noms)
         if evenements:
             _LOG.info("Grille complète chargée via AJAX : %d éléments.", len(evenements))
             return evenements
 
-    evenements = _extraire_depuis_wpbakery(html)
+    evenements = _extraire_depuis_wpbakery(
+        html, _noms_des_termes(_termes_de_la_grille(html), timeout, session)
+    )
     if evenements:
         _LOG.warning(
             "Chargement AJAX de la grille complète indisponible : repli sur la "
@@ -221,6 +307,7 @@ class TheatreGranada(Source):
     slug = "theatre-granada"
     nom = "Théâtre Granada"
     url_defaut = URL_PROGRAMMATION
+    categorie_defaut = "musique"
     description = "Liste les événements à venir du Théâtre Granada."
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:

@@ -116,6 +116,7 @@ def _extraire_depuis_blocs(html: str) -> list[Evenement]:
                 lien=lien,
                 sous_titre=sous_titre or (type_expo.capitalize() if type_expo else None),
                 image=image,
+                categorie="arts",  # un musée : expositions
             )
         )
 
@@ -156,6 +157,7 @@ class MuseeDesBeauxArts(Source):
     slug = "mbas"
     nom = "Musée des beaux-arts de Sherbrooke"
     url_defaut = URL_EN_COURS
+    categorie_defaut = "arts"
     description = "Liste les expositions en cours et à venir du Musée des beaux-arts de Sherbrooke."
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:

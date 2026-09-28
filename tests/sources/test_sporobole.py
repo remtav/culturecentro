@@ -159,6 +159,7 @@ class TestExtractionFragment(unittest.TestCase):
         )
         self.assertEqual(ev.lien, "https://sporobole.org/diffusion/fortin/")
         self.assertEqual(ev.sous_titre, "Diffusion")
+        self.assertEqual(ev.categorie, "arts")
         self.assertEqual(ev.image, "https://x/fortin.jpg")
 
     def test_date_simple(self):

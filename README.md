@@ -24,7 +24,7 @@ logique d'extraction et à l'inscrire au registre.
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
 `titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`,
-`partenaire`) : un champ non exposé par une salle vaut simplement `None`
+`partenaire`, `categorie`) : un champ non exposé par une salle vaut simplement `None`
 (p. ex. `sous_titre` pour La Petite Boîte Noire). `partenaire` est l'organisme
 qui programme l'événement (le nom de la source) ; `lieu` est l'endroit où il
 se tient, qui peut différer (programmation hors les murs). `date_fin` n'est renseignée que pour ce qui
@@ -57,8 +57,31 @@ culturecentro sources                     # liste les salles enregistrées
 culturecentro lister                      # agrège toutes les salles (texte)
 culturecentro lister --format json        # agrège en JSON
 culturecentro lister --source theatre-granada --format csv -o prog.csv
+culturecentro lister --sans-fiches        # sans lecture des fiches d'événement (catégories)
 python -m culturecentro lister            # équivalent sans le script installé
 ```
+
+### Catégorie artistique automatique
+
+La catégorie (`categorie`) n'est **pas** fixée par partenaire : elle est
+déterminée pour chaque événement, dans cet ordre (`culturecentro.categories`) :
+
+1. ce que le site du partenaire expose lui-même — taxonomie WordPress du
+   Théâtre Granada (« Musique », « Humour », « Hommage »…, lue via l'API REST
+   `wp/v2/categories`), page « jeune public » du Grand-Espace (`jeunesse`),
+   nature du partenaire pour un musée ou un centre d'art (`arts`) ;
+2. les **mots-clés** du titre et du sous-titre (genre, distribution : « Théâtre
+   classique revisité », « Spectacle de conte », « En rodage », « Hommage à
+   Pink Floyd »…) ; un public jeunesse explicite (« dès 4 ans », « jeune
+   public », « en famille ») l'emporte sur le genre ;
+3. la **fiche de l'événement** (page `lien`) : catégories et étiquettes du
+   site, type schema.org (`MusicEvent`, `TheaterEvent`, `DanceEvent`…),
+   description ; une requête par fiche, avec cache et garde-fou (désactivable
+   avec `--sans-fiches`) ;
+4. à défaut, la catégorie par défaut du partenaire (`Source.categorie_defaut`).
+
+Le classement est déterministe et n'utilise ni service tiers ni modèle de
+langage : il s'exécute tel quel en intégration continue (GitHub Actions).
 
 ## Installation
 
@@ -119,6 +142,7 @@ Chaque `Evenement` expose :
 | `image` | URL de l'affiche. |
 | `lieu` | Nom du lieu (`None` si c'est la salle du partenaire ; l'agrégation le complète). |
 | `partenaire` | Organisme qui programme l'événement (nom de la source ; renseigné par `Source`). |
+| `categorie` | Catégorie artistique (`theatre`, `musique`, `humour`, `danse`, `arts`, `litt`, `jeunesse`, `festival`), déterminée automatiquement à l'agrégation (voir ci-dessous). |
 
 `to_dict()` renvoie ces champs sérialisables (date au format ISO 8601), et
 les exports CSV/JSON reprennent les mêmes colonnes.
@@ -311,7 +335,8 @@ La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
 est présent et non vide ; sinon elle retombe sur un jeu de données de
 démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
 le **partenaire** ; chaque carte affiche le partenaire et, s'il diffère, le
-lieu. On génère le feed avec la CLI :
+lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
+« Humour » et « Jeunesse »). On génère le feed avec la CLI :
 
 ```bash
 python -m culturecentro lister --format json -o web/data/evenements.json

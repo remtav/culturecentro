@@ -71,5 +71,17 @@ class TestCommandeLister(unittest.TestCase):
                 self.assertEqual(json.load(flux)[0]["titre"], "Concert")
 
 
+class TestSansFiches(unittest.TestCase):
+    def test_option_transmise_a_agreger(self):
+        from culturecentro.cli import principal
+
+        with mock.patch("culturecentro.aggregate.agreger", return_value=[]) as agreger:
+            with mock.patch("sys.stdout", new_callable=io.StringIO):
+                self.assertEqual(principal(["lister", "--sans-fiches"]), 0)
+                self.assertFalse(agreger.call_args.kwargs["lire_fiches"])
+                self.assertEqual(principal(["lister"]), 0)
+                self.assertTrue(agreger.call_args.kwargs["lire_fiches"])
+
+
 if __name__ == "__main__":
     unittest.main()
