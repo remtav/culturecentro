@@ -22,12 +22,12 @@ import coverage
 
 # Seuils de couleur, style shields.io.
 _COULEURS = [
-    (95, "#4c1"),       # brightgreen
-    (90, "#97ca00"),    # green
-    (75, "#a4a61d"),    # yellowgreen
-    (60, "#dfb317"),    # yellow
-    (40, "#fe7d37"),    # orange
-    (0, "#e05d44"),     # red
+    (95, "#4c1"),  # brightgreen
+    (90, "#97ca00"),  # green
+    (75, "#a4a61d"),  # yellowgreen
+    (60, "#dfb317"),  # yellow
+    (40, "#fe7d37"),  # orange
+    (0, "#e05d44"),  # red
 ]
 
 

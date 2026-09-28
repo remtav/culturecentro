@@ -18,6 +18,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "coverage>=7",
+    "pytest>=8",
+    "ruff>=0.6",
+    "mypy>=1.11",
 ]
 
 [project.urls]
@@ -25,6 +28,34 @@ Homepage = "https://github.com/remtav/culturecentro"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# Fragments HTML figés et gabarit SVG : lignes longues inhérentes aux
+# chaînes littérales, qu'on ne peut pas couper sans altérer la donnée.
+"tests/**" = ["E501"]
+"scripts/coverage_badge.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src"]
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+# Dépendances sans stubs fiables dans cet environnement. À resserrer (stubs
+# dédiés + vérification des tests) lorsque mypy passera en mode strict.
+module = ["requests.*", "bs4.*", "urllib3.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["culturecentro"]

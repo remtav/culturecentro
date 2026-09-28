@@ -140,13 +140,29 @@ filtrable par discipline et par période, fil chronologique par mois, bande
 sont fictives et servent uniquement à la démonstration ; il suffit d'ouvrir
 `maquette/index.html` dans un navigateur.
 
-## Tests
+## Développement
 
-Les tests sont hors-ligne (aucun accès réseau requis) :
+Installer le paquet et les outils de qualité :
 
 ```bash
-python -m unittest discover -s tests -v
+pip install -e ".[dev]"
+pre-commit install        # facultatif : lance ruff + mypy à chaque commit
 ```
 
-Ils sont également exécutés en intégration continue (GitHub Actions) sur
-Python 3.10, 3.11 et 3.12 — voir [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+| Outil | Commande | Rôle |
+| --- | --- | --- |
+| **pytest** | `python -m pytest` | Tests (hors-ligne, aucun accès réseau) |
+| **ruff** | `ruff check .` / `ruff format .` | Lint + formatage |
+| **mypy** | `mypy` | Vérification de types (sur `src/`) |
+| **coverage** | `python -m coverage run -m pytest && python -m coverage report` | Couverture |
+
+La configuration de tous ces outils vit dans [`pyproject.toml`](pyproject.toml).
+
+## Intégration continue
+
+GitHub Actions exécute, sur chaque `push` et *pull request*
+(voir [`.github/workflows/tests.yml`](.github/workflows/tests.yml)) :
+
+- **qualité** — `ruff check`, `ruff format --check`, `mypy` ;
+- **tests** — `pytest` sur Python 3.10, 3.11 et 3.12 ;
+- **couverture** — mesure, seuil minimal et régénération du badge.

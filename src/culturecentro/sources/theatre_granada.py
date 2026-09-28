@@ -43,10 +43,10 @@ import io
 import json
 import logging
 import re
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import requests
 from bs4 import BeautifulSoup
@@ -440,9 +440,7 @@ def _extraire_evenements(html: str, timeout: float, session: requests.Session) -
     return []
 
 
-def _finaliser(
-    evenements: Sequence[Evenement], a_partir_de: datetime
-) -> list[Evenement]:
+def _finaliser(evenements: Sequence[Evenement], a_partir_de: datetime) -> list[Evenement]:
     """Déduplique, filtre les événements à venir et trie par date."""
     # Déduplication (titre + date) en conservant l'ordre de découverte.
     vus: set[tuple[str, str]] = set()
@@ -494,9 +492,7 @@ def lister_evenements_a_venir(
     if a_partir_de is None:
         # Minuit du jour courant : on conserve les événements plus tôt dans la
         # journée (« jour courant ou futur »), pas seulement ceux après l'instant présent.
-        a_partir_de = datetime.now(timezone.utc).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        a_partir_de = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
     session = _creer_session()
     try:
@@ -529,9 +525,7 @@ def exporter_json(
     return texte
 
 
-def exporter_csv(
-    evenements: Iterable[Evenement], fichier: str | Path | None = None
-) -> str:
+def exporter_csv(evenements: Iterable[Evenement], fichier: str | Path | None = None) -> str:
     """Sérialise les événements en CSV (UTF-8, colonnes : %s).
 
     Écrit dans ``fichier`` s'il est fourni, et renvoie toujours la chaîne.
@@ -551,7 +545,8 @@ def exporter_csv(
     return texte
 
 
-exporter_csv.__doc__ = exporter_csv.__doc__ % ", ".join(CHAMPS)
+if exporter_csv.__doc__:
+    exporter_csv.__doc__ = exporter_csv.__doc__ % ", ".join(CHAMPS)
 
 
 # --------------------------------------------------------------------------- #
@@ -576,9 +571,7 @@ def _construire_parseur() -> argparse.ArgumentParser:
         type=Path,
         help="Fichier de sortie (défaut : sortie standard).",
     )
-    parseur.add_argument(
-        "--timeout", type=float, default=20.0, help="Délai réseau en secondes."
-    )
+    parseur.add_argument("--timeout", type=float, default=20.0, help="Délai réseau en secondes.")
     parseur.add_argument(
         "-v",
         "--verbose",

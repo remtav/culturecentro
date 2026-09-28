@@ -160,8 +160,9 @@ class TestFiltreJourCourant(unittest.TestCase):
             Evenement("Tôt aujourd'hui", tot_aujourdhui, None),
             Evenement("Hier", hier, None),
         ]
-        with mock.patch.object(lpbn, "_telecharger", return_value=""), mock.patch.object(
-            lpbn, "_extraire_evenements", return_value=brut
+        with (
+            mock.patch.object(lpbn, "_telecharger", return_value=""),
+            mock.patch.object(lpbn, "_extraire_evenements", return_value=brut),
         ):
             resultat = lpbn.lister_evenements_a_venir()
         self.assertEqual([e.titre for e in resultat], ["Tôt aujourd'hui"])

@@ -89,7 +89,9 @@ class TestExtractionWPBakery(unittest.TestCase):
         self.evenements = _extraire_depuis_wpbakery(FRAGMENT_GRILLE)
 
     def test_nombre_et_ordre(self):
-        self.assertEqual([e.titre for e in self.evenements], ["Jesse Cook", "Alain-François | Souper-spectacle"])
+        self.assertEqual(
+            [e.titre for e in self.evenements], ["Jesse Cook", "Alain-François | Souper-spectacle"]
+        )
 
     def test_champs_du_premier(self):
         ev = self.evenements[0]
@@ -135,8 +137,9 @@ class TestFiltreJourCourant(unittest.TestCase):
             Evenement("Tôt aujourd'hui", tot_aujourdhui),
             Evenement("Hier", hier),
         ]
-        with mock.patch.object(tg, "_telecharger", return_value=""), mock.patch.object(
-            tg, "_extraire_evenements", return_value=brut
+        with (
+            mock.patch.object(tg, "_telecharger", return_value=""),
+            mock.patch.object(tg, "_extraire_evenements", return_value=brut),
         ):
             resultat = tg.lister_evenements_a_venir()
         self.assertEqual([e.titre for e in resultat], ["Tôt aujourd'hui"])
@@ -246,7 +249,9 @@ class TestReplis(unittest.TestCase):
         with mock.patch.object(tg, "_charger_grille_complete", return_value=None):
             with self.assertLogs("theatre_granada", level="WARNING"):
                 evs = _extraire_evenements(FRAGMENT_GRILLE, timeout=5, session=mock.Mock())
-        self.assertEqual([e.titre for e in evs], ["Jesse Cook", "Alain-François | Souper-spectacle"])
+        self.assertEqual(
+            [e.titre for e in evs], ["Jesse Cook", "Alain-François | Souper-spectacle"]
+        )
 
     def test_selection_repli_jsonld(self):
         with mock.patch.object(tg, "_charger_grille_complete", return_value=None):
@@ -262,7 +267,7 @@ class TestReplis(unittest.TestCase):
 
 PAGE_AVEC_GRILLE = (
     '<div data-vc-request="https://x/ajax" '
-    "data-vc-grid-settings='{\"tag\":\"vc_basic_grid\",\"page_id\":1}' "
+    'data-vc-grid-settings=\'{"tag":"vc_basic_grid","page_id":1}\' '
     'data-vc-public-nonce="abc" data-vc-post-id="1"></div>'
 )
 
@@ -304,11 +309,14 @@ class TestChargerGrille(unittest.TestCase):
 class TestListerEvenements(unittest.TestCase):
     def test_bout_en_bout_hors_ligne(self):
         seuil = datetime(2026, 1, 1, tzinfo=timezone.utc)
-        with mock.patch.object(tg, "_telecharger", return_value=FRAGMENT_GRILLE), mock.patch.object(
-            tg, "_charger_grille_complete", return_value=None
+        with (
+            mock.patch.object(tg, "_telecharger", return_value=FRAGMENT_GRILLE),
+            mock.patch.object(tg, "_charger_grille_complete", return_value=None),
         ):
             evs = tg.lister_evenements_a_venir(a_partir_de=seuil)
-        self.assertEqual([e.titre for e in evs], ["Jesse Cook", "Alain-François | Souper-spectacle"])
+        self.assertEqual(
+            [e.titre for e in evs], ["Jesse Cook", "Alain-François | Souper-spectacle"]
+        )
 
     def test_creer_session(self):
         import requests
