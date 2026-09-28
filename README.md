@@ -18,9 +18,12 @@ logique d'extraction et à l'inscrire au registre.
 | [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `culturecentro.sources.lapetiteboitenoire` | billetterie Lepointdevente |
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
-`titre`, `sous_titre`, `date_debut`, `lien`, `image`, `lieu`) : un champ non
-exposé par une salle vaut simplement `None` (p. ex. `sous_titre` pour
-La Petite Boîte Noire).
+`titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`) : un
+champ non exposé par une salle vaut simplement `None` (p. ex. `sous_titre`
+pour La Petite Boîte Noire). `date_fin` n'est renseignée que pour ce qui
+s'étale dans le temps (exposition, série d'ateliers, spectacle à l'affiche
+plusieurs jours) ; un tel événement **déjà commencé** reste listé tant que sa
+fin n'est pas passée.
 
 Chaque source récupère l'**affiche** (`image`) dès que le site en expose une :
 l'utilitaire partagé `culturecentro.scraping.url_image` lit indifféremment
@@ -97,6 +100,7 @@ Chaque `Evenement` expose :
 | `titre` | Nom de l'événement. |
 | `sous_titre` | Mention / sous-titre (ex. « SUPPLÉMENTAIRE », nom de tournée), ou `None`. |
 | `date_debut` | `datetime` (naïf, supposé heure locale) ou `None`. |
+| `date_fin` | `datetime` de fin (exposition, série…) ou `None`. |
 | `lien` | URL de la fiche de l'événement. |
 | `image` | URL de l'affiche. |
 | `lieu` | Nom du lieu (généralement `None` : toujours le Théâtre Granada). |

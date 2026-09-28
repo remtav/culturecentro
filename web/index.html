@@ -957,6 +957,7 @@
             title: e.titre || "Sans titre",
             venue: e.lieu || "",
             date: (iso || "").slice(0, 10),
+            dateEnd: e.date_fin ? String(e.date_fin).slice(0, 10) : undefined,
             time: heure,
             desc: e.sous_titre || "",
             lien: e.lien || null,

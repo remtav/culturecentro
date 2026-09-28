@@ -11,6 +11,7 @@ JSONLD = """
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
   {"@type":"Event","name":"Concert JSON-LD","startDate":"2027-03-01T20:00:00",
+   "endDate":"2027-03-01T22:00:00",
    "url":"https://x/concert/","location":{"@type":"Place","name":"Salle X"},
    "image":["https://x/affiche.jpg"]},
   {"@type":"WebPage","name":"pas un événement"}
@@ -30,6 +31,7 @@ class TestExtraireDepuisJsonld(unittest.TestCase):
         ev = self.evenements[0]
         self.assertEqual(ev.titre, "Concert JSON-LD")
         self.assertEqual(ev.date_debut, datetime(2027, 3, 1, 20, 0))
+        self.assertEqual(ev.date_fin, datetime(2027, 3, 1, 22, 0))
         self.assertEqual(ev.lien, "https://x/concert/")
         self.assertEqual(ev.lieu, "Salle X")
         self.assertEqual(ev.image, "https://x/affiche.jpg")

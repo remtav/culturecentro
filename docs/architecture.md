@@ -52,8 +52,10 @@ découvrir les salles automatiquement.
 ## Schéma d'événement unifié
 
 Toutes les sources produisent le même `Evenement` (`titre`, `sous_titre`,
-`date_debut`, `lien`, `image`, `lieu`). Un champ non exposé par une salle vaut
-`None`. Cette homogénéité est ce qui rend l'agrégation et les exports uniformes.
+`date_debut`, `date_fin`, `lien`, `image`, `lieu`). Un champ non exposé par une
+salle vaut `None`. Cette homogénéité est ce qui rend l'agrégation et les
+exports uniformes. `date_fin` sert aux événements qui s'étalent dans le temps
+(expositions, séries) : `finaliser()` les conserve tant qu'ils sont en cours.
 
 ## Du code au site public
 
