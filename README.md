@@ -151,15 +151,26 @@ Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
 puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
 via `logging`.
 
-## Maquette web
+## Site web (`web/`) et feed
 
-Le dossier [`maquette/`](maquette/) contient une **maquette de page publique**
-(`index.html`, autonome, sans dépendance) illustrant le guichet unique
-d'agrégation de la programmation culturelle du centre-ville : agenda
-filtrable par discipline et par période, fil chronologique par mois, bande
-« En ce moment » pour les expositions longue durée. Les données affichées
-sont fictives et servent uniquement à la démonstration ; il suffit d'ouvrir
-`maquette/index.html` dans un navigateur.
+Le dossier [`web/`](web/) contient la **page publique** (`index.html`,
+autonome, sans dépendance) : agenda filtrable par discipline, période et lieu,
+fil chronologique par mois, bande « En ce moment ».
+
+La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
+est présent et non vide ; sinon elle retombe sur un jeu de données de
+démonstration (utile pour l'ouvrir localement). On génère le feed avec la CLI :
+
+```bash
+python -m culturecentro lister --format json -o web/data/evenements.json
+```
+
+### Publication (GitHub Pages)
+
+Le workflow [`publish.yml`](.github/workflows/publish.yml) régénère le feed et
+déploie `web/` sur **GitHub Pages** — quotidiennement (cron), à chaque `push`
+sur `main` touchant `web/` ou le paquet, et à la demande. Prérequis (une seule
+fois) : **Settings → Pages → Source = GitHub Actions**.
 
 ## Développement
 
