@@ -20,7 +20,7 @@ existe pour ce lieu dans le dépôt, à l'état de la branche par défaut
 | Café 440 | Café-spectacle | https://lecafe440sherbrooke.com/programmation | ❌ Non implémenté |
 | Théâtre du Double signe | Compagnie / théâtre de création | https://www.doublesigne.ca/les-productions-du-double-signe/ | ❌ Non implémenté |
 | Le Petit Théâtre de Sherbrooke | Théâtre (jeune public) | https://www.petittheatre.qc.ca/spectacles/ | ❌ Non implémenté |
-| Le Tremplin 16-30 | Salle multifonctionnelle / art social | https://tremplin16-30.com/evenements/ | ❌ Non implémenté |
+| Le Tremplin 16-30 | Salle multifonctionnelle / art social | https://tremplin16-30.com/evenements/ | ✅ Implémenté (`tremplin16_30.py`) |
 | Maison des arts de la parole | Diffuseur (conte / poésie) | https://maisondesartsdelaparole.com/programmation/ | ✅ Implémenté (`maisondesartsdelaparole.py`) |
 | Bibliothèque municipale Éva-Senécal | Bibliothèque | https://bibliotheques.sherbrooke.ca/horaire-activites | ❌ Non implémenté |
 
