@@ -8,6 +8,13 @@ défaut, ``widget.js``), puis on télécharge et analyse cette liste — chaque
 carte ``.feature-col[data-tpos-event]`` donne titre, date, lieu et affiche ;
 le lien de la fiche est reconstruit à partir de l'identifiant.
 
+Le lieu affiché par Lepointdevente (``.feature-city``) est une chaîne
+« <salle>, Sherbrooke, QC » dont la graphie varie d'un événement à l'autre
+(« La Petite boite noire », « La Petite Boite Noire », « La Petite Boîte
+Noire »…). On la normalise : la ville est retirée et toute variante du nom de
+la salle est ramenée au nom canonique :attr:`LaPetiteBoiteNoire.nom`, pour
+qu'un seul lieu apparaisse dans l'agrégation et le filtre du site.
+
 Si la découverte échoue, on retombe sur l'URL de billetterie connue, puis sur
 les données schema.org ``Event`` (JSON-LD) de la page. Chaque repli émet un
 avertissement via ``logging``.
@@ -26,6 +33,7 @@ from __future__ import annotations
 
 import logging
 import re
+import unicodedata
 from collections.abc import Sequence
 from datetime import datetime
 from urllib.parse import urljoin
@@ -49,6 +57,42 @@ URL_EVENEMENTS = "https://lapetiteboitenoire.com/evenements/"
 #: URL de secours de la liste Lepointdevente, si on ne parvient pas à la
 #: découvrir dans la page (``group=6603`` = La Petite Boîte Noire).
 URL_BILLETTERIE_DEFAUT = "https://lepointdevente.com/billets/programmationavenir"
+
+#: Nom canonique de la salle, tel qu'exposé dans le champ ``lieu``.
+NOM_SALLE = "La Petite Boîte Noire"
+
+#: Suffixe « ville, province » que Lepointdevente accole au nom du lieu.
+_SUFFIXE_VILLE = re.compile(r"\s*,\s*Sherbrooke(\s*,\s*(QC|Québec|Quebec))?\s*$", re.IGNORECASE)
+
+
+def _cle_comparaison(texte: str) -> str:
+    """Forme insensible à la casse, aux accents et aux espaces multiples."""
+    sans_accents = unicodedata.normalize("NFKD", texte).encode("ascii", "ignore").decode()
+    return " ".join(sans_accents.casefold().split())
+
+
+_CLE_SALLE = _cle_comparaison(NOM_SALLE)
+
+
+def normaliser_lieu(texte: str | None) -> str | None:
+    """Ramène le lieu Lepointdevente à un nom de salle propre.
+
+    * retire le suffixe « , Sherbrooke, QC » ;
+    * ramène toute graphie du nom de la salle (casse, accents) au nom
+      canonique :data:`NOM_SALLE` ;
+    * renvoie ``None`` si le texte est vide.
+
+    Les autres lieux (ex. « Lieu à confirmer ») sont conservés tels quels,
+    sans le suffixe de ville.
+    """
+    if texte is None:
+        return None
+    lieu = _SUFFIXE_VILLE.sub("", " ".join(texte.split()))
+    if not lieu:
+        return None
+    if _cle_comparaison(lieu) == _CLE_SALLE:
+        return NOM_SALLE
+    return lieu
 
 
 # --------------------------------------------------------------------------- #
@@ -107,8 +151,9 @@ def _extraire_depuis_lepointdevente(html: str, url_base: str) -> list[Evenement]
         date_el = item.select_one(".feature-date")
         date_debut = parse_date_fr(date_el.get_text(" ", strip=True)) if date_el else None
 
+        # Le lieu « <salle>, Sherbrooke, QC » : ville retirée, graphie unifiée.
         lieu_el = item.select_one(".feature-city")
-        lieu = lieu_el.get_text(" ", strip=True) if lieu_el else None
+        lieu = normaliser_lieu(lieu_el.get_text(" ", strip=True)) if lieu_el else None
 
         # L'affiche : <img itemprop="image" src="..."> (repli sur toute <img>).
         img_el = item.select_one("img[itemprop=image]") or item.select_one("img")
@@ -157,7 +202,7 @@ def _extraire_evenements(html: str, timeout: float, session: requests.Session) -
 # --------------------------------------------------------------------------- #
 class LaPetiteBoiteNoire(Source):
     slug = "la-petite-boite-noire"
-    nom = "La Petite Boîte Noire"
+    nom = NOM_SALLE
     url_defaut = URL_EVENEMENTS
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:
