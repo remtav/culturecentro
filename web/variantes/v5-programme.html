@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Culture Centro — Variante 5 · Programme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  /* Variante 5 — programme texte, lisibilité avant tout. Police conçue pour
+     les personnes malvoyantes, gros corps, contraste élevé, aucune image.
+     Filtres combinables dans une colonne à gauche (repliés sur mobile),
+     liste par jour, activités régulières et expositions regroupées à part. */
+  :root {
+    --bg: #FFFFFF;
+    --ink: #111111;
+    --muted: #4A4A4A;
+    --line: #C9C9C9;
+    --soft: #F3F3F1;
+    --link: #1D3FBB;
+    --focus: #FFDD00;
+    --on-focus: #111111;
+    --font: "Atkinson Hyperlegible", Verdana, Tahoma, sans-serif;
+    --fs: 18px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #121212; --ink: #F4F4F4; --muted: #BDBDBD; --line: #444444; --soft: #1D1D1D; --link: #9DB8FF; --focus: #FFDD00; --on-focus: #111111; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #121212; --ink: #F4F4F4; --muted: #BDBDBD; --line: #444444; --soft: #1D1D1D; --link: #9DB8FF; --focus: #FFDD00; --on-focus: #111111; color-scheme: dark; }
+  :root[data-size="l"] { --fs: 20px; }
+  :root[data-size="xl"] { --fs: 23px; }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: var(--fs); line-height: 1.55; }
+  a { color: var(--link); text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 3px; }
+  [hidden] { display: none !important; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 0; box-shadow: 0 0 0 6px var(--focus); }
+  a:focus-visible { background: var(--focus); color: var(--on-focus); box-shadow: 0 4px 0 var(--ink); outline: none; text-decoration: none; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
+  h1, h2, h3 { margin: 0; line-height: 1.2; text-wrap: balance; }
+  .skip { position: absolute; left: -9999px; }
+  .skip:focus { left: 16px; top: 16px; z-index: 50; padding: 10px 16px; background: var(--focus); color: var(--on-focus); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  header.site { border-bottom: 6px solid var(--ink); }
+  header.site .wrap { display: flex; align-items: center; gap: 18px; padding-block: 16px; flex-wrap: wrap; }
+  .brand { margin-right: auto; color: var(--ink); text-decoration: none; }
+  .brand b { font-size: 1.3em; display: block; line-height: 1.1; }
+  .brand span { font-size: .8em; color: var(--muted); }
+  .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .tools .lbl { font-size: .8em; color: var(--muted); }
+  .tbtn { border: 2px solid var(--ink); background: var(--bg); min-width: 44px; min-height: 44px; padding: 0 10px; cursor: pointer; font-weight: 700; }
+  .tbtn[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+  .intro { padding-block: 22px 8px; }
+  .intro h1 { font-size: 1.9em; }
+  .intro p { margin: 6px 0 0; max-width: 62ch; color: var(--muted); }
+
+  .layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 36px; padding-block: 18px 40px; align-items: start; }
+  @media (max-width: 880px) { .layout { grid-template-columns: 1fr; gap: 18px; } }
+
+  /* Filtres */
+  .filters { border: 2px solid var(--ink); }
+  .filters summary { list-style: none; cursor: pointer; padding: 12px 16px; font-weight: 700; display: flex; justify-content: space-between; gap: 10px; }
+  .filters summary::-webkit-details-marker { display: none; }
+  .filters summary::after { content: "+"; font-size: 1.3em; line-height: 1; }
+  .filters[open] summary::after { content: "−"; }
+  @media (min-width: 881px) { .filters summary { pointer-events: none; } .filters summary::after { content: ""; } }
+  .filters form { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 18px; }
+  fieldset { border: 0; margin: 0; padding: 0; }
+  legend { font-weight: 700; padding: 0; margin-bottom: 6px; font-size: .95em; }
+  .opt { display: flex; align-items: flex-start; gap: 10px; padding-block: 4px; cursor: pointer; }
+  .opt input { width: 22px; height: 22px; margin: 3px 0 0; flex: none; accent-color: var(--ink); }
+  .opt .n { color: var(--muted); font-size: .85em; margin-left: auto; font-variant-numeric: tabular-nums; }
+  .clear { border: 2px solid var(--ink); background: var(--soft); padding: 8px 14px; cursor: pointer; font-weight: 700; align-self: flex-start; min-height: 44px; }
+
+  /* Résultats */
+  .status { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+  .status p { margin: 0; font-weight: 700; }
+  .status label { font-size: .85em; display: flex; gap: 8px; align-items: center; }
+  .status select { border: 2px solid var(--ink); background: var(--bg); padding: 4px 8px; min-height: 40px; }
+
+  .block { margin-top: 26px; }
+  .block > h2 { font-size: 1.35em; margin-bottom: 6px; }
+  .block > p.hint { margin: 0 0 8px; color: var(--muted); font-size: .9em; }
+  .day h3.dayh { position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); padding-block: 12px 8px; font-size: 1.15em; border-bottom: 2px solid var(--ink); z-index: 2; }
+  .day { margin-top: 14px; }
+  .item { display: grid; grid-template-columns: 7.5em minmax(0, 1fr) 9em; gap: 4px 18px; padding-block: 14px; border-bottom: 1px solid var(--line); }
+  .item .h { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .item h3 { font-size: 1em; }
+  .item .w { color: var(--muted); font-size: .9em; }
+  .item .meta { font-size: .9em; text-align: right; }
+  .item .meta span { display: block; }
+  .badge { display: inline-block; border: 1.5px solid var(--ink); padding: 0 6px; font-size: .78em; font-weight: 700; margin-right: 4px; margin-top: 4px; }
+  @media (max-width: 640px) { .item { grid-template-columns: 1fr; } .item .meta { text-align: left; } .item .meta span { display: inline; } .item .meta span + span::before { content: " · "; } }
+
+  .series .item { grid-template-columns: 12em minmax(0, 1fr) 9em; }
+  .series .h { font-weight: 700; }
+  details.more { margin-top: 6px; font-size: .9em; }
+  details.more summary { cursor: pointer; color: var(--link); text-decoration: underline; }
+  details.more ul { margin: 6px 0 0; padding-left: 1.2em; }
+  @media (max-width: 640px) { .series .item { grid-template-columns: 1fr; } }
+
+  .empty { padding: 20px; background: var(--soft); border-left: 6px solid var(--ink); margin-top: 16px; }
+
+  /* Partenaires */
+  .partners { border-top: 6px solid var(--ink); padding-block: 28px 10px; }
+  .partners h2 { font-size: 1.5em; margin-bottom: 12px; }
+  .pcols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
+  @media (max-width: 880px) { .pcols { grid-template-columns: 1fr; } }
+  .pcols h3 { font-size: 1.05em; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 2px solid var(--ink); }
+  .pcols ul { list-style: none; margin: 0; padding: 0; }
+  .pcols li { padding-block: 6px; border-bottom: 1px solid var(--line); }
+  .pcols li small { display: block; color: var(--muted); font-size: .82em; }
+  .pcols .principal li { font-size: 1.1em; font-weight: 700; }
+
+  footer { padding-block: 22px; color: var(--muted); font-size: .85em; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); margin-top: 26px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#resultats">Aller directement au programme</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#"><b>Culture Centro</b><span>Programme culturel du centre-ville de Sherbrooke</span></a>
+    <div class="tools" role="group" aria-label="Affichage">
+      <span class="lbl" id="sizeLbl">Taille du texte</span>
+      <button class="tbtn" type="button" data-size="" aria-pressed="true" aria-describedby="sizeLbl">A</button>
+      <button class="tbtn" type="button" data-size="l" aria-pressed="false" aria-describedby="sizeLbl" style="font-size:1.1em">A</button>
+      <button class="tbtn" type="button" data-size="xl" aria-pressed="false" aria-describedby="sizeLbl" style="font-size:1.25em">A</button>
+      <button class="tbtn" type="button" id="theme" aria-label="Basculer le contraste clair / sombre">Clair / sombre</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>Programme</h1>
+    <p id="introTxt"></p>
+  </div>
+
+  <div class="layout">
+    <details class="filters" id="filtersBox" open>
+      <summary id="filtersSum">Filtrer le programme</summary>
+      <form id="form" onsubmit="return false">
+        <fieldset>
+          <legend>Période</legend>
+          <label class="opt"><input type="radio" name="per" value="0"> Aujourd'hui</label>
+          <label class="opt"><input type="radio" name="per" value="6" checked> 7 prochains jours</label>
+          <label class="opt"><input type="radio" name="per" value="30"> 30 prochains jours</label>
+          <label class="opt"><input type="radio" name="per" value="120"> Toute la saison</label>
+        </fieldset>
+        <fieldset><legend>Discipline</legend><div id="fDisc"></div></fieldset>
+        <fieldset><legend>Lieu</legend><div id="fLieu"></div></fieldset>
+        <fieldset>
+          <legend>Autres critères</legend>
+          <label class="opt"><input type="checkbox" id="fFree"> Gratuit seulement</label>
+          <label class="opt"><input type="checkbox" id="fFam"> Pour la famille</label>
+          <label class="opt"><input type="checkbox" id="fRec"> Mélanger les activités régulières à la liste</label>
+        </fieldset>
+        <button class="clear" type="button" id="clear">Effacer les filtres</button>
+      </form>
+    </details>
+
+    <main id="resultats" tabindex="-1">
+      <div class="status">
+        <p id="count" aria-live="polite"></p>
+      </div>
+      <div id="out"></div>
+    </main>
+  </div>
+
+  <section class="partners" aria-labelledby="partH">
+    <h2 id="partH">Partenaires</h2>
+    <div class="pcols">
+      <div class="principal"><h3>Partenaires principaux</h3><ul id="pMaj"></ul></div>
+      <div><h3>Membres du réseau</h3><ul id="pNet"></ul></div>
+      <div><h3>Avec le soutien de</h3><ul id="pSup"></ul></div>
+    </div>
+  </section>
+
+  <footer><span>Maquette · variante 5 · données fictives</span><a href="index.html">← Toutes les variantes</a></footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.CC, T = C.TODAY, esc = C.esc;
+  C.initTheme(document.getElementById("theme"));
+  var root = document.documentElement;
+
+  // Taille du texte (mémorisée sur l'appareil)
+  function setSize(s) {
+    if (s) root.setAttribute("data-size", s); else root.removeAttribute("data-size");
+    document.querySelectorAll("[data-size]").forEach(function (b) { if (b.tagName === "BUTTON") b.setAttribute("aria-pressed", b.dataset.size === s); });
+    try { localStorage.setItem("cc-v5-size", s); } catch (e) {}
+  }
+  try { setSize(localStorage.getItem("cc-v5-size") || ""); } catch (e) {}
+  document.querySelectorAll("button[data-size]").forEach(function (b) { b.addEventListener("click", function () { setSize(b.dataset.size); }); });
+
+  document.getElementById("introTxt").textContent = "Nous sommes le " + C.dateLong(T) + " " + T.getFullYear() + ". Toutes les activités culturelles du centre-ville, en texte, du plus proche au plus lointain. Combinez les filtres pour réduire la liste.";
+
+  var fDisc = document.getElementById("fDisc"), fLieu = document.getElementById("fLieu");
+  Object.keys(C.DISC).forEach(function (k) { fDisc.insertAdjacentHTML("beforeend", '<label class="opt"><input type="checkbox" name="disc" value="' + k + '"> ' + C.DISC[k].label + '<span class="n" data-cd="' + k + '"></span></label>'); });
+  var ORGS = C.PARTNERS.filter(function (p) { return C.EVENTS.concat(C.SERIES).some(function (e) { return e.p === p.id; }); });
+  ORGS.forEach(function (p) { fLieu.insertAdjacentHTML("beforeend", '<label class="opt"><input type="checkbox" name="lieu" value="' + p.id + '"> ' + esc(p.short) + '<span class="n" data-cl="' + p.id + '"></span></label>'); });
+
+  var form = document.getElementById("form");
+  form.addEventListener("change", render);
+  document.getElementById("clear").onclick = function () { form.reset(); render(); };
+  if (window.innerWidth <= 880) document.getElementById("filtersBox").open = false;
+
+  function read() {
+    var f = new FormData(form);
+    return { per: +f.get("per"), disc: f.getAll("disc"), lieu: f.getAll("lieu"), free: document.getElementById("fFree").checked, fam: document.getElementById("fFam").checked, mix: document.getElementById("fRec").checked };
+  }
+  function match(ev, s, skip) {
+    if (skip !== "disc" && s.disc.length && s.disc.indexOf(ev.d) < 0) return false;
+    if (skip !== "lieu" && s.lieu.length && s.lieu.indexOf(ev.p) < 0) return false;
+    if (s.free && !ev.gratuit) return false;
+    if (s.fam && !ev.famille) return false;
+    return true;
+  }
+  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
+  function itemHtml(i) {
+    var ev = i.ev, p = C.partner(ev.p);
+    return '<article class="item"><div class="h">' + esc(ev.time) + '</div>' +
+      '<div><h3><a href="' + href(ev) + '" target="_blank" rel="noopener">' + esc(ev.title) + '<span class="sr"> (nouvel onglet)</span></a></h3>' +
+      '<div class="w">' + esc(C.place(ev)) + (ev.venue && p ? ', présenté par ' + esc(p.name) : '') + '</div>' +
+      '<div>' + (i.serie ? '<span class="badge">Régulier : ' + ev.rule.toLowerCase() + '</span>' : '') + (ev.dateEnd && !i.serie ? '<span class="badge">' + C.rangeLabel(ev) + '</span>' : '') + (ev.famille ? '<span class="badge">Famille</span>' : '') + '</div></div>' +
+      '<div class="meta"><span>' + C.DISC[ev.d].label + '</span><span><b>' + esc(ev.prix) + '</b></span></div></article>';
+  }
+
+  function render() {
+    var s = read(), to = C.addDays(T, s.per);
+    var all = C.agenda(T, to, { series: s.mix, spread: true, noLong: true });
+    var items = all.filter(function (i) { return match(i.ev, s); });
+    var longs = C.EVENTS.filter(function (e) { return C.isLong(e) && C.end(e) >= T && C.start(e) <= to && match(e, s); });
+    var series = s.mix ? [] : C.SERIES.filter(function (x) { return match(x, s) && C.occurrences(x, T, to).length; });
+
+    // Compteurs à côté de chaque option (ce que donnerait ce choix)
+    Object.keys(C.DISC).forEach(function (k) { document.querySelector('[data-cd="' + k + '"]').textContent = all.filter(function (i) { return i.ev.d === k && match(i.ev, s, "disc"); }).length; });
+    ORGS.forEach(function (p) { document.querySelector('[data-cl="' + p.id + '"]').textContent = all.filter(function (i) { return i.ev.p === p.id && match(i.ev, s, "lieu"); }).length; });
+
+    var active = s.disc.length + s.lieu.length + (s.free ? 1 : 0) + (s.fam ? 1 : 0);
+    document.getElementById("filtersSum").textContent = "Filtrer le programme" + (active ? " (" + active + " actif" + (active > 1 ? "s" : "") + ")" : "");
+    var perTxt = s.per === 0 ? "aujourd'hui" : s.per === 6 ? "dans les 7 prochains jours" : s.per === 30 ? "dans les 30 prochains jours" : "d'ici la fin de la saison";
+    document.getElementById("count").textContent = items.length + " activité" + (items.length > 1 ? "s" : "") + " " + perTxt + (series.length ? ", plus " + series.length + " activité" + (series.length > 1 ? "s" : "") + " régulière" + (series.length > 1 ? "s" : "") : "") + (longs.length ? " et " + longs.length + " exposition" + (longs.length > 1 ? "s" : "") : "") + ".";
+
+    var h = "";
+    if (longs.length) {
+      h += '<section class="block" aria-labelledby="bl1"><h2 id="bl1">Expositions en cours et à venir</h2><p class="hint">Visibles tous les jours pendant la période indiquée.</p>' +
+        longs.map(function (e) { return itemHtml({ ev: e, serie: false }).replace('<div class="h">' + esc(e.time) + '</div>', '<div class="h">' + (C.start(e) <= T ? "En cours" : "Dès le " + C.start(e).getDate() + " " + C.MOIS_ABBR[C.start(e).getMonth()]) + '</div>'); }).join("") + '</section>';
+    }
+    if (series.length) {
+      h += '<section class="block series" aria-labelledby="bl2"><h2 id="bl2">Activités régulières</h2><p class="hint">Elles reviennent à date fixe. Pour les voir jour par jour, cochez « Mélanger les activités régulières à la liste ».</p>' +
+        series.map(function (x) {
+          var nx = C.occurrences(x, T, C.addDays(T, 120)).slice(0, 5);
+          return '<article class="item"><div class="h">' + x.rule + '<br>' + x.time + '</div><div><h3><a href="' + href(x) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></h3><div class="w">' + esc(C.place(x)) + '</div>' +
+            '<details class="more"><summary>Prochaines dates</summary><ul>' + nx.map(function (d) { return '<li>' + C.cap(C.dateLong(d)) + '</li>'; }).join("") + '</ul></details></div>' +
+            '<div class="meta"><span>' + C.DISC[x.d].label + '</span><span><b>' + esc(x.prix) + '</b></span></div></article>';
+        }).join("") + '</section>';
+    }
+    if (items.length) {
+      h += '<section class="block" aria-labelledby="bl3"><h2 id="bl3">Jour par jour</h2>';
+      var cur = null;
+      items.forEach(function (i) {
+        var k = C.iso(i.date);
+        if (k !== cur) { if (cur) h += '</div>'; cur = k; h += '<div class="day"><h3 class="dayh">' + (C.sameDay(i.date, T) ? "Aujourd'hui, " : "") + C.cap(C.dateLong(i.date)) + '</h3>'; }
+        h += itemHtml(i);
+      });
+      h += '</div></section>';
+    }
+    if (!h) h = '<div class="empty"><b>Aucune activité ne correspond à ces filtres.</b><br>Élargissez la période ou décochez un critère.</div>';
+    document.getElementById("out").innerHTML = h;
+  }
+
+  (function partners() {
+    function li(p) { return '<li><a href="' + p.url + '" target="_blank" rel="noopener">' + esc(p.name) + '</a><small>' + esc(p.kind) + '</small></li>'; }
+    document.getElementById("pMaj").innerHTML = C.PARTNERS.filter(function (p) { return p.tier === "principal"; }).map(li).join("");
+    document.getElementById("pNet").innerHTML = C.PARTNERS.filter(function (p) { return p.tier === "reseau"; }).map(li).join("");
+    document.getElementById("pSup").innerHTML = C.PARTNERS.filter(function (p) { return p.tier === "soutien"; }).map(function (p) { return '<li>' + esc(p.name) + '<small>' + esc(p.kind) + '</small></li>'; }).join("");
+  })();
+
+  render();
+})();
+</script>
+</body>
+</html>

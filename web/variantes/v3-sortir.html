@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Culture Centro — Variante 3 · Sortir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Gabarito:wght@600;700;800;900&display=swap">
+<style>
+  /* Variante 3 — application de sortie, pensée d'abord pour le téléphone.
+     On choisit un moment (ce soir, ce week-end…) plutôt que des filtres ;
+     cartes pleines couleur par discipline, grands rayons, carrousels
+     thématiques et barre d'onglets en bas de l'écran sur mobile. */
+  :root {
+    --bg: #F6F4FB;
+    --surface: #FFFFFF;
+    --ink: #17122B;
+    --muted: #625C78;
+    --line: #E4E0EF;
+    --brand: #5B4BFF;
+    --on-card: #FFFFFF;
+    --display: "Gabarito", "Trebuchet MS", sans-serif;
+    --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+    --r-lg: 26px; --r-md: 18px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #110E1C; --surface: #1C1830; --ink: #F3F0FF; --muted: #A9A3C2; --line: #2C2742; --brand: #8E82FF; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #110E1C; --surface: #1C1830; --ink: #F3F0FF; --muted: #A9A3C2; --line: #2C2742; --brand: #8E82FF; color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  @media (min-width: 820px) { body { padding-bottom: 0; } }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+  h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.05; text-wrap: balance; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding-inline: 18px; }
+
+  .appbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); }
+  .appbar .wrap { display: flex; align-items: center; gap: 10px; padding-block: 12px; }
+  .logo { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 900; font-size: 20px; text-decoration: none; margin-right: auto; letter-spacing: -.02em; }
+  .logo i { width: 26px; height: 26px; border-radius: 50%; background: conic-gradient(#FF5A5F 0 25%, #FFB400 0 50%, #00A889 0 75%, #5B4BFF 0); display: block; }
+  .deskNav { display: none; gap: 6px; }
+  .deskNav button { border: 0; background: none; padding: 8px 14px; border-radius: 999px; font-weight: 600; cursor: pointer; color: var(--muted); }
+  .deskNav button[aria-current="true"] { background: var(--ink); color: var(--bg); }
+  @media (min-width: 820px) { .deskNav { display: flex; } }
+  .round { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--surface); display: grid; place-items: center; cursor: pointer; box-shadow: 0 0 0 1px var(--line); flex: none; }
+
+  .search { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: 999px; padding: 0 14px; box-shadow: 0 0 0 1px var(--line); margin-top: 6px; }
+  .search input { border: 0; background: none; font: inherit; font-size: 16px; padding: 12px 0; width: 100%; color: var(--ink); outline: none; }
+  .search:focus-within { box-shadow: 0 0 0 2px var(--brand); }
+
+  .hello { padding-block: 10px 6px; }
+  .hello small { color: var(--muted); font-weight: 600; }
+  .hello h1 { font-size: clamp(34px, 7vw, 58px); font-weight: 900; letter-spacing: -.03em; margin-top: 2px; }
+
+  .intents { display: flex; gap: 8px; overflow-x: auto; padding-block: 14px 6px; scrollbar-width: none; margin-inline: -18px; padding-inline: 18px; }
+  .intents::-webkit-scrollbar { display: none; }
+  .intent { flex: none; border: 0; border-radius: 999px; padding: 12px 18px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); cursor: pointer; font-family: var(--display); font-weight: 800; font-size: 17px; display: inline-flex; gap: 8px; align-items: center; }
+  .intent span { font-family: var(--body); font-size: 13px; font-weight: 700; background: var(--bg); padding: 1px 8px; border-radius: 999px; color: var(--muted); }
+  .intent[aria-pressed="true"] { background: var(--ink); color: var(--bg); box-shadow: none; }
+  .intent[aria-pressed="true"] span { background: color-mix(in srgb, var(--bg) 20%, transparent); color: var(--bg); }
+
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding-block: 6px 4px; scrollbar-width: none; margin-inline: -18px; padding-inline: 18px; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; border: 0; border-radius: 999px; padding: 7px 13px; font-size: 14px; font-weight: 600; background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+  .chip[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: var(--surface); }
+
+  /* Cartes */
+  .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; padding-block: 16px 8px; }
+  .card { position: relative; background: var(--c); color: var(--on-card); border-radius: var(--r-lg); padding: 10px 10px 16px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; transition: transform .15s; }
+  .card:hover { transform: translateY(-3px) rotate(-.4deg); }
+  .card .img { position: relative; border-radius: var(--r-md); overflow: hidden; aspect-ratio: 16 / 10; max-width: 100%; }
+  .card .img svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card .when { position: absolute; left: 10px; top: 10px; background: var(--surface); color: var(--ink); font-weight: 700; font-size: 13px; padding: 5px 11px; border-radius: 999px; }
+  .card .fav { position: absolute; right: 10px; top: 10px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; display: grid; place-items: center; }
+  .card .fav[aria-pressed="true"] { color: #E0245E; }
+  .card .fav[aria-pressed="true"] svg { fill: currentColor; }
+  .card .txt { padding-inline: 6px; display: flex; flex-direction: column; gap: 4px; }
+  .card .d { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; opacity: .9; }
+  .card h3 { font-size: 23px; font-weight: 800; letter-spacing: -.01em; }
+  .card .pl { font-size: 14.5px; font-weight: 500; opacity: .95; }
+  .card .foot { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .card .pill { font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.22); }
+  .empty { grid-column: 1 / -1; background: var(--surface); border-radius: var(--r-lg); padding: 28px; text-align: center; color: var(--muted); }
+  .empty b { display: block; font-family: var(--display); font-size: 22px; color: var(--ink); margin-bottom: 4px; }
+
+  /* Carrousels */
+  .rail { padding-block: 22px 4px; }
+  .rail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .rail-head h2 { font-size: 25px; font-weight: 800; letter-spacing: -.02em; }
+  .rail-head span { color: var(--muted); font-size: 14px; }
+  .track { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; margin-inline: -18px; padding-inline: 18px; scrollbar-width: thin; }
+  .track > * { scroll-snap-align: start; flex: none; }
+  .mini { width: 230px; background: var(--surface); border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--line); overflow: hidden; text-decoration: none; display: flex; flex-direction: column; }
+  .mini .img { position: relative; height: 110px; }
+  .mini .img svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .mini .body { padding: 11px 13px 14px; display: flex; flex-direction: column; gap: 3px; }
+  .mini .k { font-size: 12.5px; font-weight: 700; color: var(--c2); }
+  .mini b { font-family: var(--display); font-size: 17px; font-weight: 800; line-height: 1.1; }
+  .mini span { font-size: 13.5px; color: var(--muted); }
+  .count { display: inline-block; font-family: var(--display); font-weight: 900; font-size: 30px; line-height: 1; color: var(--c2); }
+
+  .rec { width: 200px; border-radius: var(--r-md); padding: 14px; background: var(--surface); box-shadow: inset 0 0 0 2px var(--c2); display: flex; flex-direction: column; gap: 4px; text-decoration: none; }
+  .rec .rule { font-family: var(--display); font-weight: 800; font-size: 15px; color: var(--c2); }
+  .rec b { font-size: 16px; line-height: 1.2; }
+  .rec span { font-size: 13px; color: var(--muted); }
+
+  .venue { width: 112px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; text-decoration: none; }
+  .venue .av { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 900; font-size: 24px; color: var(--on-card); background: var(--c2); }
+  .venue.principal .av { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--c2); }
+  .venue b { font-size: 13.5px; line-height: 1.2; }
+  .venue small { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+
+  .favs-empty { background: var(--surface); border-radius: var(--r-lg); padding: 26px; color: var(--muted); }
+
+  /* Barre d'onglets mobile */
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(4, 1fr); }
+  .tabbar button { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 4px; position: relative; }
+  .tabbar button[aria-current="true"] { color: var(--brand); }
+  .tabbar .badge { position: absolute; top: 0; left: 55%; background: #E0245E; color: #fff; font-size: 10.5px; min-width: 17px; height: 17px; border-radius: 999px; display: grid; place-items: center; padding-inline: 4px; }
+  @media (min-width: 820px) { .tabbar { display: none; } }
+
+  footer { padding-block: 30px; color: var(--muted); font-size: 13.5px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <div class="wrap">
+    <a class="logo" href="#"><i></i>culture centro</a>
+    <nav class="deskNav" id="deskNav" aria-label="Sections">
+      <button type="button" data-tab="decouvrir" aria-current="true">Découvrir</button>
+      <button type="button" data-tab="lieux">Lieux</button>
+      <button type="button" data-tab="favoris">Mes sorties <span class="favN"></span></button>
+    </nav>
+    <button class="round" id="theme" type="button" aria-label="Basculer le thème clair / sombre"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="view-decouvrir">
+    <div class="hello">
+      <small id="today"></small>
+      <h1 id="question">Qu'est-ce qu'on fait ce soir ?</h1>
+      <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="q" type="search" placeholder="Un spectacle, un lieu, un artiste…" aria-label="Rechercher"></label>
+    </div>
+    <div class="intents" id="intents" role="group" aria-label="Quand"></div>
+    <div class="chips" id="chips" role="group" aria-label="Préférences"></div>
+    <div class="results" id="results" aria-live="polite"></div>
+
+    <section class="rail"><div class="rail-head"><h2>Expos à voir avant la fin</h2><span>Longue durée</span></div><div class="track" id="railExpo"></div></section>
+    <section class="rail"><div class="rail-head"><h2>Chaque semaine</h2><span>Activités récurrentes</span></div><div class="track" id="railRec"></div></section>
+    <section class="rail"><div class="rail-head"><h2>Sans débourser</h2><span>Gratuit, 30 prochains jours</span></div><div class="track" id="railFree"></div></section>
+    <section class="rail"><div class="rail-head"><h2>En famille</h2><span>Pour les petits et les grands</span></div><div class="track" id="railFam"></div></section>
+  </div>
+
+  <div id="view-lieux" hidden>
+    <div class="hello"><small>Le réseau</small><h1>Les lieux du centre-ville</h1></div>
+    <section class="rail"><div class="rail-head"><h2>Partenaires principaux</h2></div><div class="track" id="railMaj"></div></section>
+    <section class="rail"><div class="rail-head"><h2>Le réseau</h2></div><div class="track" id="railNet"></div></section>
+    <p style="color:var(--muted);font-size:14px" id="support"></p>
+  </div>
+
+  <div id="view-favoris" hidden>
+    <div class="hello"><small>Enregistrées sur cet appareil</small><h1>Mes sorties</h1></div>
+    <div class="results" id="favs"></div>
+  </div>
+
+  <footer><span>Maquette · variante 3 · données fictives</span><a href="index.html">← Toutes les variantes</a></footer>
+</main>
+
+<nav class="tabbar" id="tabbar" aria-label="Navigation">
+  <button type="button" data-tab="decouvrir" aria-current="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>Découvrir</button>
+  <button type="button" data-tab="agenda"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
+  <button type="button" data-tab="lieux"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>Lieux</button>
+  <button type="button" data-tab="favoris"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Mes sorties<span class="badge" id="favBadge" hidden></span></button>
+</nav>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.CC, T = C.TODAY, esc = C.esc;
+  C.initTheme(document.getElementById("theme"));
+
+  // Couleurs vives propres à cette variante (texte blanc lisible dessus)
+  var VIVID = { theatre: "#E23B4E", musique: "#5443F0", arts: "#00836C", festival: "#C77A00", danse: "#C42A86", litt: "#1F6FE0", humour: "#D9570B", jeunesse: "#2E8A3A" };
+
+  var favs = [];
+  try { favs = JSON.parse(localStorage.getItem("cc-v3-favs") || "[]"); } catch (e) {}
+  function saveFavs() { try { localStorage.setItem("cc-v3-favs", JSON.stringify(favs)); } catch (e) {} updateBadge(); }
+
+  var dow = T.getDay(); // 4 = jeudi
+  var fri = C.addDays(T, (5 - dow + 7) % 7), sun = C.addDays(T, (7 - dow) % 7);
+  if (dow === 5 || dow === 6 || dow === 0) fri = T;
+  var INTENTS = [
+    { k: "soir",    label: "Ce soir",      q: "Qu'est-ce qu'on fait ce soir ?",        from: T, to: T, series: true },
+    { k: "demain",  label: "Demain",       q: "Et demain, on sort ?",                   from: C.addDays(T, 1), to: C.addDays(T, 1), series: true },
+    { k: "weekend", label: "Ce week-end",  q: "On sort ce week-end ?",                  from: fri, to: sun, series: false },
+    { k: "semaine", label: "Cette semaine", q: "Cette semaine au centre-ville",          from: T, to: C.addDays(T, 6), series: false },
+    { k: "plus",    label: "Plus tard",    q: "À prévoir dans les deux prochains mois", from: C.addDays(T, 7), to: C.addDays(T, 60), series: false }
+  ];
+  var state = { intent: "soir", free: false, fam: false, d: null, q: "" };
+
+  document.getElementById("today").textContent = C.cap(C.dateLong(T));
+
+  function keep(ev) {
+    if (state.free && !ev.gratuit) return false;
+    if (state.fam && !ev.famille) return false;
+    if (state.d && ev.d !== state.d) return false;
+    if (state.q && (ev.title + " " + C.place(ev) + " " + C.DISC[ev.d].label).toLowerCase().indexOf(state.q) < 0) return false;
+    return true;
+  }
+  function list(it) {
+    return C.agenda(it.from, it.to, { series: it.series, noLong: true, spread: it.k !== "plus" }).filter(function (i) { return keep(i.ev); });
+  }
+  function whenTxt(i) {
+    var d = i.date, t = i.ev.time;
+    if (C.sameDay(d, T)) return (C.timeKey(i.ev) >= 17 * 60 ? "Ce soir · " : "Aujourd'hui · ") + t;
+    if (C.sameDay(d, C.addDays(T, 1))) return "Demain · " + t;
+    if (C.diffDays(T, d) < 7) return C.cap(C.JOURS[d.getDay()]) + " · " + t;
+    return C.dateShort(d) + " · " + t;
+  }
+  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
+  function favKey(i) { return (i.ev.id || i.ev.title) + "@" + C.iso(i.date); }
+  var HEART = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>';
+
+  function card(i) {
+    var ev = i.ev, key = favKey(i), on = favs.some(function (f) { return f.k === key; });
+    return '<a class="card" href="' + href(ev) + '" target="_blank" rel="noopener" style="--c:' + VIVID[ev.d] + '">' +
+      '<div class="img">' + C.scene(ev.d) + '<span class="when">' + esc(whenTxt(i)) + '</span>' +
+      '<button class="fav" type="button" aria-pressed="' + on + '" aria-label="Ajouter à mes sorties" data-k="' + esc(key) + '" data-id="' + esc(ev.id || ev.id) + '" data-date="' + C.iso(i.date) + '" data-serie="' + (i.serie ? ev.id : "") + '">' + HEART + '</button></div>' +
+      '<div class="txt"><span class="d">' + C.DISC[ev.d].label + (i.serie ? " · " + ev.rule.toLowerCase() : "") + '</span><h3>' + esc(ev.title) + '</h3><span class="pl">' + esc(C.place(ev)) + '</span>' +
+      '<div class="foot"><span class="pill">' + esc(ev.prix) + '</span>' + (ev.famille ? '<span class="pill">En famille</span>' : '') + '</div></div></a>';
+  }
+
+  // Intentions
+  var inEl = document.getElementById("intents");
+  function renderIntents() {
+    inEl.innerHTML = INTENTS.map(function (it) {
+      return '<button class="intent" type="button" data-k="' + it.k + '" aria-pressed="' + (it.k === state.intent) + '">' + it.label + '<span>' + list(it).length + '</span></button>';
+    }).join("");
+  }
+  inEl.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; state.intent = b.dataset.k; render(); });
+
+  // Pastilles
+  var chEl = document.getElementById("chips");
+  function renderChips() {
+    var h = '<button class="chip" type="button" data-f="free" aria-pressed="' + state.free + '">Gratuit</button>' +
+            '<button class="chip" type="button" data-f="fam" aria-pressed="' + state.fam + '">En famille</button>';
+    Object.keys(C.DISC).forEach(function (k) { h += '<button class="chip" type="button" data-d="' + k + '" aria-pressed="' + (state.d === k) + '"><i style="--c:' + VIVID[k] + '"></i>' + C.DISC[k].label + '</button>'; });
+    chEl.innerHTML = h;
+  }
+  chEl.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.f) state[b.dataset.f] = !state[b.dataset.f];
+    else state.d = state.d === b.dataset.d ? null : b.dataset.d;
+    render();
+  });
+  document.getElementById("q").addEventListener("input", function () { state.q = this.value.trim().toLowerCase(); render(); });
+
+  function renderResults() {
+    var it = INTENTS.filter(function (x) { return x.k === state.intent; })[0];
+    document.getElementById("question").textContent = it.q;
+    var l = list(it);
+    document.getElementById("results").innerHTML = l.length ? l.map(card).join("") :
+      '<div class="empty"><b>Rien qui corresponde</b>Essayez un autre moment ou retirez un filtre.</div>';
+  }
+
+  // Favoris (délégation sur les boutons cœur)
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest(".fav"); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var k = b.dataset.k, idx = -1;
+    favs.forEach(function (f, n) { if (f.k === k) idx = n; });
+    if (idx >= 0) favs.splice(idx, 1); else favs.push({ k: k, id: b.dataset.id, serie: b.dataset.serie, date: b.dataset.date });
+    saveFavs();
+    document.querySelectorAll('.fav[data-k="' + CSS.escape(k) + '"]').forEach(function (x) { x.setAttribute("aria-pressed", idx < 0); });
+    if (currentTab === "favoris") renderFavs();
+  });
+  function renderFavs() {
+    var items = favs.map(function (f) {
+      var ev = f.serie ? C.SERIES.filter(function (s) { return s.id === f.serie; })[0] : C.EVENTS.filter(function (x) { return x.id === f.id; })[0];
+      return ev ? { ev: ev, date: C.parseD(f.date), serie: !!f.serie } : null;
+    }).filter(Boolean).sort(function (a, b) { return a.date - b.date; });
+    document.getElementById("favs").innerHTML = items.length ? items.map(card).join("") :
+      '<div class="favs-empty">Touchez le cœur d\'une activité pour la retrouver ici. Vos sorties restent sur cet appareil, sans compte à créer.</div>';
+  }
+  function updateBadge() {
+    var b = document.getElementById("favBadge"); b.hidden = !favs.length; b.textContent = favs.length;
+    document.querySelectorAll(".favN").forEach(function (x) { x.textContent = favs.length ? "(" + favs.length + ")" : ""; });
+  }
+
+  // Carrousels
+  function mini(ev, kicker) {
+    return '<a class="mini" href="' + href(ev) + '" target="_blank" rel="noopener" style="--c2:' + VIVID[ev.d] + '"><div class="img">' + C.scene(ev.d) + '</div><div class="body"><span class="k">' + kicker + '</span><b>' + esc(ev.title) + '</b><span>' + esc(C.place(ev)) + '</span></div></a>';
+  }
+  (function rails() {
+    var expo = C.EVENTS.filter(function (e) { return C.isLong(e) && C.end(e) >= T; }).sort(function (a, b) { return C.end(a) - C.end(b); });
+    document.getElementById("railExpo").innerHTML = expo.map(function (e) {
+      var started = C.start(e) <= T;
+      var k = started ? '<span class="count">' + C.diffDays(T, C.end(e)) + '</span> jours pour y aller' : 'Ouvre le ' + C.day1(C.start(e).getDate()) + " " + C.MOIS[C.start(e).getMonth()];
+      return mini(e, k);
+    }).join("");
+    document.getElementById("railRec").innerHTML = C.SERIES.map(function (s) {
+      var n = C.nextOccurrences(s, 1)[0];
+      return '<a class="rec" href="' + href(s) + '" target="_blank" rel="noopener" style="--c2:' + VIVID[s.d] + '"><span class="rule">' + s.rule + '</span><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + ' · ' + s.time + '</span><span>Prochaine fois : ' + (C.sameDay(n, T) ? "ce soir" : C.dateShort(n)) + '</span></a>';
+    }).join("");
+    var month = C.agenda(T, C.addDays(T, 30), { noLong: true });
+    function uniq(arr) { var seen = {}; return arr.filter(function (i) { var k = i.ev.id; if (seen[k]) return false; seen[k] = 1; return true; }); }
+    document.getElementById("railFree").innerHTML = uniq(month.filter(function (i) { return i.ev.gratuit; })).slice(0, 10).map(function (i) { return mini(i.ev, whenTxt(i)); }).join("");
+    document.getElementById("railFam").innerHTML = uniq(month.filter(function (i) { return i.ev.famille; })).slice(0, 10).map(function (i) { return mini(i.ev, whenTxt(i)); }).join("");
+
+    function initials(n) { return n.replace(/^(Le |La |L')/, "").split(/[\s-]+/).filter(function (w) { return /^[A-ZÀ-Ý]/.test(w); }).slice(0, 2).map(function (w) { return w[0]; }).join(""); }
+    function venue(p) {
+      var n = C.agenda(T, C.addDays(T, 30)).filter(function (i) { return i.ev.p === p.id; }).length;
+      return '<a class="venue ' + p.tier + '" href="' + p.url + '" target="_blank" rel="noopener" style="--c2:' + VIVID[p.d] + '"><span class="av">' + initials(p.name) + '</span><b>' + esc(p.short) + '</b><small>' + n + ' ce mois-ci</small></a>';
+    }
+    document.getElementById("railMaj").innerHTML = C.PARTNERS.filter(function (p) { return p.tier === "principal"; }).map(venue).join("");
+    document.getElementById("railNet").innerHTML = C.PARTNERS.filter(function (p) { return p.tier === "reseau"; }).map(venue).join("");
+    document.getElementById("support").textContent = "Avec le soutien de " + C.PARTNERS.filter(function (p) { return p.tier === "soutien"; }).map(function (p) { return p.name; }).join(" et ") + ".";
+  })();
+
+  // Onglets
+  var currentTab = "decouvrir";
+  function go(tab) {
+    if (tab === "agenda") { tab = "decouvrir"; state.intent = "semaine"; render(); }
+    currentTab = tab;
+    ["decouvrir", "lieux", "favoris"].forEach(function (t) { document.getElementById("view-" + t).hidden = t !== tab; });
+    document.querySelectorAll("[data-tab]").forEach(function (b) { b.setAttribute("aria-current", b.dataset.tab === tab || (b.dataset.tab === "agenda" && false)); });
+    if (tab === "favoris") renderFavs();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  document.querySelectorAll("[data-tab]").forEach(function (b) { b.addEventListener("click", function () { go(b.dataset.tab); }); });
+
+  function render() { renderIntents(); renderChips(); renderResults(); }
+  render(); updateBadge();
+})();
+</script>
+</body>
+</html>

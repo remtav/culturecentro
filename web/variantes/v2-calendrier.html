@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Culture Centro — Variante 2 · Calendrier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Variante 2 — outil de service public : on navigue par la date.
+     Calendrier mensuel à gauche (points = disciplines du jour), programme du
+     jour ou de la semaine à droite, grille hebdomadaire des activités
+     récurrentes en dessous. Angles droits, filets fins, aucune ombre. */
+  :root {
+    --bg: #FFFFFF;
+    --panel: #F2F6F6;
+    --ink: #102A2E;
+    --muted: #536669;
+    --line: #D3DDDE;
+    --teal: #0E6B73;
+    --sun: #FFD23F;
+    --on-sun: #102A2E;
+    --sans: "IBM Plex Sans", "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0C1A1C; --panel: #132628; --ink: #E4EEEE; --muted: #93A9AB; --line: #273C3E; --teal: #56C6CD; --sun: #F2C438; --on-sun: #102A2E; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #0C1A1C; --panel: #132628; --ink: #E4EEEE; --muted: #93A9AB; --line: #273C3E; --teal: #56C6CD; --sun: #F2C438; --on-sun: #102A2E; color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  a { color: inherit; }
+  [hidden] { display: none !important; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; }
+  h1, h2, h3 { margin: 0; line-height: 1.2; text-wrap: balance; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  header.site { border-bottom: 1px solid var(--line); }
+  header.site .wrap { display: flex; align-items: center; gap: 18px; padding-block: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; text-decoration: none; }
+  .brand .sq { width: 30px; height: 30px; background: var(--teal); color: var(--bg); display: grid; place-items: center; font-family: var(--mono); font-weight: 600; font-size: 13px; }
+  .brand b { font-weight: 700; font-size: 17px; }
+  .brand span { color: var(--muted); font-size: 13px; }
+  header nav { display: flex; gap: 20px; font-size: 14px; font-weight: 500; }
+  header nav a { text-decoration: none; color: var(--muted); }
+  header nav a:hover { color: var(--ink); }
+  .icon-btn { width: 34px; height: 34px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; display: grid; place-items: center; }
+  @media (max-width: 700px) { header nav, .brand span { display: none; } }
+
+  .layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 0; border-bottom: 1px solid var(--line); }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+  .side { border-right: 1px solid var(--line); padding: 22px 22px 22px 0; }
+  @media (max-width: 860px) { .side { border-right: 0; border-bottom: 1px solid var(--line); padding-right: 0; } }
+  .side-inner { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: flex; flex-direction: column; gap: 22px; }
+
+  /* Calendrier */
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-head h2 { font-size: 17px; font-weight: 700; text-transform: capitalize; }
+  .cal-head .nav { display: flex; gap: 4px; }
+  .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .cal .dow { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: center; padding: 6px 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--panel); text-transform: uppercase; }
+  .cal button { aspect-ratio: 1 / 1.05; min-width: 0; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); cursor: pointer; padding: 5px 4px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; font-family: var(--mono); font-size: 13px; font-weight: 500; }
+  .cal button:hover { background: var(--panel); }
+  .cal button.out { color: var(--muted); opacity: .45; }
+  .cal button.past { color: var(--muted); }
+  .cal button.today .n { box-shadow: inset 0 0 0 1.5px var(--teal); }
+  .cal button .n { padding: 0 3px; }
+  .cal button.sel { background: var(--sun); color: var(--on-sun); }
+  .cal button.inweek:not(.sel) { background: color-mix(in srgb, var(--sun) 26%, var(--bg)); }
+  .cal .dots { display: flex; gap: 2px; flex-wrap: wrap; }
+  .cal .dots i { width: 6px; height: 6px; background: var(--c); display: block; }
+
+  .legend h3, .opts h3 { font-size: 12px; font-family: var(--mono); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+  .legend .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; }
+  .legend label, .opts label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; padding-block: 3px; }
+  .legend input, .opts input { accent-color: var(--teal); width: 16px; height: 16px; margin: 0; }
+  .legend .sw { width: 10px; height: 10px; background: var(--c); flex: none; }
+
+  /* Programme */
+  .main { padding: 22px 0 30px 26px; min-width: 0; }
+  @media (max-width: 860px) { .main { padding-left: 0; } }
+  .main-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  .main-head .eyebrow { font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .main-head h1 { font-size: clamp(24px, 3.2vw, 34px); font-weight: 700; letter-spacing: -.01em; }
+  .seg { display: inline-flex; border: 1px solid var(--line); }
+  .seg button { border: 0; background: var(--bg); padding: 7px 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .steps { display: flex; gap: 4px; }
+
+  .ongoing { border: 1px solid var(--line); background: var(--panel); padding: 10px 14px; margin-bottom: 18px; font-size: 14px; }
+  .ongoing b { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 8px; }
+  .ongoing a { text-decoration: none; border-bottom: 1px solid var(--line); }
+  .ongoing a:hover { border-color: var(--ink); }
+
+  .daysec + .daysec { margin-top: 22px; }
+  .daysec h2 { font-size: 15px; font-weight: 700; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: flex; justify-content: space-between; gap: 10px; }
+  .daysec h2 span { font-family: var(--mono); font-weight: 500; font-size: 12px; color: var(--muted); text-transform: none; }
+  .slot { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 14px; padding-block: 12px; border-bottom: 1px solid var(--line); text-decoration: none; align-items: start; }
+  .slot:hover { background: var(--panel); }
+  .slot .h { font-family: var(--mono); font-size: 13px; font-weight: 600; padding-top: 2px; }
+  .slot .t { font-weight: 600; font-size: 16px; display: block; }
+  .slot .m { color: var(--muted); font-size: 13.5px; display: block; }
+  .slot .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-family: var(--mono); color: var(--muted); white-space: nowrap; padding-top: 3px; }
+  .slot .tag i { width: 8px; height: 8px; background: var(--c); }
+  .slot.rec .t::before { content: "↻ "; color: var(--teal); }
+  .slot .rule { font-family: var(--mono); font-size: 12px; color: var(--teal); }
+  .none { padding: 14px 0; color: var(--muted); font-size: 14px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 560px) { .slot { grid-template-columns: 58px minmax(0, 1fr); } .slot .tag { grid-column: 2; padding-top: 0; } }
+
+  /* Grille hebdomadaire des récurrents */
+  section.block { padding-block: 30px; border-bottom: 1px solid var(--line); }
+  .block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .block-head h2 { font-size: 22px; font-weight: 700; }
+  .block-head p { margin: 0; color: var(--muted); font-size: 14px; max-width: 60ch; }
+  .weekgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .weekgrid .col { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-height: 150px; display: flex; flex-direction: column; min-width: 0; }
+  .weekgrid .col h3 { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; padding: 8px 10px; background: var(--panel); border-bottom: 1px solid var(--line); color: var(--muted); }
+  .rcard { padding: 10px; border-bottom: 1px dashed var(--line); font-size: 13.5px; }
+  .rcard .h { font-family: var(--mono); font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .rcard .h i { width: 8px; height: 8px; background: var(--c); }
+  .rcard b { display: block; font-size: 14px; margin-top: 2px; line-height: 1.3; }
+  .rcard span { color: var(--muted); display: block; font-size: 12.5px; }
+  .rcard .nth { color: var(--teal); font-family: var(--mono); font-size: 11.5px; }
+  @media (max-width: 860px) { .weekgrid { grid-template-columns: 1fr; } .weekgrid .col { min-height: 0; } .weekgrid .col.empty { display: none; } }
+
+  /* Partenaires : tableau à cellules */
+  .pgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .pcell { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px; text-decoration: none; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .pcell:hover { background: var(--panel); }
+  .pcell.major { grid-column: span 2; padding: 20px; }
+  .pcell .lvl { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); }
+  .pcell b { font-size: 14px; line-height: 1.3; }
+  .pcell.major b { font-size: 22px; }
+  .pcell span { font-size: 12.5px; color: var(--muted); }
+  .pcell.minor { grid-column: span 1; }
+  @media (max-width: 860px) { .pgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pcell.major { grid-column: span 2; } .pcell.minor { grid-column: span 1; } }
+  .support { font-size: 13.5px; color: var(--muted); margin-top: 12px; }
+
+  footer { padding-block: 22px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#"><span class="sq">CC</span><b>Culture Centro</b><span>Agenda du centre-ville de Sherbrooke</span></a>
+    <nav><a href="#programme">Programme</a><a href="#recurrents">Chaque semaine</a><a href="#partenaires">Partenaires</a></nav>
+    <button class="icon-btn" id="theme" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout" id="programme">
+    <aside class="side">
+      <div class="side-inner">
+        <div>
+          <div class="cal-head">
+            <h2 id="calTitle"></h2>
+            <div class="nav">
+              <button class="icon-btn" id="prevM" type="button" aria-label="Mois précédent">‹</button>
+              <button class="icon-btn" id="nextM" type="button" aria-label="Mois suivant">›</button>
+            </div>
+          </div>
+          <div class="cal" id="cal" role="grid" aria-label="Calendrier"></div>
+        </div>
+        <div class="legend">
+          <h3>Disciplines</h3>
+          <div class="grid" id="legend"></div>
+        </div>
+        <div class="opts">
+          <h3>Options</h3>
+          <label><input type="checkbox" id="optRec" checked> Inclure les activités récurrentes</label>
+          <label><input type="checkbox" id="optFree"> Gratuit seulement</label>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="main-head">
+        <div><div class="eyebrow" id="eyebrow"></div><h1 id="title"></h1></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="steps"><button class="icon-btn" id="prev" type="button" aria-label="Précédent">‹</button><button class="icon-btn" id="next" type="button" aria-label="Suivant">›</button></div>
+          <div class="seg" role="group" aria-label="Vue">
+            <button type="button" data-v="day" aria-pressed="true">Jour</button>
+            <button type="button" data-v="week" aria-pressed="false">Semaine</button>
+          </div>
+        </div>
+      </div>
+      <div class="ongoing" id="ongoing"></div>
+      <div id="list"></div>
+    </main>
+  </div>
+
+  <section class="block" id="recurrents">
+    <div class="block-head"><h2>Chaque semaine au centre-ville</h2><p>Les activités qui reviennent à jour fixe, présentées une seule fois dans une grille plutôt que répétées dans l'agenda.</p></div>
+    <div class="weekgrid" id="weekgrid"></div>
+  </section>
+
+  <section class="block" id="partenaires">
+    <div class="block-head"><h2>Partenaires</h2><p>Les partenaires principaux occupent une cellule double ; les membres du réseau, une cellule simple.</p></div>
+    <div class="pgrid" id="pgrid"></div>
+    <p class="support" id="support"></p>
+  </section>
+
+  <footer><span>Maquette · variante 2 · données fictives</span><a href="index.html">← Toutes les variantes</a></footer>
+</div>
+
+<script src="commun.js"></script>
+<script>
+(function () {
+  "use strict";
+  var C = window.CC, T = C.TODAY, esc = C.esc;
+  C.initTheme(document.getElementById("theme"));
+
+  var state = { sel: new Date(T), view: "day", month: new Date(T.getFullYear(), T.getMonth(), 1), off: {}, rec: true, free: false };
+
+  function keep(ev) { return !state.off[ev.d] && (!state.free || ev.gratuit); }
+  function items(from, to) {
+    return C.agenda(from, to, { series: state.rec, spread: true, noLong: true }).filter(function (i) { return keep(i.ev); });
+  }
+  function range() {
+    if (state.view === "day") return [state.sel, state.sel];
+    var m = C.startOfWeek(state.sel); return [m, C.addDays(m, 6)];
+  }
+  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
+
+  // ---- Légende = filtres
+  var lg = document.getElementById("legend");
+  Object.keys(C.DISC).forEach(function (k) {
+    lg.insertAdjacentHTML("beforeend", '<label><input type="checkbox" checked data-k="' + k + '"><span class="sw" style="--c:' + C.DISC[k].color + '"></span>' + C.DISC[k].label + '</label>');
+  });
+  lg.addEventListener("change", function (e) { state.off[e.target.dataset.k] = !e.target.checked; render(); });
+  document.getElementById("optRec").addEventListener("change", function () { state.rec = this.checked; render(); });
+  document.getElementById("optFree").addEventListener("change", function () { state.free = this.checked; render(); });
+
+  // ---- Calendrier
+  function renderCal() {
+    var m0 = state.month;
+    document.getElementById("calTitle").textContent = C.MOIS[m0.getMonth()] + " " + m0.getFullYear();
+    var gridStart = C.startOfWeek(m0);
+    var gridEnd = C.addDays(gridStart, 41);
+    var all = items(gridStart, gridEnd);
+    var rg = range();
+    var html = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"].map(function (d) { return '<div class="dow">' + d + '</div>'; }).join("");
+    for (var i = 0; i < 42; i++) {
+      var d = C.addDays(gridStart, i);
+      if (i === 35 && d.getMonth() !== m0.getMonth()) break;
+      var its = all.filter(function (x) { return C.sameDay(x.date, d); });
+      var discs = []; its.forEach(function (x) { if (discs.indexOf(x.ev.d) < 0) discs.push(x.ev.d); });
+      var cls = [];
+      if (d.getMonth() !== m0.getMonth()) cls.push("out");
+      if (d < T) cls.push("past");
+      if (C.sameDay(d, T)) cls.push("today");
+      if (state.view === "day" && C.sameDay(d, state.sel)) cls.push("sel");
+      if (state.view === "week" && d >= rg[0] && d <= rg[1]) cls.push("inweek");
+      html += '<button type="button" class="' + cls.join(" ") + '" data-d="' + C.iso(d) + '" aria-label="' + C.dateLong(d) + ', ' + its.length + ' activité' + (its.length > 1 ? "s" : "") + '"><span class="n">' + d.getDate() + '</span><span class="dots">' +
+        discs.slice(0, 6).map(function (k) { return '<i style="--c:' + C.DISC[k].color + '"></i>'; }).join("") + '</span></button>';
+    }
+    document.getElementById("cal").innerHTML = html;
+  }
+  document.getElementById("cal").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-d]"); if (!b) return;
+    state.sel = C.parseD(b.dataset.d); render();
+    if (window.innerWidth < 860) document.getElementById("title").scrollIntoView({ behavior: "smooth" });
+  });
+  document.getElementById("prevM").onclick = function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); renderCal(); };
+  document.getElementById("nextM").onclick = function () { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); renderCal(); };
+  function step(n) { state.sel = C.addDays(state.sel, n * (state.view === "day" ? 1 : 7)); state.month = new Date(state.sel.getFullYear(), state.sel.getMonth(), 1); render(); }
+  document.getElementById("prev").onclick = function () { step(-1); };
+  document.getElementById("next").onclick = function () { step(1); };
+  document.querySelectorAll(".seg button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      state.view = b.dataset.v;
+      document.querySelectorAll(".seg button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+      render();
+    });
+  });
+
+  // ---- Programme
+  function slot(i) {
+    var ev = i.ev, p = C.partner(ev.p);
+    return '<a class="slot' + (i.serie ? " rec" : "") + '" href="' + href(ev) + '" target="_blank" rel="noopener">' +
+      '<span class="h">' + esc(ev.time.replace(" – ", "–")) + '</span>' +
+      '<span><span class="t">' + esc(ev.title) + '</span><span class="m">' + esc(C.place(ev)) + (ev.venue && p ? ' · par ' + esc(p.short) : '') + ' · ' + esc(ev.prix) + '</span>' +
+      (i.serie ? '<span class="rule">' + ev.rule + '</span>' : (ev.dateEnd ? '<span class="rule">' + C.rangeLabel(ev) + '</span>' : '')) + '</span>' +
+      '<span class="tag"><i style="--c:' + C.DISC[ev.d].color + '"></i>' + C.DISC[ev.d].label + '</span></a>';
+  }
+  function renderList() {
+    var rg = range(), all = items(rg[0], rg[1]);
+    var eb = document.getElementById("eyebrow"), ti = document.getElementById("title");
+    if (state.view === "day") {
+      eb.textContent = C.sameDay(state.sel, T) ? "Aujourd'hui" : (C.sameDay(state.sel, C.addDays(T, 1)) ? "Demain" : "Programme du jour");
+      ti.textContent = C.cap(C.dateLong(state.sel));
+    } else {
+      eb.textContent = "Programme de la semaine";
+      ti.textContent = "Du " + C.day1(rg[0].getDate()) + " " + C.MOIS_ABBR[rg[0].getMonth()] + " au " + rg[1].getDate() + " " + C.MOIS_ABBR[rg[1].getMonth()];
+    }
+    var html = "";
+    var n = state.view === "day" ? 1 : 7;
+    for (var k = 0; k < n; k++) {
+      var d = C.addDays(rg[0], k);
+      var its = all.filter(function (x) { return C.sameDay(x.date, d); });
+      if (n > 1) html += '<div class="daysec"><h2>' + C.cap(C.dateLong(d)) + '<span>' + its.length + ' activité' + (its.length > 1 ? "s" : "") + '</span></h2>';
+      else html += '<div class="daysec"><h2>' + its.length + ' activité' + (its.length > 1 ? "s" : "") + '<span>' + (state.rec ? "récurrents inclus" : "sans les récurrents") + '</span></h2>';
+      html += its.length ? its.map(slot).join("") : '<div class="none">Aucune activité ce jour-là avec les filtres choisis.</div>';
+      html += '</div>';
+    }
+    document.getElementById("list").innerHTML = html;
+
+    var long = C.EVENTS.filter(function (e) { return C.isLong(e) && keep(e) && C.start(e) <= rg[1] && C.end(e) >= rg[0]; });
+    var og = document.getElementById("ongoing");
+    og.hidden = !long.length;
+    og.innerHTML = '<b>Expositions en cours</b>' + long.map(function (e) { return '<a href="' + href(e) + '" target="_blank" rel="noopener">' + esc(e.title.replace("Exposition ", "")) + '</a> <span class="mono" style="color:var(--muted);font-size:12px">' + esc(C.partner(e.p).short) + ', ' + C.rangeLabel(e).toLowerCase() + '</span>'; }).join(" · ");
+  }
+
+  // ---- Grille des récurrents (lundi → dimanche)
+  (function weekgrid() {
+    var order = [1, 2, 3, 4, 5, 6, 0], el = document.getElementById("weekgrid");
+    order.forEach(function (j) {
+      var ss = C.SERIES.filter(function (s) { return s.jour === j; });
+      el.insertAdjacentHTML("beforeend", '<div class="col' + (ss.length ? "" : " empty") + '"><h3>' + C.JOURS[j] + '</h3>' + ss.map(function (s) {
+        return '<div class="rcard"><div class="h"><i style="--c:' + C.DISC[s.d].color + '"></i>' + s.time + '</div><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + '</span>' + (s.nth ? '<span class="nth">' + s.rule + '</span>' : '') + '<span>' + esc(s.prix) + '</span></div>';
+      }).join("") + '</div>');
+    });
+  })();
+
+  // ---- Partenaires
+  (function partners() {
+    var el = document.getElementById("pgrid");
+    C.PARTNERS.filter(function (p) { return p.tier !== "soutien"; }).forEach(function (p) {
+      var major = p.tier === "principal";
+      var n = C.agenda(T, C.addDays(T, 60), { spread: false }).filter(function (i) { return i.ev.p === p.id; }).length;
+      el.insertAdjacentHTML("beforeend", '<a class="pcell ' + (major ? "major" : "minor") + '" href="' + p.url + '" target="_blank" rel="noopener">' + (major ? '<span class="lvl">Partenaire principal</span>' : '') + '<b>' + esc(p.name) + '</b><span>' + esc(p.kind) + ' · ' + n + ' activités d\'ici 60 jours</span></a>');
+    });
+    document.getElementById("support").textContent = "Avec le soutien de : " + C.PARTNERS.filter(function (p) { return p.tier === "soutien"; }).map(function (p) { return p.name; }).join(", ") + ".";
+  })();
+
+  function render() { renderCal(); renderList(); }
+  render();
+})();
+</script>
+</body>
+</html>

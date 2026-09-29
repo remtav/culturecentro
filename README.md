@@ -461,7 +461,16 @@ est présent et non vide ; sinon elle retombe sur un jeu de données de
 démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
 le **partenaire** ; chaque carte affiche le partenaire et, s'il diffère, le
 lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
-« Humour » et « Jeunesse »). On génère le feed avec la CLI :
+« Humour » et « Jeunesse »).
+
+Le sous-dossier [`web/variantes/`](web/variantes/) propose **cinq variantes de
+design** à présenter au client (affiche, calendrier, application mobile, par
+lieu, programme accessible), avec une page de comparaison
+(`web/variantes/index.html`). Elles partagent un jeu de démonstration
+(`commun.js`) enrichi d'activités récurrentes et de niveaux de partenaires, et
+ne lisent pas encore le feed.
+
+On génère le feed avec la CLI :
 
 ```bash
 python -m culturecentro lister --format json -o web/data/evenements.json
