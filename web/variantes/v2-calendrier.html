@@ -80,6 +80,8 @@
   .legend .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; }
   .legend label, .opts label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; padding-block: 3px; }
   .legend input, .opts input { accent-color: var(--teal); width: 16px; height: 16px; margin: 0; }
+  .psel { width: 100%; font: inherit; font-size: 14px; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 0; }
+  .psel.on { border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
   .legend .sw { width: 10px; height: 10px; background: var(--c); flex: none; }
 
   /* Programme */
@@ -102,7 +104,9 @@
   .daysec + .daysec { margin-top: 22px; }
   .daysec h2 { font-size: 15px; font-weight: 700; padding-bottom: 6px; border-bottom: 2px solid var(--ink); display: flex; justify-content: space-between; gap: 10px; }
   .daysec h2 span { font-family: var(--mono); font-weight: 500; font-size: 12px; color: var(--muted); text-transform: none; }
-  .slot { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 14px; padding-block: 12px; border-bottom: 1px solid var(--line); text-decoration: none; align-items: start; }
+  .slot .th { position: relative; overflow: hidden; aspect-ratio: 16 / 10; max-width: 100%; background: var(--panel); border: 1px solid var(--line); }
+  .slot .th svg, .slot .th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .slot { display: grid; grid-template-columns: 76px 132px minmax(0, 1fr) auto; gap: 14px; padding-block: 12px; border-bottom: 1px solid var(--line); text-decoration: none; align-items: start; }
   .slot:hover { background: var(--panel); }
   .slot .h { font-family: var(--mono); font-size: 13px; font-weight: 600; padding-top: 2px; }
   .slot .t { font-weight: 600; font-size: 16px; display: block; }
@@ -112,7 +116,7 @@
   .slot.rec .t::before { content: "↻ "; color: var(--teal); }
   .slot .rule { font-family: var(--mono); font-size: 12px; color: var(--teal); }
   .none { padding: 14px 0; color: var(--muted); font-size: 14px; border-bottom: 1px solid var(--line); }
-  @media (max-width: 560px) { .slot { grid-template-columns: 58px minmax(0, 1fr); } .slot .tag { grid-column: 2; padding-top: 0; } }
+  @media (max-width: 560px) { .slot { grid-template-columns: 58px 84px minmax(0, 1fr); gap: 10px; } .slot .h { white-space: nowrap; font-size: 12px; } .slot .tag { grid-column: 3; padding-top: 0; } }
 
   /* Grille hebdomadaire des récurrents */
   section.block { padding-block: 30px; border-bottom: 1px solid var(--line); }
@@ -177,7 +181,11 @@
         <div class="opts">
           <h3>Options</h3>
           <label><input type="checkbox" id="optRec" checked> Inclure les activités récurrentes</label>
-          <label><input type="checkbox" id="optFree"> Gratuit seulement</label>
+          <label id="optFreeL"><input type="checkbox" id="optFree"> Gratuit seulement</label>
+        </div>
+        <div class="opts">
+          <h3><label for="optP">Partenaire</label></h3>
+          <select id="optP" class="psel"></select>
         </div>
       </div>
     </aside>
@@ -209,19 +217,19 @@
     <p class="support" id="support"></p>
   </section>
 
-  <footer><span>Maquette · variante 2 · données fictives</span><a href="index.html">← Toutes les variantes</a></footer>
+  <footer><span>Maquette · variante 2 · <span data-cc-source></span></span><a href="index.html">← Toutes les variantes</a></footer>
 </div>
 
 <script src="commun.js"></script>
 <script>
-(function () {
+window.CC.ready(function () {
   "use strict";
   var C = window.CC, T = C.TODAY, esc = C.esc;
   C.initTheme(document.getElementById("theme"));
 
-  var state = { sel: new Date(T), view: "day", month: new Date(T.getFullYear(), T.getMonth(), 1), off: {}, rec: true, free: false };
+  var state = { sel: new Date(T), view: "day", month: new Date(T.getFullYear(), T.getMonth(), 1), off: {}, rec: true, free: false, p: "all" };
 
-  function keep(ev) { return !state.off[ev.d] && (!state.free || ev.gratuit); }
+  function keep(ev) { return !state.off[ev.d] && (!state.free || ev.gratuit) && (state.p === "all" || ev.p === state.p); }
   function items(from, to) {
     return C.agenda(from, to, { series: state.rec, spread: true, noLong: true }).filter(function (i) { return keep(i.ev); });
   }
@@ -229,7 +237,7 @@
     if (state.view === "day") return [state.sel, state.sel];
     var m = C.startOfWeek(state.sel); return [m, C.addDays(m, 6)];
   }
-  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
+  var href = C.href;
 
   // ---- Légende = filtres
   var lg = document.getElementById("legend");
@@ -239,6 +247,10 @@
   lg.addEventListener("change", function (e) { state.off[e.target.dataset.k] = !e.target.checked; render(); });
   document.getElementById("optRec").addEventListener("change", function () { state.rec = this.checked; render(); });
   document.getElementById("optFree").addEventListener("change", function () { state.free = this.checked; render(); });
+  document.getElementById("optFreeL").hidden = !C.HAS_PRIX; // le flux réel ne porte pas de prix
+  var optP = document.getElementById("optP");
+  optP.innerHTML = '<option value="all">Tous les partenaires</option>' + C.activePartners().map(function (p) { return '<option value="' + p.id + '">' + esc(p.name) + '</option>'; }).join("");
+  optP.addEventListener("change", function () { state.p = this.value; this.classList.toggle("on", this.value !== "all"); render(); });
 
   // ---- Calendrier
   function renderCal() {
@@ -287,8 +299,9 @@
   function slot(i) {
     var ev = i.ev, p = C.partner(ev.p);
     return '<a class="slot' + (i.serie ? " rec" : "") + '" href="' + href(ev) + '" target="_blank" rel="noopener">' +
-      '<span class="h">' + esc(ev.time.replace(" – ", "–")) + '</span>' +
-      '<span><span class="t">' + esc(ev.title) + '</span><span class="m">' + esc(C.place(ev)) + (ev.venue && p ? ' · par ' + esc(p.short) : '') + ' · ' + esc(ev.prix) + '</span>' +
+      '<span class="h">' + esc((ev.time || "—").replace(" – ", "–")) + '</span>' +
+      '<span class="th">' + C.cover(ev) + '</span>' +
+      '<span><span class="t">' + esc(ev.title) + '</span><span class="m">' + esc(C.place(ev)) + (ev.venue && p ? ' · par ' + esc(p.short) : '') + (ev.prix ? ' · ' + esc(ev.prix) : '') + '</span>' +
       (i.serie ? '<span class="rule">' + ev.rule + '</span>' : (ev.dateEnd ? '<span class="rule">' + C.rangeLabel(ev) + '</span>' : '')) + '</span>' +
       '<span class="tag"><i style="--c:' + C.DISC[ev.d].color + '"></i>' + C.DISC[ev.d].label + '</span></a>';
   }
@@ -317,16 +330,16 @@
     var long = C.EVENTS.filter(function (e) { return C.isLong(e) && keep(e) && C.start(e) <= rg[1] && C.end(e) >= rg[0]; });
     var og = document.getElementById("ongoing");
     og.hidden = !long.length;
-    og.innerHTML = '<b>Expositions en cours</b>' + long.map(function (e) { return '<a href="' + href(e) + '" target="_blank" rel="noopener">' + esc(e.title.replace("Exposition ", "")) + '</a> <span class="mono" style="color:var(--muted);font-size:12px">' + esc(C.partner(e.p).short) + ', ' + C.rangeLabel(e).toLowerCase() + '</span>'; }).join(" · ");
+    og.innerHTML = '<b>En cours</b>' + long.map(function (e) { return '<a href="' + href(e) + '" target="_blank" rel="noopener">' + esc(e.title.replace("Exposition ", "")) + '</a> <span class="mono" style="color:var(--muted);font-size:12px">' + esc(C.partner(e.p).short) + ', ' + C.rangeLabel(e).toLowerCase() + '</span>'; }).join(" · ");
   }
 
   // ---- Grille des récurrents (lundi → dimanche)
   (function weekgrid() {
     var order = [1, 2, 3, 4, 5, 6, 0], el = document.getElementById("weekgrid");
     order.forEach(function (j) {
-      var ss = C.SERIES.filter(function (s) { return s.jour === j; });
+      var ss = C.SERIES.filter(function (s) { return s.jour === j && C.nextOccurrences(s, 1).length; });
       el.insertAdjacentHTML("beforeend", '<div class="col' + (ss.length ? "" : " empty") + '"><h3>' + C.JOURS[j] + '</h3>' + ss.map(function (s) {
-        return '<div class="rcard"><div class="h"><i style="--c:' + C.DISC[s.d].color + '"></i>' + s.time + '</div><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + '</span>' + (s.nth ? '<span class="nth">' + s.rule + '</span>' : '') + '<span>' + esc(s.prix) + '</span></div>';
+        return '<div class="rcard"><div class="h"><i style="--c:' + C.DISC[s.d].color + '"></i>' + (s.time || '') + '</div><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + '</span><span class="nth">' + esc(s.rule) + (s.dates ? ' · prochain : ' + C.dateShort(C.nextOccurrences(s, 1)[0]) : '') + '</span>' + (s.prix ? '<span>' + esc(s.prix) + '</span>' : '') + '</div>';
       }).join("") + '</div>');
     });
   })();
@@ -337,14 +350,14 @@
     C.PARTNERS.filter(function (p) { return p.tier !== "soutien"; }).forEach(function (p) {
       var major = p.tier === "principal";
       var n = C.agenda(T, C.addDays(T, 60), { spread: false }).filter(function (i) { return i.ev.p === p.id; }).length;
-      el.insertAdjacentHTML("beforeend", '<a class="pcell ' + (major ? "major" : "minor") + '" href="' + p.url + '" target="_blank" rel="noopener">' + (major ? '<span class="lvl">Partenaire principal</span>' : '') + '<b>' + esc(p.name) + '</b><span>' + esc(p.kind) + ' · ' + n + ' activités d\'ici 60 jours</span></a>');
+      el.insertAdjacentHTML("beforeend", '<a class="pcell ' + (major ? "major" : "minor") + '" href="' + p.url + '" target="_blank" rel="noopener">' + (major ? '<span class="lvl">Partenaire principal</span>' : '') + '<b>' + esc(p.name) + '</b><span>' + esc(p.kind) + ' · ' + (n ? n + ' activité' + (n > 1 ? 's' : '') + ' d\'ici 60 jours' : (C.SOURCE === 'flux' && !p.flux ? 'programmation pas encore intégrée' : 'rien d\'annoncé d\'ici 60 jours')) + '</span></a>');
     });
     document.getElementById("support").textContent = "Avec le soutien de : " + C.PARTNERS.filter(function (p) { return p.tier === "soutien"; }).map(function (p) { return p.name; }).join(", ") + ".";
   })();
 
   function render() { renderCal(); renderList(); }
   render();
-})();
+});
 </script>
 </body>
 </html>

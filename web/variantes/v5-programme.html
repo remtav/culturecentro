@@ -155,10 +155,10 @@
           <label class="opt"><input type="radio" name="per" value="120"> Toute la saison</label>
         </fieldset>
         <fieldset><legend>Discipline</legend><div id="fDisc"></div></fieldset>
-        <fieldset><legend>Lieu</legend><div id="fLieu"></div></fieldset>
+        <fieldset><legend>Partenaire</legend><div id="fLieu"></div></fieldset>
         <fieldset>
           <legend>Autres critères</legend>
-          <label class="opt"><input type="checkbox" id="fFree"> Gratuit seulement</label>
+          <label class="opt" id="fFreeL"><input type="checkbox" id="fFree"> Gratuit seulement</label>
           <label class="opt"><input type="checkbox" id="fFam"> Pour la famille</label>
           <label class="opt"><input type="checkbox" id="fRec"> Mélanger les activités régulières à la liste</label>
         </fieldset>
@@ -183,12 +183,12 @@
     </div>
   </section>
 
-  <footer><span>Maquette · variante 5 · données fictives</span><a href="index.html">← Toutes les variantes</a></footer>
+  <footer><span>Maquette · variante 5 · <span data-cc-source></span></span><a href="index.html">← Toutes les variantes</a></footer>
 </div>
 
 <script src="commun.js"></script>
 <script>
-(function () {
+window.CC.ready(function () {
   "use strict";
   var C = window.CC, T = C.TODAY, esc = C.esc;
   C.initTheme(document.getElementById("theme"));
@@ -226,14 +226,15 @@
     if (s.fam && !ev.famille) return false;
     return true;
   }
-  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
+  var href = C.href;
+  document.getElementById("fFreeL").hidden = !C.HAS_PRIX; // le flux réel ne porte pas de prix
   function itemHtml(i) {
     var ev = i.ev, p = C.partner(ev.p);
-    return '<article class="item"><div class="h">' + esc(ev.time) + '</div>' +
+    return '<article class="item"><div class="h">' + esc(ev.time || "—") + '</div>' +
       '<div><h3><a href="' + href(ev) + '" target="_blank" rel="noopener">' + esc(ev.title) + '<span class="sr"> (nouvel onglet)</span></a></h3>' +
       '<div class="w">' + esc(C.place(ev)) + (ev.venue && p ? ', présenté par ' + esc(p.name) : '') + '</div>' +
       '<div>' + (i.serie ? '<span class="badge">Régulier : ' + ev.rule.toLowerCase() + '</span>' : '') + (ev.dateEnd && !i.serie ? '<span class="badge">' + C.rangeLabel(ev) + '</span>' : '') + (ev.famille ? '<span class="badge">Famille</span>' : '') + '</div></div>' +
-      '<div class="meta"><span>' + C.DISC[ev.d].label + '</span><span><b>' + esc(ev.prix) + '</b></span></div></article>';
+      '<div class="meta"><span>' + C.DISC[ev.d].label + '</span>' + (ev.prix ? '<span><b>' + esc(ev.prix) + '</b></span>' : '') + '</div></article>';
   }
 
   function render() {
@@ -250,20 +251,20 @@
     var active = s.disc.length + s.lieu.length + (s.free ? 1 : 0) + (s.fam ? 1 : 0);
     document.getElementById("filtersSum").textContent = "Filtrer le programme" + (active ? " (" + active + " actif" + (active > 1 ? "s" : "") + ")" : "");
     var perTxt = s.per === 0 ? "aujourd'hui" : s.per === 6 ? "dans les 7 prochains jours" : s.per === 30 ? "dans les 30 prochains jours" : "d'ici la fin de la saison";
-    document.getElementById("count").textContent = items.length + " activité" + (items.length > 1 ? "s" : "") + " " + perTxt + (series.length ? ", plus " + series.length + " activité" + (series.length > 1 ? "s" : "") + " régulière" + (series.length > 1 ? "s" : "") : "") + (longs.length ? " et " + longs.length + " exposition" + (longs.length > 1 ? "s" : "") : "") + ".";
+    document.getElementById("count").textContent = items.length + " activité" + (items.length > 1 ? "s" : "") + " " + perTxt + (series.length ? ", plus " + series.length + " activité" + (series.length > 1 ? "s" : "") + " régulière" + (series.length > 1 ? "s" : "") : "") + (longs.length ? " et " + longs.length + " activité" + (longs.length > 1 ? "s" : "") + " de longue durée" : "") + ".";
 
     var h = "";
     if (longs.length) {
-      h += '<section class="block" aria-labelledby="bl1"><h2 id="bl1">Expositions en cours et à venir</h2><p class="hint">Visibles tous les jours pendant la période indiquée.</p>' +
-        longs.map(function (e) { return itemHtml({ ev: e, serie: false }).replace('<div class="h">' + esc(e.time) + '</div>', '<div class="h">' + (C.start(e) <= T ? "En cours" : "Dès le " + C.start(e).getDate() + " " + C.MOIS_ABBR[C.start(e).getMonth()]) + '</div>'); }).join("") + '</section>';
+      h += '<section class="block" aria-labelledby="bl1"><h2 id="bl1">En cours et à venir : longue durée</h2><p class="hint">Expositions et activités ouvertes pendant toute la période indiquée.</p>' +
+        longs.map(function (e) { return itemHtml({ ev: e, serie: false }).replace('<div class="h">' + esc(e.time || "—") + '</div>', '<div class="h">' + (C.start(e) <= T ? "En cours" : "Dès le " + C.start(e).getDate() + " " + C.MOIS_ABBR[C.start(e).getMonth()]) + '</div>'); }).join("") + '</section>';
     }
     if (series.length) {
       h += '<section class="block series" aria-labelledby="bl2"><h2 id="bl2">Activités régulières</h2><p class="hint">Elles reviennent à date fixe. Pour les voir jour par jour, cochez « Mélanger les activités régulières à la liste ».</p>' +
         series.map(function (x) {
           var nx = C.occurrences(x, T, C.addDays(T, 120)).slice(0, 5);
-          return '<article class="item"><div class="h">' + x.rule + '<br>' + x.time + '</div><div><h3><a href="' + href(x) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></h3><div class="w">' + esc(C.place(x)) + '</div>' +
+          return '<article class="item"><div class="h">' + x.rule + (x.time ? '<br>' + x.time : '') + '</div><div><h3><a href="' + href(x) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a></h3><div class="w">' + esc(C.place(x)) + '</div>' +
             '<details class="more"><summary>Prochaines dates</summary><ul>' + nx.map(function (d) { return '<li>' + C.cap(C.dateLong(d)) + '</li>'; }).join("") + '</ul></details></div>' +
-            '<div class="meta"><span>' + C.DISC[x.d].label + '</span><span><b>' + esc(x.prix) + '</b></span></div></article>';
+            '<div class="meta"><span>' + C.DISC[x.d].label + '</span>' + (x.prix ? '<span><b>' + esc(x.prix) + '</b></span>' : '') + '</div></article>';
         }).join("") + '</section>';
     }
     if (items.length) {
@@ -288,7 +289,7 @@
   })();
 
   render();
-})();
+});
 </script>
 </body>
 </html>

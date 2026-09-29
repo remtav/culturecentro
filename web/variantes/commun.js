@@ -1,14 +1,17 @@
 /*
  * Culture Centro — données et utilitaires communs aux variantes de maquette.
  *
- * Toutes les variantes (web/variantes/v*.html) lisent ce même jeu de
- * démonstration afin que seule la présentation change d'une variante à
- * l'autre. Les données sont fictives. Par rapport à la maquette principale
- * (web/index.html), le jeu est enrichi de trois notions à valider avec le
- * client :
- *   - activités récurrentes (SERIES : « tous les mardis », « 3e jeudi du mois ») ;
- *   - niveaux de partenaires (tier : principal / reseau / soutien) ;
- *   - attributs pratiques (prix, gratuit, famille, vedette).
+ * Les variantes (web/variantes/v*.html) appellent CC.ready(fn) : la page
+ * charge le flux réel publié (../data/evenements.json, généré par la CLI et
+ * déployé sur GitHub Pages, comme pour web/index.html). S'il est absent ou
+ * vide, un jeu de démonstration fictif prend le relais.
+ *
+ * Avec le flux réel :
+ *   - les activités récurrentes (SERIES) sont déduites des titres qui
+ *     reviennent chez un même partenaire à au moins six jours d'écart ;
+ *   - « famille » = catégorie Jeunesse ; le flux ne porte pas de prix
+ *     (CC.HAS_PRIX vaut false et les filtres « Gratuit » sont masqués).
+ * Les niveaux de partenaires (tier) restent une hypothèse de maquette.
  */
 window.CC = (function () {
   "use strict";
@@ -29,23 +32,24 @@ window.CC = (function () {
   };
 
   // Partenaires : liste de docs/partenaires.md. Les niveaux (tier) sont une
-  // hypothèse de maquette à valider. x / y : position sur le plan
-  // schématique de la variante 4 (0–100, non à l'échelle).
+  // hypothèse de maquette à valider. lat / lon : géocodage OpenStreetMap
+  // (Nominatim) des adresses, utilisé par le plan de la variante 4.
+  // flux : le partenaire a un extracteur, donc figure dans le flux réel.
   var PARTNERS = [
-    { id:"granada",   name:"Théâtre Granada",                    short:"Granada",        kind:"Salle patrimoniale",          tier:"principal", d:"theatre",  url:"https://theatregranada.com",          x:52, y:40 },
-    { id:"grandesp",  name:"Le Grand-Espace",                    short:"Grand-Espace",   kind:"Théâtre · danse",             tier:"principal", d:"danse",    url:"https://legrandespace.ca",            x:40, y:58 },
-    { id:"mbas",      name:"Musée des beaux-arts de Sherbrooke", short:"MBAS",           kind:"Musée",                       tier:"principal", d:"arts",     url:"https://mbas.qc.ca",                  x:62, y:27 },
-    { id:"sporobole", name:"Sporobole",                          short:"Sporobole",      kind:"Centre en art actuel",        tier:"principal", d:"arts",     url:"https://sporobole.org",               x:30, y:33 },
-    { id:"pbn",       name:"La Petite Boîte Noire",              short:"Petite Boîte Noire", kind:"Salle indépendante",      tier:"reseau",    d:"musique",  url:"https://lapetiteboitenoire.com",      x:56, y:52 },
-    { id:"tremplin",  name:"Le Tremplin 16-30",                  short:"Tremplin",       kind:"Diffusion de la relève",      tier:"reseau",    d:"musique",  url:"https://tremplin16-30.com",           x:70, y:62 },
-    { id:"map",       name:"Maison des arts de la parole",       short:"Arts de la parole", kind:"Conte · poésie",           tier:"reseau",    d:"litt",     url:"https://maisondesartsdelaparole.com", x:46, y:22 },
-    { id:"cafe440",   name:"Café 440",                           short:"Café 440",       kind:"Café-spectacle",              tier:"reseau",    d:"humour",   url:"https://lecafe440sherbrooke.com",     x:64, y:46 },
-    { id:"doublesigne", name:"Théâtre du Double signe",          short:"Double signe",   kind:"Théâtre de création",         tier:"reseau",    d:"theatre",  url:"https://www.doublesigne.ca",          x:24, y:52 },
-    { id:"petittheatre", name:"Le Petit Théâtre de Sherbrooke",  short:"Petit Théâtre",  kind:"Jeune public",                tier:"reseau",    d:"jeunesse", url:"https://www.petittheatre.qc.ca",      x:34, y:72 },
-    { id:"biblio",    name:"Bibliothèque Éva-Senécal",           short:"Éva-Senécal",    kind:"Bibliothèque",                tier:"reseau",    d:"litt",     url:"https://bibliotheques.sherbrooke.ca", x:76, y:36 },
-    { id:"ccudes",    name:"Centre culturel de l'UdeS",          short:"Centre culturel UdeS", kind:"Salle Maurice-O'Bready", tier:"reseau",  d:"musique",  url:"https://www.centrecultureludes.ca",   x:90, y:84 },
-    { id:"acvs",      name:"Animation Centre-Ville",             short:"ACVS",           kind:"Événements extérieurs",       tier:"soutien",   d:"festival", url:"#",                                   x:50, y:70 },
-    { id:"cultureestrie", name:"Culture Estrie",                 short:"Culture Estrie", kind:"Organisme régional",          tier:"soutien",   d:"arts",     url:"https://cultureestrie.org",           x:null, y:null }
+    { id:"granada",   name:"Théâtre Granada",                    short:"Granada",        kind:"Salle patrimoniale",     tier:"principal", d:"theatre",  flux:true, url:"https://theatregranada.com",          lat:45.40229, lon:-71.89107, addr:"53, rue Wellington Nord" },
+    { id:"grandesp",  name:"Le Grand-Espace",                    short:"Grand-Espace",   kind:"Théâtre · danse",        tier:"principal", d:"danse",    flux:true, url:"https://legrandespace.ca",            lat:45.39787, lon:-71.88758, addr:"250, rue du Dépôt (Centre Jean-Besré)" },
+    { id:"mbas",      name:"Musée des beaux-arts de Sherbrooke", short:"MBAS",           kind:"Musée",                  tier:"principal", d:"arts",     flux:true, url:"https://mbas.qc.ca",                  lat:45.40513, lon:-71.89460, addr:"241, rue Dufferin" },
+    { id:"sporobole", name:"Sporobole",                          short:"Sporobole",      kind:"Centre en art actuel",   tier:"principal", d:"arts",     flux:true, url:"https://sporobole.org",               lat:45.40266, lon:-71.89021, addr:"Rue Webster" },
+    { id:"pbn",       name:"La Petite Boîte Noire",              short:"Petite Boîte Noire", kind:"Salle indépendante", tier:"reseau",    d:"musique",  flux:true, url:"https://lapetiteboitenoire.com",      lat:45.40341, lon:-71.89069, addr:"58, rue Meadow" },
+    { id:"tremplin",  name:"Le Tremplin 16-30",                  short:"Tremplin",       kind:"Diffusion de la relève", tier:"reseau",    d:"musique",  flux:true, url:"https://tremplin16-30.com",           lat:45.39980, lon:-71.88949, addr:"95, rue Wellington Sud" },
+    { id:"map",       name:"Maison des arts de la parole",       short:"Arts de la parole", kind:"Conte · poésie",      tier:"reseau",    d:"litt",     flux:true, url:"https://maisondesartsdelaparole.com", lat:45.40368, lon:-71.89156, addr:"138, rue Wellington Nord" },
+    { id:"cafe440",   name:"Café 440",                           short:"Café 440",       kind:"Café-spectacle",         tier:"reseau",    d:"humour",   url:"https://lecafe440sherbrooke.com",     lat:45.39926, lon:-71.88877, addr:"146, rue Wellington Sud" },
+    { id:"doublesigne", name:"Théâtre du Double signe",          short:"Double signe",   kind:"Théâtre de création",    tier:"reseau",    d:"theatre",  url:"https://www.doublesigne.ca",          lat:45.39787, lon:-71.88758, addr:"250, rue du Dépôt (Centre Jean-Besré)" },
+    { id:"petittheatre", name:"Le Petit Théâtre de Sherbrooke",  short:"Petit Théâtre",  kind:"Jeune public",           tier:"reseau",    d:"jeunesse", url:"https://www.petittheatre.qc.ca",      lat:45.39787, lon:-71.88758, addr:"Centre Jean-Besré (adresse à confirmer)" },
+    { id:"biblio",    name:"Bibliothèque Éva-Senécal",           short:"Éva-Senécal",    kind:"Bibliothèque",           tier:"reseau",    d:"litt",     url:"https://bibliotheques.sherbrooke.ca", lat:45.39993, lon:-71.89689, addr:"450, rue Marquette" },
+    { id:"ccudes",    name:"Centre culturel de l'UdeS",          short:"Centre culturel UdeS", kind:"Salle Maurice-O'Bready", tier:"reseau", d:"musique", url:"https://www.centrecultureludes.ca",  lat:null, lon:null, addr:"Campus principal de l'UdeS, à environ 4 km" },
+    { id:"acvs",      name:"Animation Centre-Ville",             short:"ACVS",           kind:"Événements extérieurs",  tier:"soutien",   d:"festival", url:"#",                                   lat:null, lon:null, addr:"" },
+    { id:"cultureestrie", name:"Culture Estrie",                 short:"Culture Estrie", kind:"Organisme régional",     tier:"soutien",   d:"arts",     url:"https://cultureestrie.org",           lat:null, lon:null, addr:"" }
   ];
 
   // Événements ponctuels et de longue durée (dateEnd). venue : lieu quand
@@ -138,6 +142,7 @@ window.CC = (function () {
 
   // Dates d'une série entre from et to (inclus).
   function occurrences(s, from, to) {
+    if (s.dates) return s.dates.map(parseD).filter(function (d) { return d >= from && d <= to; });
     var out = [], a = parseD(s.from), b = parseD(s.to);
     var d = new Date(Math.max(a, from)); d.setHours(0, 0, 0, 0);
     var lim = new Date(Math.min(b, to));
@@ -179,6 +184,92 @@ window.CC = (function () {
   function partner(id) { for (var i = 0; i < PARTNERS.length; i++) if (PARTNERS[i].id === id) return PARTNERS[i]; return null; }
   function place(ev) { var p = partner(ev.p); return ev.venue || (p ? p.name : ""); }
   function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+  function href(ev) { var p = partner(ev.p); return ev.lien || (p && p.url !== "#" ? p.url : "#"); }
+  function activePartners() {
+    return PARTNERS.filter(function (p) { return EVENTS.concat(SERIES).some(function (e) { return e.p === p.id; }); });
+  }
+  // Vignette : scène illustrée par discipline, recouverte par l'affiche de la
+  // salle quand le flux en fournit une (retirée si le chargement échoue).
+  function cover(ev) {
+    var img = "";
+    if (ev.image && /^https?:\/\//i.test(ev.image))
+      img = '<img class="photo" src="' + esc(ev.image) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">';
+    return scene(ev.d) + img;
+  }
+
+  // ---------- Flux réel ----------
+  var api; // objet public, défini plus bas
+  function hhmm(isoStr) {
+    var m = /T(\d{2}):(\d{2})/.exec(isoStr || "");
+    return m && !(m[1] === "00" && m[2] === "00") ? (+m[1]) + " h " + m[2] : "";
+  }
+  function applyFeed(data) {
+    var byName = {};
+    PARTNERS.forEach(function (p) { byName[p.name] = p; });
+    var evs = [];
+    data.forEach(function (e, i) {
+      var debut = String(e.date_debut || "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(debut)) return;
+      var pn = e.partenaire || e.lieu || "";
+      var p = byName[pn];
+      if (!p && pn) { // partenaire inconnu de la liste : on l'ajoute au réseau
+        p = { id: "x" + i, name: pn, short: pn, kind: "Partenaire", tier: "reseau", d: "musique", flux: true, url: "#", lat: null, lon: null, addr: "" };
+        PARTNERS.push(p); byName[pn] = p;
+      }
+      var fin = e.date_fin ? String(e.date_fin).slice(0, 10) : "";
+      var d = (e.categorie && DISC[e.categorie]) ? e.categorie : (p ? p.d : "musique");
+      evs.push({
+        id: "f" + i, d: d, title: e.titre || "Sans titre", p: p ? p.id : null,
+        venue: e.lieu && p && e.lieu !== p.name ? e.lieu : undefined,
+        date: debut, dateEnd: fin && fin !== debut ? fin : undefined, time: hhmm(e.date_debut),
+        desc: e.sous_titre || "", lien: e.lien || null, image: e.image || null,
+        prix: "", gratuit: false, famille: d === "jeunesse"
+      });
+    });
+    // Récurrents : même partenaire + même titre, au moins 2 dates espacées de 6 jours ou plus
+    var groups = {}, series = [];
+    evs.forEach(function (e) { if (!isLong(e)) { var k = e.p + "|" + e.title.trim().toLowerCase(); (groups[k] = groups[k] || []).push(e); } });
+    Object.keys(groups).forEach(function (k, n) {
+      var g = groups[k].sort(function (a, b) { return start(a) - start(b); });
+      if (g.length < 2) return;
+      var gaps = g.slice(1).map(function (e, j) { return diffDays(start(g[j]), start(e)); });
+      if (Math.min.apply(null, gaps) < 6) return;
+      var j0 = start(g[0]).getDay();
+      var sameDow = g.every(function (e) { return start(e).getDay() === j0; });
+      var rule = sameDow && gaps.every(function (x) { return x === 7; }) ? "Tous les " + JOURS[j0] + "s"
+        : sameDow && gaps.every(function (x) { return x >= 21 && x <= 35; }) ? "Un " + JOURS[j0] + " par mois"
+        : g.length + " dates";
+      var f = g[0];
+      series.push({ id: "s" + n, serie: true, d: f.d, title: f.title, p: f.p, venue: f.venue, time: f.time, jour: j0, rule: rule,
+        dates: g.map(function (e) { return e.date; }), desc: f.desc, lien: f.lien, image: f.image, prix: "", gratuit: false, famille: f.famille });
+      g.forEach(function (e) { e._inSerie = true; });
+    });
+    EVENTS.length = 0; SERIES.length = 0;
+    evs.filter(function (e) { return !e._inSerie; }).sort(function (a, b) { return start(a) - start(b); }).forEach(function (e) { EVENTS.push(e); });
+    series.forEach(function (s) { SERIES.push(s); });
+    var t = new Date(); t.setHours(0, 0, 0, 0);
+    TODAY = t; api.TODAY = t;
+    api.SOURCE = "flux"; api.HAS_PRIX = false;
+  }
+  // Charge le flux puis appelle fn (une seule fois), avec repli sur la démo.
+  function ready(fn) {
+    var urls = ["../data/evenements.json", "data/evenements.json"];
+    function done() {
+      document.querySelectorAll("[data-cc-source]").forEach(function (el) {
+        el.textContent = api.SOURCE === "flux" ? "Données réelles : flux publié (" + (EVENTS.length + SERIES.length) + " fiches)" : "Données de démonstration fictives";
+      });
+      fn();
+    }
+    function next(i) {
+      if (i >= urls.length || !window.fetch) return done();
+      fetch(urls[i], { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) { if (Array.isArray(data) && data.length) { applyFeed(data); done(); } else next(i + 1); })
+        .catch(function () { next(i + 1); });
+    }
+    next(0);
+  }
 
   // ---------- Thème clair / sombre (bouton facultatif) ----------
   function initTheme(btn) {
@@ -304,7 +395,8 @@ window.CC = (function () {
   var uidN = 0;
   function scene(d) { var f = SCENES[d] || SCENES.arts; return f("s" + (uidN++)); }
 
-  return {
+  api = {
+    SOURCE: "demo", HAS_PRIX: true, ready: ready, href: href, cover: cover, activePartners: activePartners,
     TODAY: TODAY, DISC: DISC, PARTNERS: PARTNERS, EVENTS: EVENTS, SERIES: SERIES,
     MOIS: MOIS, MOIS_ABBR: MOIS_ABBR, JOURS: JOURS, JOURS_ABBR: JOURS_ABBR, DAY: DAY,
     parseD: parseD, iso: iso, addDays: addDays, sameDay: sameDay, startOfWeek: startOfWeek, diffDays: diffDays,
@@ -313,4 +405,5 @@ window.CC = (function () {
     occurrences: occurrences, nextOccurrences: nextOccurrences, agenda: agenda, timeKey: timeKey,
     partner: partner, place: place, esc: esc, initTheme: initTheme, scene: scene
   };
+  return api;
 })();

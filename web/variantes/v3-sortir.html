@@ -70,6 +70,9 @@
   .chips::-webkit-scrollbar { display: none; }
   .chip { flex: none; border: 0; border-radius: 999px; padding: 7px 13px; font-size: 14px; font-weight: 600; background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
   .chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+  select.chip { -webkit-appearance: none; appearance: none; padding-right: 28px; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E") no-repeat right 11px center; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); max-width: 220px; }
+  select.chip.on { box-shadow: inset 0 0 0 2px var(--ink); background-color: var(--surface); }
+  select.chip option { color: #17122B; }
   .chip[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: var(--surface); }
 
   /* Cartes */
@@ -77,7 +80,7 @@
   .card { position: relative; background: var(--c); color: var(--on-card); border-radius: var(--r-lg); padding: 10px 10px 16px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; transition: transform .15s; }
   .card:hover { transform: translateY(-3px) rotate(-.4deg); }
   .card .img { position: relative; border-radius: var(--r-md); overflow: hidden; aspect-ratio: 16 / 10; max-width: 100%; }
-  .card .img svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card .img svg, .card .img img.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .card .when { position: absolute; left: 10px; top: 10px; background: var(--surface); color: var(--ink); font-weight: 700; font-size: 13px; padding: 5px 11px; border-radius: 999px; }
   .card .fav { position: absolute; right: 10px; top: 10px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; display: grid; place-items: center; }
   .card .fav[aria-pressed="true"] { color: #E0245E; }
@@ -100,7 +103,7 @@
   .track > * { scroll-snap-align: start; flex: none; }
   .mini { width: 230px; background: var(--surface); border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--line); overflow: hidden; text-decoration: none; display: flex; flex-direction: column; }
   .mini .img { position: relative; height: 110px; }
-  .mini .img svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .mini .img svg, .mini .img img.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .mini .body { padding: 11px 13px 14px; display: flex; flex-direction: column; gap: 3px; }
   .mini .k { font-size: 12.5px; font-weight: 700; color: var(--c2); }
   .mini b { font-family: var(--display); font-size: 17px; font-weight: 800; line-height: 1.1; }
@@ -155,10 +158,10 @@
     <div class="chips" id="chips" role="group" aria-label="Préférences"></div>
     <div class="results" id="results" aria-live="polite"></div>
 
-    <section class="rail"><div class="rail-head"><h2>Expos à voir avant la fin</h2><span>Longue durée</span></div><div class="track" id="railExpo"></div></section>
-    <section class="rail"><div class="rail-head"><h2>Chaque semaine</h2><span>Activités récurrentes</span></div><div class="track" id="railRec"></div></section>
-    <section class="rail"><div class="rail-head"><h2>Sans débourser</h2><span>Gratuit, 30 prochains jours</span></div><div class="track" id="railFree"></div></section>
-    <section class="rail"><div class="rail-head"><h2>En famille</h2><span>Pour les petits et les grands</span></div><div class="track" id="railFam"></div></section>
+    <section class="rail" id="secExpo"><div class="rail-head"><h2>À voir avant la fin</h2><span>Expositions et longue durée</span></div><div class="track" id="railExpo"></div></section>
+    <section class="rail" id="secRec"><div class="rail-head"><h2>Ça revient</h2><span>Activités récurrentes</span></div><div class="track" id="railRec"></div></section>
+    <section class="rail" id="secFree"><div class="rail-head"><h2>Sans débourser</h2><span>Gratuit, 30 prochains jours</span></div><div class="track" id="railFree"></div></section>
+    <section class="rail" id="secFam"><div class="rail-head"><h2>En famille</h2><span>Pour les petits et les grands</span></div><div class="track" id="railFam"></div></section>
   </div>
 
   <div id="view-lieux" hidden>
@@ -173,7 +176,7 @@
     <div class="results" id="favs"></div>
   </div>
 
-  <footer><span>Maquette · variante 3 · données fictives</span><a href="index.html">← Toutes les variantes</a></footer>
+  <footer><span>Maquette · variante 3 · <span data-cc-source></span></span><a href="index.html">← Toutes les variantes</a></footer>
 </main>
 
 <nav class="tabbar" id="tabbar" aria-label="Navigation">
@@ -185,7 +188,7 @@
 
 <script src="commun.js"></script>
 <script>
-(function () {
+window.CC.ready(function () {
   "use strict";
   var C = window.CC, T = C.TODAY, esc = C.esc;
   C.initTheme(document.getElementById("theme"));
@@ -207,7 +210,7 @@
     { k: "semaine", label: "Cette semaine", q: "Cette semaine au centre-ville",          from: T, to: C.addDays(T, 6), series: false },
     { k: "plus",    label: "Plus tard",    q: "À prévoir dans les deux prochains mois", from: C.addDays(T, 7), to: C.addDays(T, 60), series: false }
   ];
-  var state = { intent: "soir", free: false, fam: false, d: null, q: "" };
+  var state = { intent: "soir", free: false, fam: false, d: null, q: "", p: "all" };
 
   document.getElementById("today").textContent = C.cap(C.dateLong(T));
 
@@ -215,6 +218,7 @@
     if (state.free && !ev.gratuit) return false;
     if (state.fam && !ev.famille) return false;
     if (state.d && ev.d !== state.d) return false;
+    if (state.p !== "all" && ev.p !== state.p) return false;
     if (state.q && (ev.title + " " + C.place(ev) + " " + C.DISC[ev.d].label).toLowerCase().indexOf(state.q) < 0) return false;
     return true;
   }
@@ -222,23 +226,23 @@
     return C.agenda(it.from, it.to, { series: it.series, noLong: true, spread: it.k !== "plus" }).filter(function (i) { return keep(i.ev); });
   }
   function whenTxt(i) {
-    var d = i.date, t = i.ev.time;
-    if (C.sameDay(d, T)) return (C.timeKey(i.ev) >= 17 * 60 ? "Ce soir · " : "Aujourd'hui · ") + t;
-    if (C.sameDay(d, C.addDays(T, 1))) return "Demain · " + t;
-    if (C.diffDays(T, d) < 7) return C.cap(C.JOURS[d.getDay()]) + " · " + t;
-    return C.dateShort(d) + " · " + t;
+    var d = i.date, t = i.ev.time ? " · " + i.ev.time : "";
+    if (C.sameDay(d, T)) return (C.timeKey(i.ev) >= 17 * 60 ? "Ce soir" : "Aujourd'hui") + t;
+    if (C.sameDay(d, C.addDays(T, 1))) return "Demain" + t;
+    if (C.diffDays(T, d) < 7) return C.cap(C.JOURS[d.getDay()]) + t;
+    return C.dateShort(d) + t;
   }
-  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
+  var href = C.href;
   function favKey(i) { return (i.ev.id || i.ev.title) + "@" + C.iso(i.date); }
   var HEART = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>';
 
   function card(i) {
     var ev = i.ev, key = favKey(i), on = favs.some(function (f) { return f.k === key; });
     return '<a class="card" href="' + href(ev) + '" target="_blank" rel="noopener" style="--c:' + VIVID[ev.d] + '">' +
-      '<div class="img">' + C.scene(ev.d) + '<span class="when">' + esc(whenTxt(i)) + '</span>' +
+      '<div class="img">' + C.cover(ev) + '<span class="when">' + esc(whenTxt(i)) + '</span>' +
       '<button class="fav" type="button" aria-pressed="' + on + '" aria-label="Ajouter à mes sorties" data-k="' + esc(key) + '" data-id="' + esc(ev.id || ev.id) + '" data-date="' + C.iso(i.date) + '" data-serie="' + (i.serie ? ev.id : "") + '">' + HEART + '</button></div>' +
       '<div class="txt"><span class="d">' + C.DISC[ev.d].label + (i.serie ? " · " + ev.rule.toLowerCase() : "") + '</span><h3>' + esc(ev.title) + '</h3><span class="pl">' + esc(C.place(ev)) + '</span>' +
-      '<div class="foot"><span class="pill">' + esc(ev.prix) + '</span>' + (ev.famille ? '<span class="pill">En famille</span>' : '') + '</div></div></a>';
+      '<div class="foot">' + (ev.prix ? '<span class="pill">' + esc(ev.prix) + '</span>' : '') + (ev.famille ? '<span class="pill">En famille</span>' : '') + (ev.dateEnd && !C.isLong(ev) ? '<span class="pill">' + C.rangeLabel(ev) + '</span>' : '') + '</div></div></a>';
   }
 
   // Intentions
@@ -253,8 +257,10 @@
   // Pastilles
   var chEl = document.getElementById("chips");
   function renderChips() {
-    var h = '<button class="chip" type="button" data-f="free" aria-pressed="' + state.free + '">Gratuit</button>' +
-            '<button class="chip" type="button" data-f="fam" aria-pressed="' + state.fam + '">En famille</button>';
+    var h = '<select class="chip' + (state.p !== "all" ? " on" : "") + '" id="pSel" aria-label="Partenaire"><option value="all">Tous les lieux</option>' +
+      C.activePartners().map(function (p) { return '<option value="' + p.id + '"' + (state.p === p.id ? " selected" : "") + '>' + esc(p.short) + '</option>'; }).join("") + '</select>' +
+      (C.HAS_PRIX ? '<button class="chip" type="button" data-f="free" aria-pressed="' + state.free + '">Gratuit</button>' : '') +
+      '<button class="chip" type="button" data-f="fam" aria-pressed="' + state.fam + '">En famille</button>';
     Object.keys(C.DISC).forEach(function (k) { h += '<button class="chip" type="button" data-d="' + k + '" aria-pressed="' + (state.d === k) + '"><i style="--c:' + VIVID[k] + '"></i>' + C.DISC[k].label + '</button>'; });
     chEl.innerHTML = h;
   }
@@ -264,6 +270,7 @@
     else state.d = state.d === b.dataset.d ? null : b.dataset.d;
     render();
   });
+  chEl.addEventListener("change", function (e) { if (e.target.id === "pSel") { state.p = e.target.value; render(); } });
   document.getElementById("q").addEventListener("input", function () { state.q = this.value.trim().toLowerCase(); render(); });
 
   function renderResults() {
@@ -300,28 +307,34 @@
 
   // Carrousels
   function mini(ev, kicker) {
-    return '<a class="mini" href="' + href(ev) + '" target="_blank" rel="noopener" style="--c2:' + VIVID[ev.d] + '"><div class="img">' + C.scene(ev.d) + '</div><div class="body"><span class="k">' + kicker + '</span><b>' + esc(ev.title) + '</b><span>' + esc(C.place(ev)) + '</span></div></a>';
+    return '<a class="mini" href="' + href(ev) + '" target="_blank" rel="noopener" style="--c2:' + VIVID[ev.d] + '"><div class="img">' + C.cover(ev) + '</div><div class="body"><span class="k">' + kicker + '</span><b>' + esc(ev.title) + '</b><span>' + esc(C.place(ev)) + '</span></div></a>';
   }
-  (function rails() {
-    var expo = C.EVENTS.filter(function (e) { return C.isLong(e) && C.end(e) >= T; }).sort(function (a, b) { return C.end(a) - C.end(b); });
+  function renderRails() {
+    var expo = C.EVENTS.filter(function (e) { return C.isLong(e) && C.end(e) >= T && keep(e); }).sort(function (a, b) { return C.end(a) - C.end(b); });
     document.getElementById("railExpo").innerHTML = expo.map(function (e) {
       var started = C.start(e) <= T;
       var k = started ? '<span class="count">' + C.diffDays(T, C.end(e)) + '</span> jours pour y aller' : 'Ouvre le ' + C.day1(C.start(e).getDate()) + " " + C.MOIS[C.start(e).getMonth()];
       return mini(e, k);
     }).join("");
-    document.getElementById("railRec").innerHTML = C.SERIES.map(function (s) {
+    var recs = C.SERIES.filter(function (s) { return keep(s) && C.nextOccurrences(s, 1).length; });
+    document.getElementById("railRec").innerHTML = recs.map(function (s) {
       var n = C.nextOccurrences(s, 1)[0];
-      return '<a class="rec" href="' + href(s) + '" target="_blank" rel="noopener" style="--c2:' + VIVID[s.d] + '"><span class="rule">' + s.rule + '</span><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + ' · ' + s.time + '</span><span>Prochaine fois : ' + (C.sameDay(n, T) ? "ce soir" : C.dateShort(n)) + '</span></a>';
+      return '<a class="rec" href="' + href(s) + '" target="_blank" rel="noopener" style="--c2:' + VIVID[s.d] + '"><span class="rule">' + s.rule + '</span><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + (s.time ? ' · ' + s.time : '') + '</span><span>Prochaine fois : ' + (C.sameDay(n, T) ? "ce soir" : C.dateShort(n)) + '</span></a>';
     }).join("");
-    var month = C.agenda(T, C.addDays(T, 30), { noLong: true });
+    var month = C.agenda(T, C.addDays(T, 30), { noLong: true }).filter(function (i) { return keep(i.ev); });
     function uniq(arr) { var seen = {}; return arr.filter(function (i) { var k = i.ev.id; if (seen[k]) return false; seen[k] = 1; return true; }); }
     document.getElementById("railFree").innerHTML = uniq(month.filter(function (i) { return i.ev.gratuit; })).slice(0, 10).map(function (i) { return mini(i.ev, whenTxt(i)); }).join("");
     document.getElementById("railFam").innerHTML = uniq(month.filter(function (i) { return i.ev.famille; })).slice(0, 10).map(function (i) { return mini(i.ev, whenTxt(i)); }).join("");
+    [["secExpo", "railExpo"], ["secRec", "railRec"], ["secFree", "railFree"], ["secFam", "railFam"]].forEach(function (x) {
+      document.getElementById(x[0]).hidden = !document.getElementById(x[1]).children.length || (x[0] === "secFree" && !C.HAS_PRIX);
+    });
+  }
+  (function venues() {
 
     function initials(n) { return n.replace(/^(Le |La |L')/, "").split(/[\s-]+/).filter(function (w) { return /^[A-ZÀ-Ý]/.test(w); }).slice(0, 2).map(function (w) { return w[0]; }).join(""); }
     function venue(p) {
       var n = C.agenda(T, C.addDays(T, 30)).filter(function (i) { return i.ev.p === p.id; }).length;
-      return '<a class="venue ' + p.tier + '" href="' + p.url + '" target="_blank" rel="noopener" style="--c2:' + VIVID[p.d] + '"><span class="av">' + initials(p.name) + '</span><b>' + esc(p.short) + '</b><small>' + n + ' ce mois-ci</small></a>';
+      return '<a class="venue ' + p.tier + '" href="' + p.url + '" target="_blank" rel="noopener" style="--c2:' + VIVID[p.d] + '"><span class="av">' + initials(p.name) + '</span><b>' + esc(p.short) + '</b><small>' + (n ? n + ' ce mois-ci' : (C.SOURCE === "flux" && !p.flux ? "bientôt intégré" : "rien ce mois-ci")) + '</small></a>';
     }
     document.getElementById("railMaj").innerHTML = C.PARTNERS.filter(function (p) { return p.tier === "principal"; }).map(venue).join("");
     document.getElementById("railNet").innerHTML = C.PARTNERS.filter(function (p) { return p.tier === "reseau"; }).map(venue).join("");
@@ -340,9 +353,9 @@
   }
   document.querySelectorAll("[data-tab]").forEach(function (b) { b.addEventListener("click", function () { go(b.dataset.tab); }); });
 
-  function render() { renderIntents(); renderChips(); renderResults(); }
+  function render() { renderIntents(); renderChips(); renderResults(); renderRails(); }
   render(); updateBadge();
-})();
+});
 </script>
 </body>
 </html>

@@ -54,10 +54,10 @@
   .theme { border: 2px solid var(--ink); background: none; color: var(--ink); width: 34px; height: 34px; cursor: pointer; display: grid; place-items: center; }
   @media (max-width: 640px) { .topbar nav { display: none; } }
 
-  .mast { padding-block: 10px 18px; border-bottom: 3px solid var(--ink); }
-  .wordmark { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(64px, 17vw, 228px); line-height: .8; letter-spacing: -.01em; display: flex; flex-wrap: wrap; column-gap: .12em; }
+  .mast { padding-block: 14px 16px; border-bottom: 3px solid var(--ink); }
+  .wordmark { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(40px, 7vw, 84px); line-height: .85; letter-spacing: -.01em; display: flex; flex-wrap: wrap; column-gap: .18em; }
   .wordmark .c2 { color: var(--pink); mix-blend-mode: var(--blend); }
-  .mast-sub { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 14px; font-weight: 600; }
+  .mast-sub { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-weight: 600; }
   .mast-sub .wk { font-family: var(--display); font-size: 22px; font-weight: 800; text-transform: uppercase; color: var(--blue); }
 
   /* Filtres : liens texte séparés par des barres obliques */
@@ -66,6 +66,14 @@
   .filters button:hover { color: var(--ink); }
   .filters button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-decoration-thickness: 4px; text-underline-offset: 4px; text-decoration-color: var(--pink); }
   .filters .sep { color: var(--muted); padding-inline: 8px; opacity: .5; }
+  .filters .pwrap { margin-left: auto; display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
+  @media (max-width: 640px) { .filters .pwrap { margin-left: 0; flex-basis: 100%; padding-top: 6px; } .filters select { flex: 1; min-width: 0; } }
+  .filters .pwrap label { font-size: 16px; color: var(--muted); }
+  .filters select { font: inherit; font-size: 19px; text-transform: uppercase; color: var(--ink); background: var(--paper); border: 0; border-bottom: 3px solid var(--ink); padding: 0 4px; cursor: pointer; max-width: 260px; }
+  .filters select.on { border-color: var(--pink); color: var(--pink); }
+  /* Vignettes : illustration + affiche de la salle */
+  .th { position: relative; overflow: hidden; background: var(--ink); }
+  .th svg, .th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 
   section { padding-block: 34px; }
   .sec-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
@@ -74,19 +82,23 @@
 
   /* ---------- Affiches ---------- */
   .posters { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: auto auto; gap: 16px; }
-  .poster { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; min-height: 250px; padding: 20px; color: var(--on-spot); text-decoration: none; isolation: isolate; transition: transform .15s; }
+  .poster { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-height: 250px; padding: 14px 14px 18px; color: var(--on-spot); text-decoration: none; isolation: isolate; transition: transform .15s; }
   .poster:hover { transform: translate(-3px, -3px); }
   .poster.big { grid-row: span 2; min-height: 520px; }
+  .poster.big .th { aspect-ratio: 4 / 3 !important; }
+  .poster .th { aspect-ratio: 16 / 9; max-width: 100%; box-shadow: 6px 6px 0 color-mix(in srgb, var(--ink) 85%, transparent); }
+  .poster .th img { filter: saturate(1.05) contrast(1.05); }
+  .poster .txt { display: flex; flex-direction: column; gap: 10px; padding-inline: 6px; }
   .poster.s-pink { background: var(--pink); }
   .poster.s-blue { background: var(--blue); }
   .poster .dot { position: absolute; border-radius: 50%; z-index: -1; mix-blend-mode: multiply; opacity: .9; }
   .poster.s-pink .dot { background: var(--blue); }
   .poster.s-blue .dot { background: var(--pink); }
   .poster .kicker { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-  .poster h3 { font-size: clamp(34px, 4.4vw, 54px); font-weight: 900; }
-  .poster.big h3 { font-size: clamp(46px, 7.4vw, 104px); }
-  .poster .when { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 6vw, 72px); line-height: .85; font-variant-numeric: tabular-nums; }
-  .poster.big .when { font-size: clamp(56px, 9vw, 128px); }
+  .poster h3 { font-size: clamp(26px, 2.8vw, 38px); font-weight: 900; }
+  .poster.big h3 { font-size: clamp(38px, 5vw, 70px); }
+  .poster .when { font-family: var(--display); font-weight: 900; font-size: clamp(34px, 4vw, 52px); line-height: .85; font-variant-numeric: tabular-nums; }
+  .poster.big .when { font-size: clamp(50px, 7vw, 96px); }
   .poster .where { font-weight: 600; font-size: 15px; margin-top: 6px; }
   @media (max-width: 760px) { .posters { grid-template-columns: 1fr; } .poster.big { grid-row: auto; min-height: 380px; } }
 
@@ -99,14 +111,15 @@
   .day.is-today .num { color: var(--pink); }
   .day ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
   .day li + li { border-top: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); }
-  .ev { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 12px; padding-block: 9px; text-decoration: none; }
+  .ev { display: grid; grid-template-columns: 64px 120px minmax(0, 1fr); gap: 14px; padding-block: 10px; text-decoration: none; align-items: start; }
+  .ev .th { aspect-ratio: 16 / 10; max-width: 100%; }
   .ev:hover .t { text-decoration: underline; text-decoration-thickness: 2px; }
   .ev .h { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; padding-top: 3px; }
   .ev .t { font-family: var(--display); font-weight: 800; font-size: 25px; text-transform: uppercase; line-height: 1; display: block; }
   .ev .m { font-size: 14px; color: var(--muted); display: block; margin-top: 3px; }
   .ev .m b { font-weight: 700; color: var(--ink); }
   .day .none { color: var(--muted); font-size: 14px; padding-block: 9px; }
-  @media (max-width: 520px) { .day { grid-template-columns: 56px minmax(0, 1fr); gap: 10px; } .day .num { font-size: 46px; } .ev { grid-template-columns: 1fr; gap: 0; } }
+  @media (max-width: 520px) { .day { grid-template-columns: 1fr; gap: 4px; } .day > div:first-child { display: flex; align-items: baseline; gap: 10px; } .day .num { font-size: 46px; } .ev { grid-template-columns: 96px minmax(0, 1fr); gap: 2px 12px; } .ev .th { grid-column: 1; grid-row: 1 / span 2; } .ev .h { grid-column: 2; grid-row: 1; padding-top: 0; } .ev > span:last-child { grid-column: 2; grid-row: 2; } .ev .t { font-size: 21px; } }
 
   .aside { display: flex; flex-direction: column; gap: 22px; }
   .box { border: 3px solid var(--ink); padding: 16px 18px; background: var(--paper-2); }
@@ -122,7 +135,10 @@
   .season { columns: 2 380px; column-gap: 36px; }
   .month { break-inside: avoid; margin-bottom: 26px; }
   .month h3 { font-size: 38px; font-weight: 900; border-bottom: 3px solid var(--ink); padding-bottom: 6px; margin-bottom: 4px; }
-  .row { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding-block: 8px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); text-decoration: none; }
+  .row { display: grid; grid-template-columns: 64px 64px minmax(0, 1fr); gap: 12px; align-items: center;
+  }
+  .row .th { aspect-ratio: 1; max-width: 100%; }
+  .row { padding-block: 8px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); text-decoration: none; }
   .row:hover b { text-decoration: underline; }
   .row .d { font-family: var(--display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; }
   .row b { display: block; font-size: 15px; }
@@ -165,7 +181,7 @@
   <div class="filters" id="filters" role="group" aria-label="Filtrer par discipline"></div>
 
   <section id="affiche">
-    <div class="sec-title"><h2>À l'affiche</h2><span>La sélection de la semaine</span></div>
+    <div class="sec-title"><h2>À l'affiche</h2><span id="selNote">La sélection de la semaine</span></div>
     <div class="posters" id="posters"></div>
   </section>
 
@@ -174,7 +190,7 @@
     <div class="week-grid">
       <div id="days"></div>
       <aside class="aside">
-        <div class="box"><h3>En ce moment</h3><p class="lead">Expositions à voir avant qu'elles ferment.</p><ul id="now"></ul></div>
+        <div class="box"><h3>En ce moment</h3><p class="lead">Expositions et activités de longue durée.</p><ul id="now"></ul></div>
         <div class="box"><h3>Rendez-vous réguliers</h3><p class="lead">Ils reviennent chaque semaine ou chaque mois : on les regroupe ici pour alléger l'agenda.</p><ul id="regular"></ul></div>
       </aside>
     </div>
@@ -194,18 +210,18 @@
 </div>
 <footer>
   <div class="wrap">
-    <div><b>Culture Centro</b><br>Maquette · variante 1 · données fictives</div>
+    <div><b>Culture Centro</b><br>Maquette · variante 1 · <span data-cc-source></span></div>
     <div><a class="back" href="index.html">← Toutes les variantes</a></div>
   </div>
 </footer>
 
 <script src="commun.js"></script>
 <script>
-(function () {
+window.CC.ready(function () {
   "use strict";
   var C = window.CC, T = C.TODAY, esc = C.esc;
   C.initTheme(document.getElementById("theme"));
-  var state = { d: "all" };
+  var state = { d: "all", p: "all" };
 
   document.getElementById("today").textContent = C.cap(C.dateLong(T)) + " " + T.getFullYear();
   var monday = C.startOfWeek(T);
@@ -214,10 +230,9 @@
   document.getElementById("wk").textContent = "Semaine " + wkNum;
   document.getElementById("weekRange").textContent = "Du " + C.dateShort(T) + " au " + C.dateShort(C.addDays(T, 6));
 
-  // Filtres texte
+  // Filtres texte (discipline) + sélecteur de partenaire
   var fEl = document.getElementById("filters");
-  var keys = ["all"].concat(Object.keys(C.DISC));
-  keys.forEach(function (k, i) {
+  ["all"].concat(Object.keys(C.DISC)).forEach(function (k, i) {
     if (i) { var s = document.createElement("span"); s.className = "sep"; s.textContent = "/"; s.setAttribute("aria-hidden", "true"); fEl.appendChild(s); }
     var b = document.createElement("button");
     b.type = "button"; b.dataset.k = k; b.textContent = k === "all" ? "Tout" : C.DISC[k].label;
@@ -229,40 +244,63 @@
     });
     fEl.appendChild(b);
   });
-  function keep(ev) { return state.d === "all" || ev.d === state.d; }
-  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
-  function dd(d) { return String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0"); }
+  var pw = document.createElement("div");
+  pw.className = "pwrap";
+  pw.innerHTML = '<label for="partner">Partenaire</label><select id="partner"><option value="all">Tous</option>' +
+    C.activePartners().map(function (p) { return '<option value="' + p.id + '">' + esc(p.short) + '</option>'; }).join("") + '</select>';
+  fEl.appendChild(pw);
+  document.getElementById("partner").addEventListener("change", function () { state.p = this.value; this.classList.toggle("on", this.value !== "all"); render(); });
 
-  // À l'affiche : sélection éditoriale (champ vedette), non filtrée
-  (function posters() {
-    var sel = C.EVENTS.filter(function (e) { return e.vedette && C.end(e) >= T; }).slice(0, 3);
+  function keep(ev) { return (state.d === "all" || ev.d === state.d) && (state.p === "all" || ev.p === state.p); }
+  function dd(d) { return String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0"); }
+  function thumb(ev) { return '<span class="th">' + C.cover(ev) + '</span>'; }
+  function meta(ev, parts) { return parts.filter(Boolean).join(" · "); }
+
+  // À l'affiche : champ « vedette » (démo) ou, avec le flux réel, le prochain
+  // spectacle illustré de chaque partenaire, partenaires principaux d'abord.
+  function renderPosters() {
+    var sel;
+    if (C.SOURCE !== "flux") sel = C.EVENTS.filter(function (e) { return e.vedette && C.end(e) >= T && keep(e); });
+    else {
+      var seen = {}, rank = { principal: 0, reseau: 1, soutien: 2 };
+      sel = C.EVENTS.filter(function (e) { return !C.isLong(e) && e.image && C.start(e) >= T && C.start(e) <= C.addDays(T, 30) && keep(e); })
+        .filter(function (e) { if (seen[e.p]) return false; seen[e.p] = 1; return true; })
+        .sort(function (a, b) { var pa = C.partner(a.p), pb = C.partner(b.p); return (rank[pa.tier] - rank[pb.tier]) || (C.start(a) - C.start(b)); });
+    }
+    sel = sel.slice(0, 3);
+    document.getElementById("selNote").textContent = C.SOURCE === "flux" ? "Le prochain rendez-vous de chaque partenaire" : "La sélection de la semaine";
     var el = document.getElementById("posters");
+    el.innerHTML = "";
+    document.getElementById("affiche").hidden = !sel.length;
     sel.forEach(function (ev, i) {
       var a = document.createElement("a");
       a.className = "poster " + (i === 1 ? "s-blue" : "s-pink") + (i === 0 ? " big" : "");
-      a.href = href(ev); a.target = "_blank"; a.rel = "noopener";
+      a.href = C.href(ev); a.target = "_blank"; a.rel = "noopener";
       var s = C.start(ev), long = C.isLong(ev);
       var when = long && s <= T ? "→ " + dd(C.end(ev)) : (ev.dateEnd ? dd(s) + "–" + String(C.end(ev).getDate()).padStart(2, "0") : dd(s));
       var size = i === 0 ? 420 : 220;
+      var p = C.partner(ev.p);
       a.innerHTML =
         '<span class="dot" style="width:' + size + 'px;height:' + size + 'px;right:-' + (size * .28) + 'px;bottom:-' + (size * .32) + 'px"></span>' +
-        '<div class="kicker"><span>' + C.DISC[ev.d].label + '</span><span>' + esc(ev.prix) + '</span></div>' +
+        thumb(ev) +
+        '<div class="txt"><div class="kicker"><span>' + C.DISC[ev.d].label + '</span><span>' + esc(ev.prix || (p ? p.short : "")) + '</span></div>' +
         '<h3>' + esc(ev.title) + '</h3>' +
-        '<div><div class="when">' + when + '</div><div class="where">' + esc(C.place(ev)) + ' · ' + esc(ev.time) + '</div></div>';
+        '<div><div class="when">' + when + '</div><div class="where">' + esc(meta(ev, [C.place(ev), ev.time])) + '</div></div></div>';
       el.appendChild(a);
     });
-  })();
+  }
 
   // Longue durée + rendez-vous réguliers (encadrés)
   function renderAside() {
     var now = document.getElementById("now"); now.innerHTML = "";
     C.EVENTS.filter(function (e) { return C.isLong(e) && keep(e) && C.end(e) >= T && C.start(e) <= C.addDays(T, 45); })
-      .forEach(function (e) { now.insertAdjacentHTML("beforeend", '<li><b>' + esc(e.title) + '</b><span>' + esc(C.place(e)) + ' · ' + C.rangeLabel(e) + '</span></li>'); });
+      .forEach(function (e) { now.insertAdjacentHTML("beforeend", '<li><a href="' + C.href(e) + '" target="_blank" rel="noopener" style="text-decoration:none"><b>' + esc(e.title) + '</b></a><span>' + esc(C.place(e)) + ' · ' + C.rangeLabel(e) + '</span></li>'); });
     if (!now.children.length) now.innerHTML = '<li><span>Aucune exposition pour ce filtre.</span></li>';
     var reg = document.getElementById("regular"); reg.innerHTML = "";
     C.SERIES.filter(keep).forEach(function (s) {
       var n = C.nextOccurrences(s, 1)[0];
-      reg.insertAdjacentHTML("beforeend", '<li><span class="rule">' + s.rule + ' · ' + s.time + '</span><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + ' · prochain : ' + C.dateShort(n) + '</span></li>');
+      if (!n) return;
+      reg.insertAdjacentHTML("beforeend", '<li><span class="rule">' + esc(meta(s, [s.rule, s.time])) + '</span><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + ' · prochain : ' + C.dateShort(n) + '</span></li>');
     });
     if (!reg.children.length) reg.innerHTML = '<li><span>Aucun rendez-vous régulier pour ce filtre.</span></li>';
   }
@@ -275,10 +313,10 @@
       var d = C.addDays(T, k);
       var its = items.filter(function (i) { return C.sameDay(i.date, d); });
       var html = '<div class="day' + (k === 0 ? " is-today" : "") + '"><div><div class="num">' + String(d.getDate()).padStart(2, "0") + '</div><span class="dn">' + (k === 0 ? "Aujourd'hui" : C.JOURS[d.getDay()]) + '</span></div>';
-      if (!its.length) html += '<div class="none">Rien de programmé ce jour-là' + (state.d !== "all" ? " dans cette discipline" : "") + '.</div>';
+      if (!its.length) html += '<div class="none">Rien de programmé ce jour-là' + (state.d !== "all" || state.p !== "all" ? " avec ces filtres" : "") + '.</div>';
       else html += '<ul>' + its.map(function (i) {
         var ev = i.ev;
-        return '<li><a class="ev" href="' + href(ev) + '" target="_blank" rel="noopener"><span class="h">' + esc(ev.time) + '</span><span><span class="t">' + esc(ev.title) + '</span><span class="m"><b>' + esc(C.place(ev)) + '</b> · ' + C.DISC[ev.d].label + ' · ' + esc(ev.prix) + '</span></span></a></li>';
+        return '<li><a class="ev" href="' + C.href(ev) + '" target="_blank" rel="noopener"><span class="h">' + esc(ev.time || "—") + '</span>' + thumb(ev) + '<span><span class="t">' + esc(ev.title) + '</span><span class="m"><b>' + esc(C.place(ev)) + '</b> · ' + esc(meta(ev, [C.DISC[ev.d].label, ev.prix])) + '</span></span></a></li>';
       }).join("") + '</ul>';
       el.insertAdjacentHTML("beforeend", html + '</div>');
     }
@@ -295,7 +333,7 @@
     Object.keys(groups).sort(function (a, b) { return a - b; }).forEach(function (k) {
       var y = Math.floor(k / 12), m = k % 12;
       el.insertAdjacentHTML("beforeend", '<div class="month"><h3>' + C.MOIS[m] + ' ' + y + '</h3>' + groups[k].map(function (e) {
-        return '<a class="row" href="' + href(e) + '" target="_blank" rel="noopener"><span class="d">' + dd(C.start(e)) + '</span><span><b>' + esc(e.title) + '</b><span>' + esc(C.place(e)) + ' · ' + esc(e.time) + '</span></span></a>';
+        return '<a class="row" href="' + C.href(e) + '" target="_blank" rel="noopener"><span class="d">' + dd(C.start(e)) + '</span>' + thumb(e) + '<span><b>' + esc(e.title) + '</b><span>' + esc(meta(e, [C.place(e), e.time])) + '</span></span></a>';
       }).join("") + '</div>');
     });
     if (!list.length) el.innerHTML = '<p>Rien d\'autre cette saison pour ce filtre.</p>';
@@ -314,9 +352,9 @@
     document.getElementById("support").textContent = "Avec le soutien de : " + C.PARTNERS.filter(function (p) { return p.tier === "soutien"; }).map(function (p) { return p.name; }).join(", ") + ".";
   })();
 
-  function render() { renderWeek(); renderAside(); renderSeason(); }
+  function render() { renderPosters(); renderWeek(); renderAside(); renderSeason(); }
   render();
-})();
+});
 </script>
 </body>
 </html>

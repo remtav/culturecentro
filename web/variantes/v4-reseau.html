@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap">
 <style>
-  /* Variante 4 — on entre par les lieux. Plan schématique du centre-ville
+  /* Variante 4 — on entre par les lieux. Plan réel du centre-ville (OSM)
      avec des repères numérotés, puis la programmation lieu par lieu :
      grands panneaux pour les partenaires principaux, cartes compactes pour
      le réseau. Chaque lieu a sa couleur d'identité. Une seule famille
@@ -70,13 +70,16 @@
   .plan { background: var(--block); border-radius: 18px; overflow: hidden; border: 1px solid var(--line); position: relative; }
   .plan svg { display: block; width: 100%; height: auto; }
   .plan .street { stroke: var(--street); fill: none; stroke-linecap: round; }
-  .plan .lbl { fill: var(--muted); font-family: var(--font); font-size: 2.3px; font-weight: 600; letter-spacing: .05px; }
+  .plan .lbl { fill: var(--muted); font-family: var(--font); font-size: 17px; font-weight: 600; paint-order: stroke; stroke: var(--block); stroke-width: 4px; stroke-linejoin: round; }
+  .plan .lbl.w { font-style: italic; font-size: 19px; fill: color-mix(in srgb, var(--muted) 70%, var(--water)); stroke: none; }
   .plan .pin { cursor: pointer; }
-  .plan .pin circle { stroke: var(--surface); stroke-width: .6; transition: r .15s; }
-  .plan .pin text { fill: var(--pin-text); font-family: var(--font); font-weight: 800; font-size: 2.6px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .plan .pin circle { stroke: var(--surface); stroke-width: 4; }
+  .plan .pin text { fill: var(--pin-text); font-family: var(--font); font-weight: 800; font-size: 19px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
   .plan .pin.dim { opacity: .3; }
-  .plan .pin:focus-visible circle { stroke: var(--ink); stroke-width: .9; }
-  .plan .note { position: absolute; left: 12px; top: 10px; font-size: 12px; color: var(--muted); background: color-mix(in srgb, var(--surface) 85%, transparent); padding: 3px 8px; border-radius: 6px; }
+  .plan .pin:focus-visible circle, .plan .pin:hover circle { stroke: var(--ink); stroke-width: 5; }
+  .plan .note a { color: inherit; }
+  @media (max-width: 600px) { .plan .note { font-size: 10px; padding: 2px 6px; } }
+  .plan .note { position: absolute; right: 10px; bottom: 8px; font-size: 12px; color: var(--muted); background: color-mix(in srgb, var(--surface) 85%, transparent); padding: 3px 8px; border-radius: 6px; }
 
   /* Lieux principaux */
   .sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -152,8 +155,8 @@
       <button class="reset" id="reset" type="button" hidden>Voir tous les lieux</button>
     </div>
     <div class="plan">
-      <svg id="plan" viewBox="0 0 100 75" role="img" aria-label="Plan schématique du centre-ville avec les lieux numérotés"></svg>
-      <span class="note">Plan schématique, positions indicatives</span>
+      <svg id="plan" viewBox="0 0 926 1000" role="img" aria-label="Plan du centre-ville de Sherbrooke avec les lieux numérotés"></svg>
+      <span class="note">Fond de carte © contributeurs <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span>
     </div>
   </section>
 
@@ -168,12 +171,12 @@
 
   <div id="byDate" class="chrono" hidden></div>
 
-  <footer><span>Maquette · variante 4 · données fictives</span><a href="index.html">← Toutes les variantes</a></footer>
+  <footer><span>Maquette · variante 4 · <span data-cc-source></span></span><a href="index.html">← Toutes les variantes</a></footer>
 </div>
 
 <script src="commun.js"></script>
 <script>
-(function () {
+window.CC.ready(function () {
   "use strict";
   var C = window.CC, T = C.TODAY, esc = C.esc;
   C.initTheme(document.getElementById("theme"));
@@ -190,21 +193,22 @@
   function upcoming(pid) {
     return C.agenda(T, HORIZON, { series: false, noLong: true }).filter(function (i) { return i.ev.p === pid; });
   }
-  function href(ev) { var p = C.partner(ev.p); return p && p.url !== "#" ? p.url : "#"; }
+  var href = C.href;
   function row(i, withNum) {
     var ev = i.ev, d = i.date, p = C.partner(ev.p);
     return '<a class="erow" href="' + href(ev) + '" target="_blank" rel="noopener" style="--vc:' + (p.vc || "var(--ink)") + '"><span class="dt"><b>' + d.getDate() + '</b><span>' + C.MOIS_ABBR[d.getMonth()] + '</span></span>' +
       (withNum ? '<span class="num">' + (p.n || "·") + '</span>' : '') +
-      '<span><span class="t">' + esc(ev.title) + '</span><span class="m">' + C.JOURS[d.getDay()] + ' · ' + esc(ev.time) + (ev.venue ? ' · ' + esc(ev.venue) : '') + (withNum ? ' · ' + esc(p.short) : '') + '</span></span>' +
-      '<span class="pr">' + esc(ev.prix) + '</span></a>';
+      '<span><span class="t">' + esc(ev.title) + '</span><span class="m">' + C.JOURS[d.getDay()] + (ev.time ? ' · ' + esc(ev.time) : '') + (ev.venue ? ' · ' + esc(ev.venue) : '') + (withNum ? ' · ' + esc(p.short) : '') + '</span></span>' +
+      '<span class="pr">' + esc(ev.prix || "") + '</span></a>';
   }
+  function none(p) { return '<div class="none">' + (C.SOURCE === "flux" && !p.flux ? 'Programmation pas encore intégrée au flux : <a href="' + p.url + '" target="_blank" rel="noopener">voir le site du lieu</a>.' : 'Aucun événement ponctuel annoncé.') + '</div>'; }
   function extras(p) {
     var h = "";
     C.EVENTS.filter(function (e) { return e.p === p.id && C.isLong(e) && C.end(e) >= T && C.start(e) <= HORIZON; }).forEach(function (e) {
       h += '<div><span class="k">' + (C.start(e) <= T ? "En cours" : "À venir") + '</span><span>' + esc(e.title) + ' — ' + C.rangeLabel(e).toLowerCase() + '</span></div>';
     });
     C.SERIES.filter(function (s) { return s.p === p.id; }).forEach(function (s) {
-      h += '<div><span class="k">' + s.rule + '</span><span>' + esc(s.title) + ' · ' + s.time + (s.venue ? ' · ' + esc(s.venue) : '') + '</span></div>';
+      h += '<div><span class="k">' + s.rule + '</span><span>' + esc(s.title) + (s.time ? ' · ' + s.time : '') + (s.venue ? ' · ' + esc(s.venue) : '') + '</span></div>';
     });
     return h ? '<div class="extra">' + h + '</div>' : "";
   }
@@ -213,40 +217,46 @@
   var vl = document.getElementById("vlist");
   LIEUX.forEach(function (p) {
     var n = C.agenda(T, C.addDays(T, 30)).filter(function (i) { return i.ev.p === p.id; }).length;
-    vl.insertAdjacentHTML("beforeend", '<li class="' + p.tier + '"><button type="button" data-id="' + p.id + '" aria-pressed="false" style="--vc:' + p.vc + '"><span class="num">' + p.n + '</span><span class="nm">' + esc(p.short) + '<small>' + n + ' activité' + (n > 1 ? "s" : "") + ' d\'ici 30 jours</small></span></button></li>');
+    vl.insertAdjacentHTML("beforeend", '<li class="' + p.tier + '"><button type="button" data-id="' + p.id + '" aria-pressed="false" style="--vc:' + p.vc + '"><span class="num">' + p.n + '</span><span class="nm">' + esc(p.short) + '<small>' + (n ? n + ' activité' + (n > 1 ? "s" : "") + ' d\'ici 30 jours' : (C.SOURCE === "flux" && !p.flux ? "pas encore dans le flux" : "rien d\'ici 30 jours")) + '</small></span></button></li>');
   });
   vl.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) select(b.dataset.id); });
   document.getElementById("reset").onclick = function () { select(null); };
 
-  // Plan schématique (non à l'échelle)
+  // Plan du centre-ville, tracé à partir d'OpenStreetMap (rues, rivières,
+  // parcs ; simplifié). Les repères sont placés aux coordonnées géocodées
+  // des adresses (commun.js). Projection équirectangulaire, nord en haut.
+  var PLAN = {"W":926,"water":["M-40 822 L-16 786 L-15 781 L42 789 L41 796 L78 802 L83 805 L87 811 L89 816 L89 823 L84 842 L63 887 L56 898 L12 955 L-8 965 L-40 976 L-40 822Z","M489 -40 L540 14 L556 57 L553 81 L595 159 L612 185 L621 204 L652 240 L744 331 L791 394 L832 441 L841 469 L894 558 L912 635 L914 670 L900 737 L889 822 L902 894 L920 947 L966 1009 L966 542 L902 407 L893 394 L860 359 L852 355 L843 344 L827 322 L781 267 L704 169 L643 28 L631 -17 L617 -40 L489 -40Z","M240 260 L246 256 L256 260 L257 258 L261 259 L268 250 L286 232 L308 215 L323 207 L368 189 L375 194 L382 194 L392 189 L405 188 L416 184 L423 180 L426 172 L407 178 L407 172 L404 172 L403 169 L475 149 L494 139 L538 106 L553 81 L595 159 L578 154 L572 160 L563 164 L544 168 L530 175 L501 179 L454 200 L448 187 L425 196 L428 202 L373 212 L372 209 L354 214 L331 223 L337 238 L333 239 L337 252 L314 268 L288 283 L276 283 L264 292 L246 299 L231 301 L200 314 L179 314 L155 335 L104 386 L96 399 L90 415 L89 429 L79 439 L73 431 L77 428 L74 425 L78 421 L75 418 L86 401 L84 399 L70 410 L66 408 L65 410 L69 412 L61 421 L63 423 L55 428 L53 437 L55 443 L59 445 L74 464 L64 477 L66 483 L33 513 L3 528 L-4 534 L-6 542 L5 589 L13 643 L17 704 L28 708 L22 731 L28 750 L33 752 L40 772 L42 789 L-15 781 L-10 743 L-3 724 L-5 703 L-2 696 L-9 685 L-11 613 L-13 607 L-24 591 L-40 563 L-40 500 L-33 498 L-7 498 L-3 496 L13 456 L33 433 L38 425 L39 408 L57 396 L68 383 L80 381 L85 383 L93 380 L96 377 L132 313 L140 303 L159 291 L171 288 L180 288 L205 291 L212 289 L227 278 L240 260Z"],"parks":["M139 940 L173 932 L213 927 L217 877 L210 870 L150 884 L142 861 L133 855 L130 850 L127 832 L108 795 L91 797 L42 791 L41 796 L78 802 L83 805 L89 816 L88 831 L63 887 L56 898 L12 955 L-8 965 L-73 986 L-213 1019 L-246 1018 L-266 1020 L-377 1035 L-449 1042 L-560 1071 L-571 1072 L-595 1065 L-610 1072 L-628 1076 L-641 1076 L-670 1085 L-676 1081 L-679 1070 L-677 1068 L-669 1066 L-662 1061 L-651 1062 L-637 1047 L-636 1043 L-638 1038 L-647 1036 L-678 1042 L-699 1055 L-711 1071 L-739 1097 L-741 1106 L-784 1125 L-809 1141 L-827 1141 L-848 1145 L-860 1152 L-867 1159 L-871 1177 L-870 1182 L-39 983 L54 959 L53 950 L136 929 L139 940Z","M391 456 L370 467 L363 452 L359 454 L354 445 L359 441 L366 443 L375 442 L381 438 L391 456Z","M730 1054 L705 1064 L696 1044 L674 1052 L665 1042 L657 1045 L663 1060 L689 1075 L732 1059 L730 1054Z","M502 838 L598 802 L586 775 L492 812 L502 838Z","M372 209 L364 212 L371 229 L377 227 L372 209Z","M-733 807 L-745 821 L-755 829 L-763 834 L-782 838 L-1082 847 L-1209 852 L-1214 854 L-1220 933 L-1218 952 L-1221 1104 L-1224 1135 L-1224 1198 L-1221 1229 L-1194 1232 L-1146 1234 L-1089 1234 L-1012 1217 L-1027 1198 L-1030 1192 L-1042 1139 L-1053 1105 L-1065 1086 L-1074 1066 L-1075 1049 L-1081 1026 L-1079 1010 L-1071 998 L-1053 988 L-1040 983 L-1024 976 L-952 929 L-943 928 L-939 925 L-936 921 L-937 920 L-868 888 L-845 881 L-701 885 L-672 895 L-660 897 L-641 896 L-612 884 L-585 869 L-554 846 L-545 842 L-491 835 L-453 833 L-409 825 L-398 830 L-364 831 L-352 829 L-338 823 L-167 863 L-154 864 L-132 860 L-130 863 L-128 864 L-124 863 L-122 859 L-51 831 L-42 825 L-41 821 L-82 839 L-119 851 L-136 854 L-151 854 L-170 852 L-272 825 L-323 806 L-351 804 L-558 830 L-590 837 L-603 833 L-624 821 L-650 859 L-733 807Z","M901 297 L917 287 L925 304 L909 312 L901 297Z","M-123 -27 L-125 121 L-123 125 L-116 128 L-70 128 L-60 125 L-57 121 L-56 114 L-54 -27 L-57 -30 L-60 -31 L-118 -32 L-123 -30 L-123 -27Z","M162 2 L188 -11 L196 -11 L212 9 L212 13 L209 18 L184 37 L177 40 L174 40 L158 12 L158 5 L162 2Z"],"streets":{"m":["M187 783 L186 774 L178 756","M711 432 L719 456 L723 477 L728 528 L733 542 L802 737 L847 857","M746 891 L759 890 L856 853","M-90 344 L-32 423","M852 844 L781 651 L746 549 L734 477 L727 452 L717 428 L709 421","M897 975 L925 1027 L953 1100","M-21 770 L43 780","M43 780 L67 784","M220 916 L219 944","M219 944 L216 978","M-1 457 L46 506","M92 587 L154 714","M686 367 L709 421","M838 332 L846 327","M67 784 L85 788 L115 784 L171 759","M216 978 L212 985 L209 1058","M709 421 L653 461","M773 380 L761 383 L709 421","M773 380 L838 332","M852 844 L754 880 L746 891","M174 748 L162 721 L154 714","M187 783 L219 850 L222 863","M154 714 L155 724 L168 751","M171 759 L180 778 L187 783","M643 480 L668 462","M168 751 L116 775 L67 784","M711 432 L768 392 L773 380","M960 1093 L930 1017","M463 600 L426 622 L347 663","M178 756 L350 671","M408 642 L467 608 L588 520","M906 971 L870 888","M746 891 L774 982 L789 1024 L828 1112","M856 853 L852 844","M178 756 L174 748","M846 327 L881 301","M668 462 L711 432","M283 693 L174 748","M314 679 L283 693","M585 510 L463 600","M54 513 L92 587","M46 506 L54 513","M920 275 L953 251 L967 236","M311 -55 L322 -54 L340 -47 L349 -45","M349 -45 L331 -61 L326 -74","M546 226 L552 231 L592 241 L599 240","M599 240 L592 236 L553 226 L546 226","M645 279 L627 256 L612 245 L599 240","M374 -31 L359 -41 L349 -45","M546 226 L534 222 L522 215 L507 201 L498 187","M498 187 L471 138","M653 461 L585 510","M222 863 L220 916","M881 301 L920 275","M446 93 L422 43","M454 110 L446 93","M675 342 L686 367","M655 299 L675 342","M471 138 L463 126","M399 -1 L386 -19 L374 -31","M414 29 L399 -1","M655 299 L645 279","M-251 745 L-21 770","M463 126 L454 110","M350 671 L408 642","M347 663 L314 679","M847 857 L897 975","M930 1017 L906 971","M870 888 L856 853","M168 751 L171 759","M174 748 L168 751","M171 759 L178 756","M709 421 L711 432","M588 520 L643 480","M217 1059 L220 985 L216 978","M422 43 L414 29","M-32 423 L-1 457"],"r":["M585 510 L512 339 L476 261","M-51 633 L-147 631","M-44 675 L-44 639 L-48 634 L-51 633","M-70 450 L-32 423","M147 3 L176 51","M361 222 L373 247","M114 97 L177 186 L185 189","M273 77 L158 158","M28 374 L24 372 L-77 235","M63 351 L35 372 L28 374","M-42 211 L63 351","M-46 128 L-6 185","M-46 128 L-51 113","M151 433 L215 558","M234 543 L261 600","M298 485 L379 647","M238 413 L215 375","M422 518 L381 438","M352 438 L366 443 L375 442 L381 438","M409 231 L430 281","M238 413 L255 408 L259 408 L276 442","M393 758 L429 836","M222 863 L350 830","M580 1012 L567 1005 L551 965","M561 785 L620 938","M429 836 L561 785","M561 785 L483 611","M589 705 L658 674","M589 705 L527 566","M664 -20 L791 -67","M893 18 L1050 -1","M769 220 L823 201","M823 201 L865 287","M718 810 L736 799 L743 787 L745 776 L728 719 L721 660","M718 810 L713 797","M746 891 L684 913 L551 965","M347 191 L361 222","M56 1232 L56 1162 L62 1046 L53 998 L53 991 L55 989","M582 388 L553 321","M589 1044 L584 1041 L541 1062","M553 321 L512 339","M396 348 L434 357 L441 357 L459 351","M691 633 L648 652","M463 996 L518 1013","M222 863 L158 876 L133 883","M653 461 L658 469","M492 812 L408 642","M492 812 L551 965","M620 938 L660 1044","M817 72 L806 52 L798 48 L728 45","M55 989 L106 978 L128 976 L216 978","M540 406 L582 388","M132 889 L132 889","M893 18 L897 22 L984 195","M138 253 L108 212 L87 180 L87 176","M87 176 L142 136","M90 485 L138 444","M813 -16 L741 11 L720 -14","M817 72 L833 28 L791 -67","M658 469 L678 515 L686 543","M426 120 L390 135 L334 164","M397 296 L430 281","M366 413 L352 438 L342 449 L309 475 L234 543 L203 568","M430 213 L430 213","M151 433 L159 432 L218 379 L369 256 L373 247","M373 247 L366 251 L307 298 L153 428 L151 433","M185 189 L240 167 L260 162 L292 159 L320 141","M238 29 L320 141 L334 164 L347 191","M843 126 L835 107 L817 72","M286 701 L363 856 L367 859","M624 759 L686 736","M684 913 L624 759","M802 1178 L762 1115 L684 913","M138 253 L138 258 L123 273 L89 331 L63 351","M-51 113 L-49 -29 L-54 -34 L-57 -34 L-136 -35","M686 736 L648 652","M483 611 L481 605 L485 595","M408 642 L403 639 L396 637","M588 520 L585 510","M238 29 L224 12","M456 226 L450 213","M450 213 L422 226","M409 231 L373 247","M526 1029 L570 1121 L573 1133","M718 810 L746 891","M504 986 L526 1029","M429 836 L453 885 L504 986","M367 859 L375 857 L429 836","M203 568 L119 642","M373 247 L403 312 L404 324 L396 348 L366 413","M605 555 L588 520","M138 444 L151 433","M54 513 L90 485","M283 693 L286 701","M720 656 L692 571 L686 543","M-44 736 L-44 675","M-48 767 L-44 736","M791 140 L791 140","M881 301 L871 295 L865 287","M426 120 L454 110","M551 965 L504 986","M673 555 L673 555","M553 321 L592 304","M341 31 L273 77","M399 -1 L384 7","M769 644 L727 656 L721 660","M384 7 L341 31","M536 729 L589 705","M617 587 L605 555","M347 663 L350 671","M770 648 L779 643","M721 660 L720 656","M721 660 L728 661 L770 648","M779 643 L769 644","M422 226 L409 231","M476 261 L456 226","M430 281 L459 351","M713 797 L686 736","M858 -46 L888 13 L893 18","M803 -39 L858 -46","M833 28 L893 18","M799 91 L813 79 L817 72","M823 201 L871 181","M276 442 L298 485","M350 671 L393 758","M648 652 L634 626 L617 587","M460 594 L422 518","M467 608 L460 594","M381 438 L366 413","M561 785 L624 759"],"t":["M220 -10 L215 -10","M897 383 L905 388 L913 390 L965 364","M147 3 L62 53 L-29 119 L-39 125 L-65 134 L-82 135 L-117 135 L-132 141","M91 -99 L99 -94 L105 -87 L158 -3","M224 12 L204 -13","M-134 277 L176 51","M920 275 L843 126 L824 107 L814 100 L799 91 L769 79","M897 383 L905 395 L968 522","M817 291 L846 327","M215 -10 L204 -13","M965 364 L962 372 L907 401","M204 -13 L167 -68 L128 -120 L122 -123","M941 316 L920 275","M700 29 L664 -20 L626 -63 L574 -111","M769 79 L732 58 L700 29","M700 29 L715 57 L769 220 L783 248 L817 291","M207 31 L224 12","M960 354 L941 316","M224 12 L228 7","M846 327 L897 383","M228 7 L279 -46","M274 -53 L235 -15 L220 -10","M204 -13 L197 -16 L187 -18 L147 3","M176 51 L207 31"]},"labels":[["Wellington N.",566,488,67],["King O.",500,584,-35],["Dufferin",313,132,52],["Marquette",289,494,-42],["Frontenac",263,342,-40],["du Dépôt",734,742,71],["Belvédère N.",123,650,64],["King E.",863,314,-36],["Rivière Magog",215,215,-38],["Rivière Saint-François",590,150,62],["Lac des Nations",60,700,-70]],"proj":{"lat0":45.396,"lat1":45.407,"lon0":-71.8995,"k":90909.09090912661,"c":0.7021344119562468}};
   (function plan() {
-    var s = document.getElementById("plan");
-    var g = '';
-    g += '<rect width="100" height="75" fill="var(--block)"/>';
-    g += '<path d="M0 52 C 12 50, 20 60, 34 58 S 58 46, 70 52 S 88 64, 100 60 L100 67 C 88 71, 78 60, 70 59 S 50 54, 36 65 S 12 58, 0 60 Z" fill="var(--water)"/>';
-    g += '<path d="M92 0 C 90 20, 96 36, 92 52 S 94 70, 96 75 L100 75 L100 0 Z" fill="var(--water)"/>';
-    g += '<ellipse cx="44" cy="68" rx="9" ry="4" fill="var(--park)"/>';
-    var streets = [
-      ["M4 38 L 94 38", 1.6, "King Ouest", 6, 36.6],
-      ["M8 20 L 90 22", 1.1, "Frontenac", 10, 19.2],
-      ["M52 0 L 54 56", 1.6, "Wellington", 55, 6],
-      ["M34 0 L 38 56", 1.1, "Dufferin", 39, 12],
-      ["M72 0 L 70 54", 1.1, "Marquette", 73, 8],
-      ["M12 30 L 88 30", .7, "", 0, 0],
-      ["M20 46 L 86 46", .7, "", 0, 0],
-      ["M22 4 L 20 56", .7, "", 0, 0],
-      ["M84 4 L 82 56", .7, "", 0, 0]
-    ];
-    streets.forEach(function (st) {
-      g += '<path class="street" d="' + st[0] + '" stroke-width="' + st[1] + '"/>';
-      if (st[2]) g += '<text class="lbl" x="' + st[3] + '" y="' + st[4] + '">' + st[2] + '</text>';
+    var s = document.getElementById("plan"), P = PLAN.proj;
+    function xy(lat, lon) { return [(lon - P.lon0) * P.c * P.k, (P.lat1 - lat) * P.k]; }
+    s.setAttribute("viewBox", "0 0 " + PLAN.W + " 1000");
+    var g = '<rect width="' + PLAN.W + '" height="1000" fill="var(--block)"/>';
+    PLAN.parks.forEach(function (d) { g += '<path d="' + d + '" fill="var(--park)"/>'; });
+    PLAN.water.forEach(function (d) { g += '<path d="' + d + '" fill="var(--water)"/>'; });
+    [["r", 5], ["t", 8], ["m", 12]].forEach(function (c) {
+      PLAN.streets[c[0]].forEach(function (d) { g += '<path class="street" d="' + d + '" stroke-width="' + c[1] + '"/>'; });
     });
-    g += '<text class="lbl" x="4" y="57" style="font-style:italic">Rivière Magog</text>';
-    g += '<text class="lbl" x="37" y="74" >Parc J.-Cartier</text>';
-    LIEUX.forEach(function (p) {
-      if (p.x == null) return;
-      var r = p.tier === "principal" ? 3.2 : 2.4;
-      g += '<g class="pin" data-id="' + p.id + '" tabindex="0" role="button" aria-label="' + esc(p.n + ". " + p.name) + '"><title>' + esc(p.n + ". " + p.name) + '</title><circle cx="' + p.x + '" cy="' + (p.y * .75) + '" r="' + r + '" fill="' + p.vc + '"/><text x="' + p.x + '" y="' + (p.y * .75 + .1) + '">' + p.n + '</text></g>';
+    PLAN.labels.forEach(function (l) {
+      var water = /Rivière|Lac/.test(l[0]);
+      g += '<text class="lbl' + (water ? " w" : "") + '" x="' + l[1] + '" y="' + l[2] + '" transform="rotate(' + l[3] + ' ' + l[1] + ' ' + l[2] + ')" text-anchor="middle">' + esc(l[0]) + '</text>';
+    });
+    // Repères : les lieux qui partagent une adresse sont posés côte à côte.
+    var spots = {};
+    LIEUX.forEach(function (p) { if (p.lat != null) { var k = p.lat + "," + p.lon; (spots[k] = spots[k] || []).push(p); } });
+    Object.keys(spots).forEach(function (k) {
+      var grp = spots[k], c = xy(grp[0].lat, grp[0].lon);
+      if (grp.length > 1) g += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="7" fill="var(--ink)"/>';
+      grp.forEach(function (p, i) {
+        var r = p.tier === "principal" ? 24 : 18;
+        var x = c[0] + (i - (grp.length - 1) / 2) * 42, y = c[1] - (grp.length > 1 ? 34 : 0);
+        g += '<g class="pin" data-id="' + p.id + '" tabindex="0" role="button" aria-label="' + esc(p.n + ". " + p.name + ", " + p.addr) + '"><title>' + esc(p.n + ". " + p.name + " — " + p.addr) + '</title><circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r + '" fill="' + p.vc + '"/><text x="' + x.toFixed(1) + '" y="' + (y + 1).toFixed(1) + '">' + p.n + '</text></g>';
+      });
+    });
+    // Lieux hors du cadre (campus de l'UdeS) : repère au bord, avec la direction.
+    LIEUX.filter(function (p) { return p.lat == null; }).forEach(function (p, i) {
+      var x = 40 + i * 44, y = 950;
+      g += '<g class="pin" data-id="' + p.id + '" tabindex="0" role="button" aria-label="' + esc(p.n + ". " + p.name + ", " + p.addr) + '"><title>' + esc(p.n + ". " + p.name + " — " + p.addr) + '</title><circle cx="' + x + '" cy="' + y + '" r="18" fill="' + p.vc + '"/><text x="' + x + '" y="' + (y + 1) + '">' + p.n + '</text></g>';
+      g += '<text class="lbl" x="' + (x + 26) + '" y="' + (y + 6) + '">↙ ' + esc(p.short) + ' (hors carte, 4 km)</text>';
     });
     s.innerHTML = g;
     s.addEventListener("click", function (e) { var pin = e.target.closest(".pin"); if (pin) select(pin.dataset.id); });
@@ -262,10 +272,10 @@
       var up = upcoming(p.id);
       if (p.tier === "principal" || sel) {
         maj.insertAdjacentHTML("beforeend", '<article class="major" id="l-' + p.id + '" style="--vc:' + p.vc + '"><div class="id"><span class="big">' + String(p.n).padStart(2, "0") + '</span><div><h3>' + esc(p.name) + '</h3><small>' + esc(p.kind) + '</small></div>' + (p.url !== "#" ? '<a href="' + p.url + '" target="_blank" rel="noopener">Programmation complète ↗</a>' : '') + '</div>' +
-          '<div class="prog">' + (up.length ? up.slice(0, sel ? 10 : 4).map(function (i) { return row(i); }).join("") : '<div class="none">Aucun événement ponctuel annoncé.</div>') + extras(p) + '</div></article>');
+          '<div class="prog">' + (up.length ? up.slice(0, sel ? 10 : 4).map(function (i) { return row(i); }).join("") : none(p)) + extras(p) + '</div></article>');
       } else {
         net.insertAdjacentHTML("beforeend", '<article class="ncard" id="l-' + p.id + '" style="--vc:' + p.vc + '"><header><span class="num">' + p.n + '</span><div><h3>' + esc(p.name) + '</h3><small>' + esc(p.kind) + '</small></div></header>' +
-          (up.length ? up.slice(0, 2).map(function (i) { return row(i); }).join("") : '<div class="none">Aucun événement ponctuel annoncé.</div>') + extras(p) +
+          (up.length ? up.slice(0, 2).map(function (i) { return row(i); }).join("") : none(p)) + extras(p) +
           '<a class="go" href="' + p.url + '" target="_blank" rel="noopener">Programmation complète ↗</a></article>');
       }
     });
@@ -312,7 +322,7 @@
     if (state.view === "lieu") renderVenues(); else renderChrono();
   }
   render();
-})();
+});
 </script>
 </body>
 </html>

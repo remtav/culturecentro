@@ -466,9 +466,12 @@ lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
 Le sous-dossier [`web/variantes/`](web/variantes/) propose **cinq variantes de
 design** à présenter au client (affiche, calendrier, application mobile, par
 lieu, programme accessible), avec une page de comparaison
-(`web/variantes/index.html`). Elles partagent un jeu de démonstration
-(`commun.js`) enrichi d'activités récurrentes et de niveaux de partenaires, et
-ne lisent pas encore le feed.
+(`web/variantes/index.html`). Elles lisent le même feed que la page publique
+(`web/data/evenements.json`, images comprises) via `commun.js`, qui en déduit
+aussi les activités récurrentes (même titre chez un partenaire, à au moins six
+jours d'écart) ; sans feed, elles retombent sur un jeu de démonstration. Le
+plan de la variante 4 est tracé d'après OpenStreetMap et les lieux y sont
+placés à leur adresse géocodée.
 
 On génère le feed avec la CLI :
 
