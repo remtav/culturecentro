@@ -319,8 +319,11 @@ pas elle-même les spectacles : elle charge un **widget de la billetterie
 page, y découvre l'URL de la liste Lepointdevente (lien « Programmation
 complète » ou, à défaut, `widget.js`), télécharge cette liste et analyse
 chaque carte `.feature-col[data-tpos-event]` (titre, date en français, lieu,
-affiche). Le lien de la fiche est reconstruit à partir de l'identifiant de
-l'événement. Le lieu « <salle>, Sherbrooke, QC » est normalisé : la ville est
+affiche). Le lien mène à la fiche propre à l'événement sur Lepointdevente
+(`https://lepointdevente.com/billets/<code>`, le contenu de la fenêtre
+surgissante du widget) plutôt qu'à la programmation générale ; le code est lu
+dans l'URL de l'affiche, sinon on utilise le lien permanent
+`/plugins/embed/redirect?event=<id>`, qui redirige vers la même fiche. Le lieu « <salle>, Sherbrooke, QC » est normalisé : la ville est
 retirée et toute graphie du nom de la salle (casse, accents) est ramenée à
 « La Petite Boîte Noire », pour qu'un seul lieu apparaisse dans l'agrégation.
 

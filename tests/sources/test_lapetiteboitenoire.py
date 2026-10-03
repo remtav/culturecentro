@@ -21,6 +21,7 @@ from culturecentro.sources.lapetiteboitenoire import (
     _extraire_depuis_lepointdevente,
     _extraire_evenements,
     _trouver_url_billetterie,
+    lien_fiche,
     main,
     normaliser_lieu,
 )
@@ -95,7 +96,7 @@ class TestTrouverUrlBilletterie(unittest.TestCase):
 
 class TestExtractionLepointdevente(unittest.TestCase):
     def setUp(self):
-        self.evenements = _extraire_depuis_lepointdevente(FRAGMENT_LISTE, URL_BASE)
+        self.evenements = _extraire_depuis_lepointdevente(FRAGMENT_LISTE)
 
     def test_nombre_et_ordre(self):
         self.assertEqual(
@@ -106,7 +107,8 @@ class TestExtractionLepointdevente(unittest.TestCase):
     def test_champs_du_premier(self):
         ev = self.evenements[0]
         self.assertEqual(ev.date_debut, datetime(2026, 9, 30, 20, 0))
-        self.assertEqual(ev.lien, "https://lepointdevente.com/billets/programmationavenir/529998")
+        # Fiche propre à l'événement, code lu dans l'URL de l'affiche.
+        self.assertEqual(ev.lien, "https://lepointdevente.com/billets/pbn260930001")
         self.assertEqual(ev.lieu, "La Petite Boîte Noire")  # ville retirée, graphie unifiée
         self.assertEqual(
             ev.image,
@@ -114,10 +116,11 @@ class TestExtractionLepointdevente(unittest.TestCase):
         )
         self.assertIsNone(ev.sous_titre)  # LPBN n'expose pas de sous-titre
 
-    def test_lien_du_second(self):
+    def test_lien_du_second_sans_affiche(self):
+        # Sans affiche : lien permanent qui redirige vers la fiche.
         self.assertEqual(
             self.evenements[1].lien,
-            "https://lepointdevente.com/billets/programmationavenir/541978",
+            "https://lepointdevente.com/plugins/embed/redirect?event=541978",
         )
 
     def test_image_absente_vaut_none(self):
@@ -131,8 +134,28 @@ class TestExtractionLepointdevente(unittest.TestCase):
           </div>
         </div>
         """
-        evs = _extraire_depuis_lepointdevente(fragment, URL_BASE)
+        evs = _extraire_depuis_lepointdevente(fragment)
         self.assertEqual(evs[0].image, "https://x/fond.png")
+
+
+class TestLienFiche(unittest.TestCase):
+    def test_code_lu_dans_l_affiche(self):
+        image = (
+            "https://tpos.s3.amazonaws.com/events/PBN/26/10/07/001/"
+            "pbn261007001-1152x648-fr-69c5a038.png"
+        )
+        self.assertEqual(
+            lien_fiche("513492", image), "https://lepointdevente.com/billets/pbn261007001"
+        )
+
+    def test_affiche_sans_code_repli_sur_identifiant(self):
+        self.assertEqual(
+            lien_fiche("513492", "https://x/fond.png"),
+            "https://lepointdevente.com/plugins/embed/redirect?event=513492",
+        )
+
+    def test_rien_vaut_none(self):
+        self.assertIsNone(lien_fiche(None, None))
 
 
 class TestNormaliserLieu(unittest.TestCase):
