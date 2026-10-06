@@ -1219,8 +1219,11 @@
   function partager(ev){
     var url = lienPartage(ev);
     if (navigator.share){
-      // Feuille de partage native (mobile, Safari, Chrome/Edge de bureau)
-      navigator.share({ title: ev.title, text: ev.title + " — " + whenLabel(ev) + " · " + partnerOf(ev), url: url })
+      // Feuille de partage native (mobile, Safari, Chrome/Edge de bureau). Le lien
+      // seul, sans « text » : avec un texte, l'action « Copier » de certains
+      // téléphones ne copie que ce texte, sans l'URL. Le titre, la date et
+      // l'affiche viennent de l'aperçu de la page de partage.
+      navigator.share({ title: ev.title, url: url })
         .catch(function(err){ if (!err || err.name !== "AbortError") copier(url); });
     } else {
       copier(url);

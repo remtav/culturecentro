@@ -478,7 +478,9 @@ manque.
 
 Chaque carte porte aussi un bouton **Partager** dont le lien ramène vers Culture
 Centro, et non vers le site du partenaire. Sur mobile, le bouton ouvre la
-feuille de partage du système ; ailleurs, il copie le lien. Le lien partagé est
+feuille de partage du système ; ailleurs, il copie le lien. Seuls le lien et le
+titre sont transmis, sans texte d'accompagnement : avec un texte, l'action
+« Copier » de certains téléphones ne copiait que ce texte, sans l'URL. Le lien partagé est
 la **page de partage** de l'événement, `…/e/<id>/`, où `<id>` est tiré du titre
 et de la date (ex. `e/les-belles-soeurs-2026-10-03/`). Cette page statique porte
 les balises Open Graph — affiche, titre, date, partenaire — pour que Facebook,
