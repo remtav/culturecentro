@@ -1,4 +1,4 @@
-# Événements à venir — salles de spectacle
+# Culture Centro — agenda culturel du centre-ville de Sherbrooke
 
 [![Tests](https://github.com/remtav/culturecentro/actions/workflows/tests.yml/badge.svg)](https://github.com/remtav/culturecentro/actions/workflows/tests.yml)
 ![Couverture](coverage.svg)
@@ -14,6 +14,10 @@ organismes culturels du **centre-ville de Sherbrooke**.
 - **Salles couvertes** : 7 à ce jour (voir [Sources disponibles](#sources-disponibles)).
 - **Sorties** : texte, CSV, JSON, et le feed JSON du site.
 
+[![Page publique de Culture Centro : filtres par discipline, période et partenaire, bande « En ce moment » et liste datée](docs/img/apercu.png)](https://remtav.github.io/culturecentro/)
+
+<sub>Page publique (`web/index.html`) affichée avec son jeu de données de démonstration.</sub>
+
 Récupère la liste des **événements à venir** de la programmation de salles de
 spectacle et permet de les exporter en texte, CSV ou JSON. Chaque salle est
 une **source** (`culturecentro.sources`) qui n'implémente que l'extraction
@@ -25,7 +29,7 @@ logique d'extraction et à l'inscrire au registre.
 
 ## Sommaire
 
-- [Événements à venir — salles de spectacle](#événements-à-venir--salles-de-spectacle)
+- [Culture Centro — agenda culturel du centre-ville de Sherbrooke](#culture-centro--agenda-culturel-du-centre-ville-de-sherbrooke)
   - [Démarrage rapide](#démarrage-rapide)
   - [Installation](#installation)
   - [Structure du projet](#structure-du-projet)
@@ -37,13 +41,7 @@ logique d'extraction et à l'inscrire au registre.
     - [Catégorie artistique automatique](#catégorie-artistique-automatique)
   - [Utilisation en ligne de commande](#utilisation-en-ligne-de-commande)
   - [Utilisation en bibliothèque](#utilisation-en-bibliothèque)
-  - [Théâtre Granada](#théâtre-granada)
-  - [La Petite Boîte Noire](#la-petite-boîte-noire)
-  - [Maison des arts de la parole](#maison-des-arts-de-la-parole)
-  - [Le Tremplin 16-30](#le-tremplin-16-30)
-  - [Musée des beaux-arts de Sherbrooke (MBAS)](#musée-des-beaux-arts-de-sherbrooke-mbas)
-  - [Sporobole](#sporobole)
-  - [Le Grand-Espace](#le-grand-espace)
+  - [Fonctionnement par salle](#fonctionnement-par-salle)
   - [Site web (web/) et feed](#site-web-web-et-feed)
     - [Feed et filtres](#feed-et-filtres)
     - [Ajouter au calendrier](#ajouter-au-calendrier)
@@ -168,7 +166,9 @@ culturecentro/
 │   ├── architecture.md
 │   ├── ajouter-une-source.md
 │   ├── partenaires.md
-│   └── inspiration.md
+│   ├── inspiration.md
+│   ├── img/apercu.png          # capture de la page publique (en-tête du README)
+│   └── sources/                # une fiche technique par salle (+ modèle de fiche)
 ├── scripts/                    # utilitaires (ex. génération du badge de couverture)
 │   └── coverage_badge.py
 ├── .github/workflows/          # intégration continue et publication GitHub Pages
@@ -202,7 +202,10 @@ Le registre faisant autorité est [`culturecentro.sources.SOURCES`](src/culturec
 `culturecentro sources` l'affiche (slug + nom). La catégorie par défaut
 (`Source.categorie_defaut`) ne sert qu'en dernier recours, quand rien d'autre
 ne permet de classer un événement (voir
-[Catégorie artistique automatique](#catégorie-artistique-automatique)).
+[Catégorie artistique automatique](#catégorie-artistique-automatique)). Le
+détail de chaque extraction est dans sa fiche,
+[`docs/sources/<slug>.md`](docs/sources/) (voir
+[Fonctionnement par salle](#fonctionnement-par-salle)).
 
 Les autres partenaires du centre-ville, et l'état de leur intégration, sont
 suivis dans [`docs/partenaires.md`](docs/partenaires.md) : c'est la feuille de
@@ -230,7 +233,9 @@ Le détail des champs et de leur sérialisation est donné dans
 [Utilisation en bibliothèque](#utilisation-en-bibliothèque).
 
 Exemple d'événement dans le feed `web/data/evenements.json` (valeurs
-illustratives). Les dates sont en ISO 8601, sans fuseau (heure locale) ; la
+illustratives). Les dates sont en ISO 8601, sans fuseau : ce sont des heures
+locales (`America/Toronto`), et le filtre « à venir » part de minuit, heure de
+Sherbrooke (`culturecentro.filtrage.minuit_local`). La
 clé `id` n'est pas un champ d'`Evenement` : elle est ajoutée au feed par
 `culturecentro pages`, pour les seuls événements datés (voir
 [Générer le feed et les pages de partage](#générer-le-feed-et-les-pages-de-partage)).
@@ -460,213 +465,26 @@ renvoient toujours la chaîne produite, et l'écrivent en plus dans le fichier
 s'il est fourni. Les fonctions `lister_evenements_a_venir`, `exporter_json` et
 `exporter_csv` sont aussi importables depuis chaque module de source.
 
-## Théâtre Granada
+## Fonctionnement par salle
 
-Module `culturecentro.sources.theatre_granada` (slug `theatre-granada`), qui
-suit l'interface et les options communes décrites plus haut :
+Chaque salle a sa **fiche technique** dans [`docs/sources/`](docs/sources/) :
+page analysée, technique d'extraction (AJAX, billetterie, calendrier…), replis
+et particularités, commandes d'exemple. Toutes suivent l'interface et les
+options communes décrites plus haut ; par exemple :
 
 ```bash
 python -m culturecentro.sources.theatre_granada --format json
 ```
 
-### Fonctionnement
-
-Le site est un WordPress construit avec **WPBakery Page Builder**. Les
-événements sont affichés dans une grille en mode « lazy » : le HTML initial
-ne contient que 10 événements, mais un unique appel AJAX
-(`admin-ajax.php` / `vc_get_vc_grid_data`) renvoie **l'intégralité** des
-événements à venir. Le module reproduit cet appel, puis analyse chaque bloc
-`.vc_grid-item-mini` (titre, date en français, lien).
-
-Les catégories WordPress de chaque bloc mêlent genres (« Musique »,
-« Humour »…) et **salles** : le Granada annonce aussi des spectacles qu'il
-présente ailleurs, classés « La Petite Boîte Noire » ou « Le Grand-Espace -
-CAJB ». Le terme de salle donne le `lieu` (et n'est pas lu comme un genre :
-« Théâtre Granada » n'est pas du théâtre) ; les autres termes donnent la
-catégorie.
-
-Si cet appel échoue (thème modifié, nonce invalide…), le module se rabat
-successivement sur : la grille inline (10 événements), les données
-structurées schema.org `Event` (JSON-LD), puis les sélecteurs du plugin
-« The Events Calendar ». Chaque repli émet un avertissement via `logging`.
-
-## La Petite Boîte Noire
-
-Même interface, dans le module `culturecentro.sources.lapetiteboitenoire` :
-
-```bash
-python -m culturecentro.sources.lapetiteboitenoire                     # liste texte
-python -m culturecentro.sources.lapetiteboitenoire --format json
-python -m culturecentro.sources.lapetiteboitenoire --format csv -o evenements.csv
-```
-
-```python
-from culturecentro.sources.lapetiteboitenoire import (
-    lister_evenements_a_venir,
-    exporter_json,
-)
-
-evenements = lister_evenements_a_venir()
-exporter_json(evenements, "evenements.json")
-```
-
-Les options (`--url`, `--format`, `-o/--sortie`, `--timeout`, `-v`) sont
-identiques à celles du Théâtre Granada. Les événements suivent le schéma commun
-décrit plus haut ; La Petite Boîte Noire n'expose pas de `sous_titre` (toujours
-`None`), et `image` (URL de l'affiche) vaut `None` si la source n'en fournit pas.
-
-### Fonctionnement
-
-La page [`/evenements/`](https://lapetiteboitenoire.com/evenements/) n'affiche
-pas elle-même les spectacles : elle charge un **widget de la billetterie
-[Lepointdevente.com](https://lepointdevente.com)**. Le module télécharge la
-page, y découvre l'URL de la liste Lepointdevente (lien « Programmation
-complète » ou, à défaut, `widget.js`), télécharge cette liste et analyse
-chaque carte `.feature-col[data-tpos-event]` (titre, date en français, lieu,
-affiche). Le lien mène à la fiche propre à l'événement sur Lepointdevente
-(`https://lepointdevente.com/billets/<code>`, le contenu de la fenêtre
-surgissante du widget) plutôt qu'à la programmation générale ; le code est lu
-dans l'URL de l'affiche, sinon on utilise le lien permanent
-`/plugins/embed/redirect?event=<id>`, qui redirige vers la même fiche.
-Le lieu « `<salle>, Sherbrooke, QC` » est normalisé : la ville est
-retirée et toute graphie du nom de la salle (casse, accents) est ramenée à
-« La Petite Boîte Noire », pour qu'un seul lieu apparaisse dans l'agrégation.
-
-La **catégorie** que l'organisateur déclare sur Lepointdevente (« Humour »,
-« Arts littéraires », « Théâtre », « Danse ») n'apparaît ni dans la liste ni
-sur la fiche : seule la recherche du site filtre par catégorie. Le module y
-cherche donc la salle à Sherbrooke, une catégorie à la fois (4 requêtes), et
-attribue la catégorie correspondante aux événements trouvés — un spectacle
-d'humour est ainsi reconnu même quand ni son titre ni sa description ne
-disent « humour ». Les autres événements suivent le classement automatique
-(musique par défaut). En cas d'échec de la recherche, un avertissement est
-émis et ce classement automatique s'applique.
-
-Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
-puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
-via `logging`.
-
-## Maison des arts de la parole
-
-Module `culturecentro.sources.maisondesartsdelaparole`, même interface et mêmes
-options que les autres salles :
-
-```bash
-python -m culturecentro.sources.maisondesartsdelaparole --format json
-```
-
-### Fonctionnement
-
-La page [`/programmation/`](https://maisondesartsdelaparole.com/programmation/)
-affiche un calendrier **EventON** chargé mois par mois : le HTML initial ne
-contient que le mois courant, et le changement de mois passe par un appel AJAX
-(`admin-ajax.php` / `the_ajax_hook`) dont la requête reprend les réglages du
-calendrier (`.cal_arguments`, `.evo-data`, filtres actifs comme la saison) et
-un `nonce` inscrit dans la page. Le module lit le mois courant, puis rejoue
-l'appel « mois suivant » pour les 12 mois à venir. Chaque bloc
-`.eventon_list_event` fournit titre, sous-titre (distribution), dates de début
-et de fin (métadonnées schema.org), affiche, lieu (les spectacles se donnent
-souvent hors les murs : cafés, salles partenaires…) et lien de la fiche.
-
-Si le calendrier est introuvable, le module retombe sur les données JSON-LD de
-la page ; si un appel AJAX échoue, la boucle s'arrête avec les mois déjà
-chargés. Chaque repli émet un avertissement via `logging`.
-
-## Le Tremplin 16-30
-
-Module `culturecentro.sources.tremplin16_30`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.tremplin16_30 --format json
-```
-
-### Fonctionnement
-
-La page [`/evenements/`](https://tremplin16-30.com/evenements/) liste les
-événements à venir sous forme de blocs Gutenberg « média + texte »
-(`.wp-block-media-text`) : titre `h2`, `figure` dont l'affiche est un fond
-CSS, paragraphes `p.event-data` (dates, lieu, tarif) et bouton « Plus
-d'infos » vers la fiche. Les dates sont en texte libre et souvent **sans
-année** (celle-ci figure dans le titre, ex. « automne 2026 ») ; l'analyseur
-partagé `culturecentro.dates.plage_dates_fr` / `trouver_dates_fr` gère :
-
-- « Mardi 29 septembre 2026 - 17h » → un événement ;
-- « Jeudis 17 septembre, 29 octobre, 26 novembre et 17 décembre - 18h30 à 20h30 »
-  → **un événement par date** (même titre, même lien) ;
-- « Tous les mercredis du 9 septembre au 16 décembre - 18h30 à 20h30 » → un
-  événement avec `date_debut` et `date_fin` (série en cours conservée).
-
-Le texte des dates est repris en `sous_titre`. Repli JSON-LD si aucun bloc
-n'est trouvé.
-
-## Musée des beaux-arts de Sherbrooke (MBAS)
-
-Module `culturecentro.sources.mbas`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.mbas --format json
-```
-
-### Fonctionnement
-
-Les expositions sont réparties sur deux pages,
-[`/en-cours/`](https://mbas.qc.ca/en-cours/) (page par défaut) et
-[`/a-venir/`](https://mbas.qc.ca/a-venir/) (téléchargée en plus). Chaque
-exposition est un bloc `div#rectangle` : affiche `img`, titre `h2`, un
-paragraphe « type + période » (« EXPOSITION TEMPORAIRE / 15 octobre 2026 au
-21 mars 2027 », « EXPO-VENTE / Jusqu'en octobre 2026 », « EXPOSITION
-PERMANENTE »), parfois un sous-titre (thème, artiste invité), et un bouton
-« En savoir plus ». La période donne `date_debut` et `date_fin` : une
-exposition **déjà commencée** reste listée tant qu'elle n'est pas terminée ;
-une exposition permanente n'a pas de date (triée en fin de liste). Le
-`sous_titre` reprend le sous-titre du bloc, sinon le type d'exposition.
-Repli JSON-LD si aucun bloc n'est trouvé.
-
-## Sporobole
-
-Module `culturecentro.sources.sporobole`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.sporobole --format json
-```
-
-### Fonctionnement
-
-La page [`/programmation/`](https://sporobole.org/programmation/) ne contient
-aucun événement : la liste est injectée par un appel AJAX du thème
-(`admin-ajax.php` / `standish_select_refresh`), filtrable par type de contenu
-(« Diffusions », projets, créations, ateliers) et paginé. Seules les
-**diffusions** (expositions, lancements, résidences ouvertes…) portent des
-dates : le module les interroge page après page, tant que les événements
-restent en cours ou à venir (la liste est triée du plus récent au plus
-ancien). Chaque bloc `.standish-single-event` fournit l'affiche (fond CSS), la
-catégorie (`sous_titre`), le titre, le lien et la période (« Du 02 octobre
-2026 au 27 novembre 2026 » → `date_debut`/`date_fin`, « Le 23 octobre 2026 »).
-Repli JSON-LD si l'appel AJAX échoue.
-
-## Le Grand-Espace
-
-Module `culturecentro.sources.legrandespace`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.legrandespace --format json
-```
-
-### Fonctionnement
-
-Le site publie sa programmation par **public** et par **édition** (saison) :
-[`/public/grand-public/`](https://legrandespace.ca/public/grand-public/?edition=2026-2027)
-et [`/public/jeune-public/`](https://legrandespace.ca/public/jeune-public/?edition=2026-2027),
-avec un paramètre `?edition=2026-2027`. L'édition en cours est déduite de la
-date (la saison commence en août) ; `--url` permet d'en viser une autre.
-Chaque page contient d'abord un sélecteur de billetterie (tous les spectacles,
-liens `#`, ignoré) puis la liste proprement dite (`.liste_spectacle_block`) :
-blocs `.spectacle` avec l'affiche (`img.product_image`), le genre et la
-compagnie (réunis en `sous_titre`), le titre, le lien de la fiche et la date de
-représentation (« 18 octobre 2026 10 h 00 », « Du 7 au 17 octobre 2026 »,
-« Du 29 octobre 2026 au 28 mai 2027 » → `date_debut`/`date_fin`). Les
-spectacles marqués « [Terminé] » sont ignorés. Le module télécharge les deux
-publics et fusionne les listes ; repli JSON-LD si aucun bloc n'est trouvé.
+| Salle | En bref | Fiche |
+| --- | --- | --- |
+| Théâtre Granada | WordPress / WPBakery : un appel AJAX (`vc_get_vc_grid_data`) renvoie toute la grille ; les catégories WordPress donnent le genre ou le lieu. Replis : grille inline, JSON-LD, The Events Calendar. | [`theatre-granada.md`](docs/sources/theatre-granada.md) |
+| La Petite Boîte Noire | Widget de la billetterie Lepointdevente : liste des spectacles, lien vers leur fiche de billetterie ; catégorie lue via la recherche du site (4 requêtes). Replis : URL de billetterie connue, JSON-LD. | [`la-petite-boite-noire.md`](docs/sources/la-petite-boite-noire.md) |
+| Maison des arts de la parole | Calendrier EventON : mois courant, puis 12 mois rejoués en AJAX (`the_ajax_hook`, nonce de la page) ; spectacles souvent hors les murs. Repli : JSON-LD. | [`maison-des-arts-de-la-parole.md`](docs/sources/maison-des-arts-de-la-parole.md) |
+| Le Tremplin 16-30 | Blocs Gutenberg « média + texte » ; dates en texte libre, souvent sans année : une liste de dates donne un événement par date, « tous les mercredis… » une série. Repli : JSON-LD. | [`tremplin-16-30.md`](docs/sources/tremplin-16-30.md) |
+| Musée des beaux-arts de Sherbrooke (MBAS) | Expositions des pages « en cours » et « à venir » (blocs `div#rectangle`) ; la période donne début et fin, une exposition permanente n'a pas de date. Repli : JSON-LD. | [`mbas.md`](docs/sources/mbas.md) |
+| Sporobole | Liste AJAX du thème (`standish_select_refresh`) : seules les diffusions, page après page, tant qu'elles sont en cours ou à venir. Repli : JSON-LD. | [`sporobole.md`](docs/sources/sporobole.md) |
+| Le Grand-Espace | Pages grand public et jeune public de l'édition (saison) en cours (`?edition=2026-2027`) ; spectacles « [Terminé] » ignorés. Repli : JSON-LD. | [`le-grand-espace.md`](docs/sources/le-grand-espace.md) |
 
 ## Site web (`web/`) et feed
 
@@ -786,9 +604,8 @@ pip install -e ".[dev]"
 pre-commit install        # facultatif : lance ruff + mypy à chaque commit
 ```
 
-`pre-commit` ne fait pas partie des dépendances `[dev]` : l'installer d'abord
-(`pip install pre-commit`). Pour lancer les hooks sur tout le dépôt sans
-attendre un commit : `pre-commit run --all-files`.
+`pre-commit` est fourni par les dépendances `[dev]`. Pour lancer les hooks sur
+tout le dépôt sans attendre un commit : `pre-commit run --all-files`.
 
 | Outil | Commande | Rôle |
 | --- | --- | --- |
@@ -858,13 +675,15 @@ publication du site est un workflow distinct (voir
   [Développement](#développement) la reproduit en local.
 - Pour une nouvelle salle : suivre [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md)
   et choisir parmi les partenaires de [`docs/partenaires.md`](docs/partenaires.md),
-  puis mettre à jour le tableau [Sources disponibles](#sources-disponibles) et
-  ajouter une section « Fonctionnement » à ce README.
+  puis mettre à jour les tableaux [Sources disponibles](#sources-disponibles)
+  et [Fonctionnement par salle](#fonctionnement-par-salle), et rédiger sa
+  fiche dans [`docs/sources/`](docs/sources/) (modèle fourni).
 
 ## Documentation
 
 - [`docs/architecture.md`](docs/architecture.md) — vue d'ensemble du paquet et du flux de données.
 - [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md) — guide pour brancher une nouvelle salle.
+- [`docs/sources/`](docs/sources/) — fiche technique de chaque salle (extraction, replis) et modèle de fiche.
 - [`docs/partenaires.md`](docs/partenaires.md) — partenaires culturels du centre-ville (feuille de route des sources).
 - [`docs/inspiration.md`](docs/inspiration.md) — sites d'agendas culturels agrégés servant d'inspiration pour le design.
 
