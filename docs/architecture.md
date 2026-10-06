@@ -75,7 +75,11 @@ exports uniformes. `date_fin` sert aux événements qui s'étalent dans le temps
 4. `web/index.html` charge ce feed (repli sur des données de démo s'il est
    absent) et l'affiche ; le bouton Partager pointe vers la page de partage.
 5. Le workflow `publish.yml` régénère le feed et les pages de partage, puis
-   déploie `web/` sur GitHub Pages.
+   déploie `web/` sur GitHub Pages. Le feed déjà en ligne sert de repli
+   (`lister --precedent`) : une salle restée en échec malgré les reprises
+   (`--tentatives`, `--attente`) y reprend ses derniers événements, et le
+   rapport d'échecs (`--rapport`) fait échouer le dernier pas du workflow,
+   ce qui déclenche le courriel de notification de GitHub.
 
 ## Qualité
 

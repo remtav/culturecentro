@@ -170,8 +170,28 @@ Tremplin 16-30 »…) et les événements **hors du centre-ville** (autre
 municipalité, campus, quartier périphérique) sont écartés — voir
 `culturecentro.lieux`, dont les listes de lieux connus, de rues du
 centre-ville et de marqueurs hors périmètre sont la « carte » éditable du
-projet. Une salle indisponible est ignorée avec un avertissement (les autres
-sont conservées).
+projet. Une salle indisponible ne fait pas échouer l'agrégation (voir
+[Salle indisponible](#salle-indisponible--reprises-repli-et-alerte)).
+
+### Salle indisponible : reprises, repli et alerte
+
+Le site d'un partenaire peut être momentanément hors ligne (connexion
+refusée, délai dépassé) ou avoir changé de structure. Dans ce cas :
+
+- **reprises** : avec `--tentatives N`, une salle en panne réseau est
+  interrogée de nouveau, jusqu'à N fois, après `--attente` secondes (délai
+  doublé à chaque essai). Seules les salles en panne sont réinterrogées. Une
+  erreur d'extraction (structure du site modifiée) n'est pas réessayée ;
+- **repli** : avec `--precedent FEED`, une salle restée en échec reprend ses
+  événements du feed précédent (ceux dont le `partenaire` est la salle, et
+  qui sont encore à venir), au lieu de disparaître du site ;
+- **rapport** : avec `--rapport FICHIER`, la liste des salles restées en
+  échec est écrite en JSON (`slug`, `nom`, `erreur`, `tentatives`,
+  `conserves`) ; elle est vide si tout a fonctionné. Le code de sortie reste 0 :
+  le feed est produit malgré l'échec.
+
+En publication, le workflow utilise les trois (voir
+[Publication](#publication-github-pages)).
 
 ### Spectacle annoncé par deux partenaires
 
@@ -206,6 +226,8 @@ culturecentro lister                      # agrège toutes les salles (texte)
 culturecentro lister --format json        # agrège en JSON
 culturecentro lister --source theatre-granada --format csv -o prog.csv
 culturecentro lister --sans-fiches        # sans lecture des fiches d'événement (catégories)
+culturecentro lister --format json --tentatives 3 --attente 120 \
+  --precedent ancien.json --rapport echecs.json   # reprises, repli et rapport d'échecs
 python -m culturecentro lister            # équivalent sans le script installé
 ```
 
@@ -601,6 +623,16 @@ les pages de partage (l'adresse publique vient de `actions/configure-pages`),
 puis déploie `web/` sur **GitHub Pages** — quotidiennement (cron), à chaque `push`
 sur `main` touchant `web/` ou le paquet, et à la demande. Prérequis (une seule
 fois) : **Settings → Pages → Source = GitHub Actions**.
+
+Le feed déjà en ligne est d'abord téléchargé et sert de repli : une salle en
+panne réseau est réessayée deux fois (après 2 puis 4 minutes), puis, si elle
+reste en échec, ses derniers événements connus sont conservés ; si toute
+l'agrégation échoue, le feed en ligne est republié tel quel. Le site est
+ensuite déployé, puis le dernier pas du workflow **échoue** si une salle est
+restée en échec : GitHub envoie alors un courriel de notification (réglage
+**Settings → Notifications → Actions** du compte qui reçoit les
+notifications du workflow), et le résumé du lancement liste les salles en
+cause.
 
 ## Développement
 

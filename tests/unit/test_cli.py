@@ -71,6 +71,80 @@ class TestCommandeLister(unittest.TestCase):
                 self.assertEqual(json.load(flux)[0]["titre"], "Concert")
 
 
+class TestReprisesEtRapport(unittest.TestCase):
+    def test_options_transmises_et_feed_precedent_relu(self):
+        with tempfile.TemporaryDirectory() as rep:
+            precedent = os.path.join(rep, "precedent.json")
+            with open(precedent, "w", encoding="utf-8") as flux:
+                json.dump([dict(EVENEMENTS[0].to_dict(), id="concert-2026-10-01")], flux)
+            with mock.patch("culturecentro.aggregate.agreger", return_value=[]) as agreger:
+                code, _ = _lancer(
+                    ["lister", "--tentatives", "3", "--attente", "120", "--precedent", precedent]
+                )
+        self.assertEqual(code, 0)
+        kwargs = agreger.call_args.kwargs
+        self.assertEqual((kwargs["tentatives"], kwargs["attente"]), (3, 120.0))
+        self.assertEqual(kwargs["precedents"], EVENEMENTS)
+
+    def test_sans_reprise_ni_repli_par_defaut(self):
+        with mock.patch("culturecentro.aggregate.agreger", return_value=[]) as agreger:
+            code, _ = _lancer(["lister"])
+        self.assertEqual(code, 0)
+        self.assertEqual(agreger.call_args.kwargs["tentatives"], 1)
+        self.assertIsNone(agreger.call_args.kwargs["precedents"])
+
+    def test_feed_precedent_illisible_ignore(self):
+        with tempfile.TemporaryDirectory() as rep:
+            precedent = os.path.join(rep, "precedent.json")
+            for contenu in (
+                "pas du json",
+                '{"titre": "pas une liste"}',
+                '[{"lieu": "sans titre"}]',
+            ):
+                with open(precedent, "w", encoding="utf-8") as flux:
+                    flux.write(contenu)
+                with mock.patch("culturecentro.aggregate.agreger", return_value=[]) as agreger:
+                    with self.assertLogs("culturecentro.cli", level="WARNING"):
+                        code, _ = _lancer(["lister", "--precedent", precedent])
+                self.assertEqual(code, 0)
+                self.assertEqual(agreger.call_args.kwargs["precedents"], [])
+            manquant = os.path.join(rep, "absent.json")
+            with mock.patch("culturecentro.aggregate.agreger", return_value=[]) as agreger:
+                with self.assertLogs("culturecentro.cli", level="WARNING"):
+                    _lancer(["lister", "--precedent", manquant])
+            self.assertEqual(agreger.call_args.kwargs["precedents"], [])
+
+    def test_rapport_des_salles_en_echec(self):
+        from culturecentro.aggregate import Echec
+
+        def agreger_avec_echec(sources, **kwargs):
+            kwargs["echecs"].append(Echec("ko", "KO", "Connection refused", 3, conserves=5))
+            return EVENEMENTS
+
+        with tempfile.TemporaryDirectory() as rep:
+            rapport = os.path.join(rep, "rapport.json")
+            with mock.patch("culturecentro.aggregate.agreger", side_effect=agreger_avec_echec):
+                code, _ = _lancer(["lister", "--format", "json", "--rapport", rapport])
+            self.assertEqual(code, 0)  # le feed est produit malgré l'échec
+            with open(rapport, encoding="utf-8") as flux:
+                self.assertEqual(
+                    json.load(flux),
+                    [
+                        {
+                            "slug": "ko",
+                            "nom": "KO",
+                            "erreur": "Connection refused",
+                            "tentatives": 3,
+                            "conserves": 5,
+                        }
+                    ],
+                )
+            with mock.patch("culturecentro.aggregate.agreger", return_value=EVENEMENTS):
+                _lancer(["lister", "--rapport", rapport])
+            with open(rapport, encoding="utf-8") as flux:
+                self.assertEqual(json.load(flux), [])  # aucun échec : liste vide
+
+
 class TestSansFiches(unittest.TestCase):
     def test_option_transmise_a_agreger(self):
         from culturecentro.cli import principal
