@@ -63,6 +63,9 @@
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px rgba(0,0,0,.34);
     color-scheme: dark;
   }
+  /* Thème clair choisi : « only light » empêche le navigateur (thème sombre automatique de
+     Chrome Android, Samsung Internet…) d'assombrir lui-même la page, ce qui la rendait sombre. */
+  :root[data-theme="light"] { color-scheme: only light; }
 
   * { box-sizing: border-box; }
   body {
