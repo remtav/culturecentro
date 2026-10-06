@@ -551,6 +551,16 @@ prend l'image par défaut [`web/img/partage.png`](web/img/partage.png). Si
 l'événement n'est plus au feed (passé, renommé par le partenaire), la page
 404 renvoie vers l'agenda, où un bandeau le signale.
 
+Le sous-dossier [`web/variantes/`](web/variantes/) propose **cinq variantes de
+design** à présenter au client (affiche, calendrier, application mobile, par
+lieu, programme accessible), avec une page de comparaison
+(`web/variantes/index.html`). Elles lisent le même feed que la page publique
+(`web/data/evenements.json`, images comprises) via `commun.js`, qui en déduit
+aussi les activités récurrentes (même titre chez un partenaire, à au moins six
+jours d'écart) ; sans feed, elles retombent sur un jeu de démonstration. Le
+plan de la variante 4 est tracé d'après OpenStreetMap et les lieux y sont
+placés à leur adresse géocodée.
+
 On génère le feed, puis les pages de partage, avec la CLI :
 
 ```bash
@@ -622,6 +632,7 @@ GitHub Actions exécute, sur chaque `push` et *pull request*
 - [`docs/architecture.md`](docs/architecture.md) — vue d'ensemble du paquet et du flux de données.
 - [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md) — guide pour brancher une nouvelle salle.
 - [`docs/partenaires.md`](docs/partenaires.md) — partenaires culturels du centre-ville (feuille de route des sources).
+- [`docs/inspiration.md`](docs/inspiration.md) — sites d'agendas culturels agrégés servant d'inspiration pour le design.
 
 ## Licence
 
