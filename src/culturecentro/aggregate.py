@@ -17,7 +17,7 @@ from datetime import datetime
 import requests
 
 from culturecentro.categories import Categorisation
-from culturecentro.filtrage import finaliser, minuit_utc
+from culturecentro.filtrage import finaliser, minuit_local
 from culturecentro.http import creer_session
 from culturecentro.lieux import est_centre_ville, normaliser_lieu
 from culturecentro.models import Evenement
@@ -37,7 +37,8 @@ def agreger(
 
     Args:
         sources: salles à interroger (défaut : toutes celles enregistrées).
-        a_partir_de: seuil temporel ; par défaut minuit du jour courant (UTC).
+        a_partir_de: seuil temporel ; par défaut minuit du jour courant (heure
+            de Sherbrooke).
         timeout: délai d'attente réseau par salle, en secondes.
         lire_fiches: lire la fiche des événements dont la catégorie n'a pu
             être déterminée autrement (une requête par fiche).
@@ -58,7 +59,7 @@ def agreger(
     if sources is None:
         sources = toutes()
     if a_partir_de is None:
-        a_partir_de = minuit_utc()
+        a_partir_de = minuit_local()
 
     session = creer_session() if lire_fiches else None
     categorisation = Categorisation(session=session, timeout=timeout)

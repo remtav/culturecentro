@@ -13,6 +13,9 @@ authors = [{ name = "remtav" }]
 dependencies = [
     "requests>=2.28",
     "beautifulsoup4>=4.11",
+    # Base des fuseaux horaires pour zoneinfo (America/Toronto) : fournie par
+    # le système sous Linux et macOS, pas sous Windows.
+    "tzdata; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
