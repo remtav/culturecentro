@@ -471,11 +471,27 @@ Outlook ou Samsung Calendrier — ou *Google Agenda* (lien pré-rempli), pratiqu
 sur Android où l'app Google Agenda n'ouvre pas les `.ics`. Heures en
 `America/Toronto` ; un événement sur plusieurs jours (ou sans heure) est inscrit
 en journées entières, et une durée de 2 h est supposée quand l'heure de fin
-manque. On génère le feed avec la CLI :
+manque.
+
+Chaque carte porte aussi un bouton **Partager** dont le lien ramène vers Culture
+Centro, et non vers le site du partenaire : `…/?e=<id>`, où `<id>` est tiré
+du titre et de la date (ex. `?e=les-belles-soeurs-2026-10-03`). Sur mobile, le
+bouton ouvre la feuille de partage du système ; ailleurs, il copie le lien.
+À l'arrivée, la page réinitialise les filtres, fait défiler jusqu'à
+l'événement et le met en évidence. Si l'événement n'est plus au feed (passé,
+renommé par le partenaire), un bandeau le signale au-dessus de l'agenda.
+
+On génère le feed avec la CLI :
 
 ```bash
 python -m culturecentro lister --format json -o web/data/evenements.json
 ```
+
+**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
+datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
+téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
+reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
+conteneur), pas celle de l'écran.
 
 ### Publication (GitHub Pages)
 

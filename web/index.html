@@ -12,6 +12,13 @@
 </style>
 <title>Culture Centro Sherbrooke</title>
 <meta name="description" content="Guichet unique de la programmation culturelle du centre-ville de Sherbrooke.">
+<!-- Aperçu des liens partagés (Facebook, Messenger, WhatsApp…) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Culture Centro Sherbrooke">
+<meta property="og:title" content="Culture Centro — toute la culture du centre-ville de Sherbrooke">
+<meta property="og:description" content="Théâtre, musique, arts visuels, littérature… La programmation culturelle du centre-ville de Sherbrooke, en un seul agenda.">
+<meta property="og:locale" content="fr_CA">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
@@ -191,14 +198,42 @@
     background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
     overflow: hidden; box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .15s;
     text-decoration: none; color: inherit;
+    scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--tb, 70px) + 14px);
   }
   /* Toute la carte est cliquable : le lien du titre s'étend sur la carte entière,
-     sauf le bouton « Ajouter au calendrier » posé au-dessus. */
+     sauf les boutons « Partager » et « Ajouter au calendrier » posés au-dessus. */
   .ev-link { text-decoration: none; }
   .ev-link::after { content: ""; position: absolute; inset: 0; z-index: 3; }
   .ev-link:focus-visible { outline: none; }
   .ev-link:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius); }
   .event:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(22,22,46,.08), 0 16px 34px rgba(22,22,46,.1); }
+
+  /* Événement ouvert depuis un lien partagé (?e=…) */
+  .event.is-shared { outline: 3px solid var(--accent); outline-offset: 3px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .event.is-shared { animation: cc-pulse 1.1s ease-out 2; }
+  }
+  @keyframes cc-pulse {
+    from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent), var(--shadow); }
+    to { box-shadow: 0 0 0 16px transparent, var(--shadow); }
+  }
+  .notice {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 12px 14px 12px 16px;
+    border-radius: 12px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+    background: color-mix(in srgb, var(--accent) 10%, var(--card)); font-size: 14px; color: var(--ink-soft);
+  }
+  .notice b { color: var(--ink); }
+  .notice button { margin-left: auto; flex: none; border: 0; background: none; color: var(--ink-faint); font: inherit; font-size: 20px; line-height: 1; padding: 2px 6px; cursor: pointer; }
+  .notice button:hover { color: var(--ink); }
+
+  /* Message éphémère (« Lien copié ») */
+  .toast {
+    position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 50;
+    transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+    background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 600;
+    padding: 10px 18px; border-radius: 999px; box-shadow: var(--shadow); transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
   .cover { position: relative; min-height: 132px; color: #fff; overflow: hidden; background: #1a1a24; }
   .cover .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   /* Affiche fournie par la salle (feed) : recouvre la scène illustrée, qui reste en repli si l'image échoue. */
@@ -220,7 +255,8 @@
   }
   .event h3 { font-size: 19px; font-weight: 700; }
   .event .venue { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
-  .event .venue.partner + .venue { font-weight: 500; color: var(--ink-faint); margin-top: -4px; }
+  /* « org » (et non « partner ») : .partner est la tuile encadrée de la section Lieux partenaires. */
+  .event .venue.org + .venue { font-weight: 500; color: var(--ink-faint); margin-top: -4px; }
   .event .venue svg { color: var(--ink-faint); flex: none; }
   .event .when { font-size: 13px; color: var(--ink-faint); font-weight: 500; }
   .event .desc { font-size: 13.5px; color: var(--ink-soft); margin-top: 1px; }
@@ -248,14 +284,16 @@
   .tag-soon { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: var(--ink-soft); background: color-mix(in srgb, var(--ink) 8%, var(--card)); border: 1px solid var(--line); }
   /* Ajouter au calendrier : bouton-icône sur la vignette (coin opposé à la pastille de date,
      loin de la réglette des mois) + menu (calendrier de l'appareil ou Google Agenda) */
-  .cal-btn {
+  /* Partager : même bouton-icône, juste à gauche de celui du calendrier */
+  .cal-btn, .share-btn {
     position: absolute; right: 10px; bottom: 10px; z-index: 4; padding: 0; border: 0;
     width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer;
     color: #fff; background: rgba(0,0,0,.38); backdrop-filter: blur(2px); transition: background .15s;
   }
-  .cal-btn:hover, .cal-btn[aria-expanded="true"] { background: rgba(0,0,0,.62); }
-  .cal-btn:focus-visible { border-radius: 10px; }
-  .cal-btn svg { display: block; }
+  .share-btn { right: 50px; }
+  .cal-btn:hover, .cal-btn[aria-expanded="true"], .share-btn:hover { background: rgba(0,0,0,.62); }
+  .cal-btn:focus-visible, .share-btn:focus-visible { border-radius: 10px; }
+  .cal-btn svg, .share-btn svg { display: block; }
   .cal-menu {
     position: absolute; z-index: 5; min-width: 196px; max-width: calc(100% - 16px);
     display: flex; flex-direction: column; padding: 5px;
@@ -344,11 +382,44 @@
     .cover { min-height: 100%; }
     .cover .date-badge { top: 8px; left: 8px; padding: 4px 7px; }
     .cover .date-badge b { font-size: 17px; }
-    .cal-btn { right: 8px; bottom: 8px; width: 32px; height: 32px; }
+    .cal-btn, .share-btn { right: 8px; bottom: 8px; width: 32px; height: 32px; }
+    .share-btn { right: 46px; }
     .event .body { padding: 13px 14px; }
     .event h3 { font-size: 17px; }
     .now-rows { grid-template-columns: 1fr; }
     .agenda { padding-block: 20px 40px; }
+  }
+
+  /* ---------- Billet : talon de date détachable à droite des cartes de la liste ---------- */
+  /* Seuil en requête de conteneur : il suit la largeur réelle de la liste, donc
+     aussi la taille du texte choisie (A− / A+). En deçà (téléphone, texte très
+     agrandi), le talon est masqué et la carte garde sa pastille de date. La bande
+     « En ce moment » n'a pas de talon. */
+  #list { container: liste / inline-size; }
+  .stub { display: none; }
+  @container liste (min-width: 640px) {
+    #list .event { grid-template-columns: 168px 1fr 136px; }
+    #list .cover .date-badge, #list .event .when { display: none; }
+    #list .stub {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      position: relative; padding: 14px 10px; min-width: 0; text-align: center; line-height: 1;
+      border-left: 2px dashed var(--line-strong);
+      background: color-mix(in srgb, var(--dc) 6%, var(--card));
+    }
+    /* encoches du talon, en haut et en bas du pointillé */
+    #list .stub::before, #list .stub::after {
+      content: ""; position: absolute; left: -9px; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--paper); border: 1px solid var(--line);
+    }
+    #list .stub::before { top: -9px; }
+    #list .stub::after { bottom: -9px; }
+  }
+  .stub span { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+  .stub b { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .stub .time {
+    margin-top: 8px; padding: 4px 9px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-soft); font-variant-numeric: tabular-nums;
+    background: color-mix(in srgb, var(--dc) 14%, var(--card));
   }
 
   /* ---------- Partenaires (condensé) ---------- */
@@ -440,6 +511,10 @@
     <h2>Agenda</h2>
     <span class="count" id="resCount"></span>
   </div>
+  <div class="notice" id="notice" role="status" hidden>
+    <span><b>Cet événement n'est plus à l'affiche.</b> Voici la programmation actuelle.</span>
+    <button type="button" id="noticeClose" aria-label="Fermer">×</button>
+  </div>
   <section class="now-band" id="nowBand" hidden>
     <div class="band-head"><h3>En ce moment</h3><span>expositions et parcours à voir avant la fin</span></div>
     <div class="now-rows" id="nowRows"></div>
@@ -496,6 +571,8 @@
     </div>
   </div>
 </footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function () {
@@ -725,6 +802,27 @@
 
   function parseD(s){ var p = s.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
 
+  // Identifiant d'événement pour les liens partagés (?e=<id>) : titre + date, donc
+  // stable d'un jour à l'autre tant que le partenaire ne change ni l'un ni l'autre.
+  // Ex. « Les Belles-Sœurs » le 3 oct. 2026 → les-belles-soeurs-2026-10-03.
+  function slugify(s){
+    return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+      .replace(/œ/g, "oe").replace(/æ/g, "ae").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+  function assignerIds(){
+    var vus = {};
+    EVENTS.forEach(function(ev){
+      var id = (slugify(ev.title).slice(0, 60).replace(/-+$/, "") || "evenement") + "-" + ev.date;
+      if (vus[id]){ // même titre deux fois le même jour : on distingue par l'heure, sinon -2, -3…
+        var heure = String(ev.time || "").replace(/\D/g, "");
+        if (heure && !vus[id + "-" + heure]) id += "-" + heure;
+        else { var n = 2; while (vus[id + "-" + n]) n++; id += "-" + n; }
+      }
+      vus[id] = true;
+      ev.id = id;
+    });
+  }
+
   function whenLabel(ev){
     var s = parseD(ev.date);
     if (ev.dateEnd){
@@ -858,9 +956,28 @@
   var HOUSE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>';
   function placeHtml(ev){
     var partner = partnerOf(ev);
-    var html = '<span class="venue partner">' + HOUSE + ' ' + partner + '</span>';
+    var html = '<span class="venue org">' + HOUSE + ' ' + partner + '</span>';
     if (ev.venue && ev.venue !== partner) html += '<span class="venue">' + PIN + ' ' + ev.venue + '</span>';
     return html;
+  }
+
+  // Talon de date de la vue Billet : [petit libellé, grand chiffre, mois] + heure
+  function stubParts(ev, cont){
+    var s = parseD(ev.date), e = endOf(ev);
+    if (cont){
+      if (s <= NOW) return ["Jusqu'au", e.getDate(), MOIS_ABBR[e.getMonth()]];
+      return ["Dès le", s.getDate(), MOIS_ABBR[s.getMonth()]];
+    }
+    if (ev.dateEnd){
+      var mois = s.getMonth() === e.getMonth() ? MOIS_ABBR[s.getMonth()] : MOIS_ABBR[s.getMonth()] + "–" + MOIS_ABBR[e.getMonth()];
+      return [JOURS[s.getDay()] + "–" + JOURS[e.getDay()], s.getDate() + "–" + e.getDate(), mois];
+    }
+    return [JOURS[s.getDay()], s.getDate(), MOIS_ABBR[s.getMonth()]];
+  }
+  function stubHtml(ev, cont){
+    var p = stubParts(ev, cont);
+    return '<div class="stub"><span>'+ p[0] +'</span><b>'+ p[1] +'</b><span>'+ p[2] +'</span>' +
+      (ev.time ? '<span class="time">'+ ev.time +'</span>' : '') + '</div>';
   }
 
   // ---------- Ajouter au calendrier ----------
@@ -1046,7 +1163,8 @@
     if (calBtnOuvert && e.relatedTarget && !calMenu.contains(e.relatedTarget) && e.relatedTarget !== calBtnOuvert) fermerCal(false);
   });
 
-  function card(ev, uid, cont){
+  // talon : carte de la liste datée (billet) ; la bande « En ce moment » n'en a pas.
+  function card(ev, uid, cont, talon){
     var d = DISC[ev.d];
     var started = parseD(ev.date) <= NOW;
     var tag = "";
@@ -1054,9 +1172,11 @@
     else if (cont && !started && daysUntil(parseD(ev.date)) <= 30) tag = '<span class="tag-soon">Bientôt</span>';
     var el = document.createElement("article");
     el.className = "event";
+    el.id = "e-" + ev.id;
     el.style.setProperty("--dc", d.pill);
     el.innerHTML =
       '<div class="cover">' + SCENES[ev.d](uid) + photoHtml(ev) + badgeHtml(ev, cont) +
+        '<button class="share-btn" type="button" title="Partager">' + SHARE_ICO + '</button>' +
         '<button class="cal-btn" type="button" aria-expanded="false" aria-controls="cal-menu" title="Ajouter au calendrier">' + CAL_ICO + '</button>' +
       '</div>' +
       '<div class="body">' +
@@ -1064,17 +1184,54 @@
         '<h3><a class="ev-link">'+ ev.title +'</a></h3>' +
         placeHtml(ev) +
         '<span class="when">'+ whenLine(ev, cont) +'</span>' +
-        '<span class="desc">'+ ev.desc +'</span>' +
-      '</div>';
+        (ev.desc ? '<span class="desc">'+ ev.desc +'</span>' : '') +
+      '</div>' +
+      (talon ? stubHtml(ev, cont) : '');
     var a = el.querySelector(".ev-link");
     a.href = ev.lien || "#";
     if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    var share = el.querySelector(".share-btn");
+    share.setAttribute("aria-label", "Partager « " + a.textContent + " »");
+    share.addEventListener("click", function(){ partager(ev); });
     var btn = el.querySelector(".cal-btn");
     btn.setAttribute("aria-label", "Ajouter « " + a.textContent + " » au calendrier");
     btn.addEventListener("click", function(){
       if (calBtnOuvert === btn) fermerCal(false); else ouvrirCal(btn, ev);
     });
     return el;
+  }
+
+  // Partage : le lien pointe vers Culture Centro (?e=<id>), pas vers le partenaire,
+  // pour que la personne qui le reçoit arrive d'abord sur l'agenda.
+  var SHARE_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>';
+  function lienPartage(ev){
+    return location.href.split(/[?#]/)[0] + "?e=" + encodeURIComponent(ev.id);
+  }
+  function partager(ev){
+    var url = lienPartage(ev);
+    if (navigator.share){
+      // Feuille de partage native (mobile, Safari, Chrome/Edge de bureau)
+      navigator.share({ title: ev.title, text: ev.title + " — " + whenLabel(ev) + " · " + partnerOf(ev), url: url })
+        .catch(function(err){ if (!err || err.name !== "AbortError") copier(url); });
+    } else {
+      copier(url);
+    }
+  }
+  function copier(url){
+    function demander(){ window.prompt("Copiez ce lien :", url); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ toast("Lien copié"); }, demander);
+    } else {
+      demander();
+    }
+  }
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2500);
   }
 
   var observer = null;
@@ -1135,7 +1292,7 @@
       wrap.appendChild(head);
       var rows = document.createElement("div");
       rows.className = "rows";
-      g.items.forEach(function(o){ rows.appendChild(card(o.ev, uid++, o.cont)); });
+      g.items.forEach(function(o){ rows.appendChild(card(o.ev, uid++, o.cont, true)); });
       wrap.appendChild(rows);
       listEl.appendChild(wrap);
 
@@ -1283,16 +1440,45 @@
   window.addEventListener("scroll", positionRail, { passive: true });
   window.addEventListener("resize", positionRail);
 
+  assignerIds();
   render();
   positionRail();
 
   // Données en direct : si le feed agrégé (data/evenements.json) est présent
   // et non vide, il remplace les données de démonstration. Sinon (fichier
   // absent, vide, ou ouverture locale du fichier), la démo reste affichée.
-  chargerFeed();
+  // Le lien partagé (?e=…) n'est traité qu'ensuite, sur les données définitives.
+  chargerFeed().then(appliquerLienProfond);
+
+  // Arrivée par un lien partagé (?e=<id>) : l'événement est mis en évidence au
+  // milieu de l'agenda complet ; s'il n'y est plus, un bandeau le signale.
+  var noticeEl = document.getElementById("notice");
+  document.getElementById("noticeClose").addEventListener("click", function(){ noticeEl.hidden = true; });
+  function appliquerLienProfond(){
+    var id = null;
+    try { id = new URLSearchParams(location.search).get("e"); } catch(e){}
+    if (!id) return;
+    var trouve = EVENTS.some(function(ev){ return ev.id === id; });
+    if (trouve){
+      reinitialiserFiltres();
+      render();
+    }
+    var el = trouve && document.getElementById("e-" + id);
+    if (!el){ noticeEl.hidden = false; return; }
+    el.classList.add("is-shared");
+    el.scrollIntoView({ block: "center" });
+  }
+  function reinitialiserFiltres(){
+    state.disc = "all"; state.q = ""; state.period = "all"; state.venue = "all";
+    Array.prototype.forEach.call(chipsEl.children, function(c){ c.setAttribute("aria-pressed", c.dataset.key === "all" ? "true" : "false"); });
+    Array.prototype.forEach.call(periodEl.children, function(b){ b.setAttribute("aria-pressed", b.dataset.p === "all" ? "true" : "false"); });
+    venueEl.value = "all";
+    venueEl.parentNode.classList.remove("active");
+    document.getElementById("q").value = "";
+  }
 
   function chargerFeed(){
-    fetch("data/evenements.json", { cache: "no-store" })
+    return fetch("data/evenements.json", { cache: "no-store" })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(data){
         if (!Array.isArray(data) || data.length === 0) return;
@@ -1335,6 +1521,7 @@
         }).filter(function(e){ return /^\d{4}-\d{2}-\d{2}$/.test(e.date); });
         if (!mapped.length) return;
         EVENTS = mapped;
+        assignerIds();
         NOW = new Date();
         NOW.setHours(0, 0, 0, 0); // vraie date du jour pour les données réelles
         populateVenues();
