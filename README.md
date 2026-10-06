@@ -477,6 +477,12 @@ manque. On génère le feed avec la CLI :
 python -m culturecentro lister --format json -o web/data/evenements.json
 ```
 
+**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
+datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
+téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
+reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
+conteneur), pas celle de l'écran.
+
 ### Publication (GitHub Pages)
 
 Le workflow [`publish.yml`](.github/workflows/publish.yml) régénère le feed et
