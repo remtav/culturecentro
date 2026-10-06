@@ -37,11 +37,14 @@ from culturecentro.categories import depuis_libelle
 from culturecentro.dates import parse_date_fr, parse_date_iso
 from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (API publique)
 from culturecentro.jsonld import extraire_depuis_jsonld
+from culturecentro.lieux import lieu_connu
 from culturecentro.models import Evenement
 from culturecentro.scraping import attribut, premiere_image, url_image
 from culturecentro.sources.base import Source
 
 _LOG = logging.getLogger(__name__)
+
+NOM = "Théâtre Granada"
 
 URL_PROGRAMMATION = "https://theatregranada.com/programmation-2/"
 
@@ -165,21 +168,43 @@ def _noms_des_termes(
     return noms
 
 
-def _categorie_du_bloc(item: Tag, noms: dict[int, str]) -> str | None:
-    """Catégorie d'un bloc d'après ses termes WordPress (« Musique » → musique)."""
+def _noms_termes_du_bloc(item: Tag, noms: dict[int, str]) -> list[str]:
+    """Noms des termes WordPress d'un bloc, dans l'ordre de ses classes."""
     conteneur = (
         item
         if "vc_grid-item" in (item.get("class") or [])
         else item.find_parent(class_="vc_grid-item")
     )
     if conteneur is None:
-        return None
-    for classe in _classes(conteneur):
-        m = _TERME.match(classe)
-        if m:
-            categorie = depuis_libelle(noms.get(int(m.group(1))))
-            if categorie:
-                return categorie
+        return []
+    termes = (_TERME.match(classe) for classe in _classes(conteneur))
+    return [noms.get(int(m.group(1)), "") for m in termes if m]
+
+
+def _categorie_du_bloc(item: Tag, noms: dict[int, str]) -> str | None:
+    """Catégorie d'un bloc d'après ses termes WordPress (« Musique » → musique).
+
+    Les termes de salle (« Théâtre Granada », « La Petite Boîte Noire »…)
+    sont ignorés : « Théâtre Granada » n'est pas du théâtre.
+    """
+    for nom in _noms_termes_du_bloc(item, noms):
+        categorie = None if lieu_connu(nom) else depuis_libelle(nom)
+        if categorie:
+            return categorie
+    return None
+
+
+def _lieu_du_bloc(item: Tag, noms: dict[int, str]) -> str | None:
+    """Salle où se tient l'événement, d'après ses termes WordPress.
+
+    Le Granada classe aussi par salle les spectacles qu'il présente ailleurs
+    (« La Petite Boîte Noire », « Le Grand-Espace - CAJB ») : ce terme donne le
+    lieu. ``None`` pour le Granada lui-même (l'agrégation le complète).
+    """
+    for nom in _noms_termes_du_bloc(item, noms):
+        lieu = lieu_connu(nom)
+        if lieu and lieu != NOM:
+            return lieu
     return None
 
 
@@ -189,7 +214,7 @@ def _extraire_depuis_wpbakery(
     """Analyse la grille WPBakery de la page de programmation.
 
     ``noms_termes`` (identifiant → nom de catégorie WordPress) permet de
-    renseigner ``categorie`` d'après la taxonomie du site.
+    renseigner ``categorie`` et ``lieu`` d'après la taxonomie du site.
     """
     soup = BeautifulSoup(html, "html.parser")
     evenements: list[Evenement] = []
@@ -225,6 +250,7 @@ def _extraire_depuis_wpbakery(
                 lien=lien,
                 sous_titre=sous_titre,
                 image=image,
+                lieu=_lieu_du_bloc(item, noms_termes),
                 categorie=_categorie_du_bloc(item, noms_termes),
             )
         )
@@ -305,7 +331,7 @@ def _extraire_evenements(html: str, timeout: float, session: requests.Session) -
 # --------------------------------------------------------------------------- #
 class TheatreGranada(Source):
     slug = "theatre-granada"
-    nom = "Théâtre Granada"
+    nom = NOM
     url_defaut = URL_PROGRAMMATION
     categorie_defaut = "musique"
     description = "Liste les événements à venir du Théâtre Granada."

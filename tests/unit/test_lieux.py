@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from culturecentro.lieux import cle, est_centre_ville, normaliser_lieu
+from culturecentro.lieux import cle, est_centre_ville, lieu_connu, normaliser_lieu
 
 
 class TestCle(unittest.TestCase):
@@ -32,6 +32,14 @@ class TestNormaliserLieu(unittest.TestCase):
     def test_vide(self):
         self.assertIsNone(normaliser_lieu(None))
         self.assertIsNone(normaliser_lieu("  "))
+
+
+class TestLieuConnu(unittest.TestCase):
+    def test_lieu_connu_ou_none(self):
+        self.assertEqual(lieu_connu("Le Grand-Espace - CAJB"), "Le Grand-Espace")
+        self.assertEqual(lieu_connu("la petite boite noire"), "La Petite Boîte Noire")
+        self.assertIsNone(lieu_connu("Humour"))
+        self.assertIsNone(lieu_connu(None))
 
 
 class TestEstCentreVille(unittest.TestCase):

@@ -163,6 +163,37 @@ class TestCategoriesWordPress(unittest.TestCase):
         self.assertEqual([e.categorie for e in evs], ["musique", "humour", None])
         self.assertEqual([e.categorie for e in _extraire_depuis_wpbakery(self.GRILLE)], [None] * 3)
 
+    def test_terme_de_salle_donne_le_lieu_et_pas_la_categorie(self):
+        # Le Granada classe aussi ses spectacles par salle : « Théâtre Granada »
+        # n'est pas du théâtre, et « La Petite Boîte Noire » donne le lieu.
+        grille = """
+        <div class="vc_grid-item vc_grid-term-9 vc_grid-term-23">
+          <div class="vc_grid-item-mini">
+            <div class="vc_gitem-post-data-source-post_title"><h4>Variétés</h4></div>
+          </div>
+        </div>
+        <div class="vc_grid-item vc_grid-term-21 vc_grid-term-10">
+          <div class="vc_grid-item-mini">
+            <div class="vc_gitem-post-data-source-post_title"><h4>Découverte</h4></div>
+          </div>
+        </div>
+        <div class="vc_grid-item vc_grid-term-32">
+          <div class="vc_grid-item-mini">
+            <div class="vc_gitem-post-data-source-post_title"><h4>Ailleurs</h4></div>
+          </div>
+        </div>
+        """
+        noms = {
+            9: "Théâtre Granada",
+            10: "La Petite Boîte Noire",
+            21: "Humour",
+            23: "Variété",
+            32: "Le Grand-Espace - CAJB",
+        }
+        evs = _extraire_depuis_wpbakery(grille, noms)
+        self.assertEqual([e.categorie for e in evs], ["musique", "humour", None])
+        self.assertEqual([e.lieu for e in evs], [None, "La Petite Boîte Noire", "Le Grand-Espace"])
+
     def test_noms_des_termes_via_rest(self):
         session = mock.Mock()
         rep = mock.Mock()

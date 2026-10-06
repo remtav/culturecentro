@@ -922,8 +922,10 @@
     });
   });
 
-  // Filtre par partenaire (l'organisme qui programme l'événement). Le lieu,
-  // parfois différent (programmation hors les murs), reste affiché sur la carte.
+  // Filtre par partenaire : l'organisme qui programme l'événement, ou celui qui
+  // l'accueille (lieu, affiché sur la carte quand il diffère). Un spectacle
+  // annoncé par deux partenaires n'est qu'une fois au feed : il reste visible
+  // sous chacun des deux.
   var venueEl = document.getElementById("venue");
   function partnerOf(ev){ return ev.partner || ev.venue; }
   function populateVenues(){
@@ -1253,7 +1255,7 @@
     fermerCal(false); // les cartes vont être recréées
     var base = EVENTS.filter(function(ev){
       if (state.disc !== "all" && ev.d !== state.disc) return false;
-      if (state.venue !== "all" && partnerOf(ev) !== state.venue) return false;
+      if (state.venue !== "all" && partnerOf(ev) !== state.venue && ev.venue !== state.venue) return false;
       if (state.q){
         var hay = (ev.title + " " + partnerOf(ev) + " " + ev.venue + " " + DISC[ev.d].label + " " + ev.desc).toLowerCase();
         if (hay.indexOf(state.q) === -1) return false;
