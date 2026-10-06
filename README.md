@@ -105,6 +105,8 @@ culturecentro/
 │   └── sources/                # une salle par fichier, sur des fixtures HTML
 ├── web/                        # page publique autonome + feed généré
 │   ├── index.html
+│   ├── favicon.svg             # logo (aussi icône d'onglet)
+│   ├── apple-touch-icon.png    # logo pour l'écran d'accueil iOS
 │   └── data/evenements.json
 ├── docs/                       # architecture, guide d'ajout de source, partenaires
 ├── scripts/                    # utilitaires (ex. génération du badge de couverture)
@@ -458,6 +460,12 @@ publics et fusionne les listes ; repli JSON-LD si aucun bloc n'est trouvé.
 Le dossier [`web/`](web/) contient la **page publique** (`index.html`,
 autonome, sans dépendance) : agenda filtrable par discipline, période et lieu,
 fil chronologique par mois, bande « En ce moment ».
+
+**Logo.** Deux C concentriques (*Culture*, *Centro*) : le petit C se prolonge en
+vague — la rivière Magog qui traverse le centre-ville — et un point doré marque
+le cœur de la ville. Le dessin est un symbole SVG en ligne dans `index.html`
+(en-tête et pied de page) et le fichier [`web/favicon.svg`](web/favicon.svg)
+(icône d'onglet) ; `apple-touch-icon.png` en est le rendu 180 × 180.
 
 La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
 est présent et non vide ; sinon elle retombe sur un jeu de données de
