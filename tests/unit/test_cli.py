@@ -83,5 +83,53 @@ class TestSansFiches(unittest.TestCase):
                 self.assertTrue(agreger.call_args.kwargs["lire_fiches"])
 
 
+class TestCommandePages(unittest.TestCase):
+    URL = "https://remtav.github.io/culturecentro/"
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.rep = self._tmp.name
+        self.feed = os.path.join(self.rep, "evenements.json")
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _ecrire_feed(self, contenu):
+        with open(self.feed, "w", encoding="utf-8") as flux:
+            flux.write(contenu)
+
+    def _pages(self, url=URL):
+        return _lancer(["pages", "--feed", self.feed, "--dossier", self.rep, "--url-base", url])[0]
+
+    def test_identifiants_dans_le_feed_et_pages(self):
+        self._ecrire_feed(json.dumps([EVENEMENTS[0].to_dict(), {"titre": "Sans date"}]))
+        self.assertEqual(self._pages(), 0)
+        with open(self.feed, encoding="utf-8") as flux:
+            feed = json.load(flux)
+        self.assertEqual(feed[0]["id"], "concert-2026-10-01")
+        self.assertNotIn("id", feed[1])
+        self.assertTrue(
+            os.path.isfile(os.path.join(self.rep, "e", "concert-2026-10-01", "index.html"))
+        )
+        self.assertTrue(os.path.isfile(os.path.join(self.rep, "404.html")))
+
+    def test_feed_vide(self):
+        self._ecrire_feed("[]\n")
+        self.assertEqual(self._pages(), 0)
+        with open(self.feed, encoding="utf-8") as flux:
+            self.assertEqual(flux.read(), "[]\n")
+
+    def test_feed_illisible_ou_inattendu(self):
+        self.assertEqual(self._pages(), 1)  # absent
+        self._ecrire_feed("{pas du json")
+        self.assertEqual(self._pages(), 1)
+        self._ecrire_feed('{"titre": "pas une liste"}')
+        self.assertEqual(self._pages(), 1)
+
+    def test_url_base_invalide(self):
+        self._ecrire_feed("[]")
+        self.assertEqual(self._pages("remtav.github.io/culturecentro"), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

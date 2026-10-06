@@ -819,12 +819,17 @@
   // stable d'un jour à l'autre tant que le partenaire ne change ni l'un ni l'autre.
   // Ex. « Les Belles-Sœurs » le 3 oct. 2026 → les-belles-soeurs-2026-10-03.
   function slugify(s){
-    return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+    return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
       .replace(/œ/g, "oe").replace(/æ/g, "ae").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
+  // Le feed publié porte déjà l'identifiant (calculé à l'identique par
+  // « culturecentro pages », qui génère les pages de partage) ; on ne le calcule
+  // ici que pour les événements qui n'en ont pas (démo).
   function assignerIds(){
     var vus = {};
+    EVENTS.forEach(function(ev){ if (ev.id) vus[ev.id] = true; });
     EVENTS.forEach(function(ev){
+      if (ev.id) return;
       var id = (slugify(ev.title).slice(0, 60).replace(/-+$/, "") || "evenement") + "-" + ev.date;
       if (vus[id]){ // même titre deux fois le même jour : on distingue par l'heure, sinon -2, -3…
         var heure = String(ev.time || "").replace(/\D/g, "");
@@ -1217,14 +1222,21 @@
   // Partage : le lien pointe vers Culture Centro (?e=<id>), pas vers le partenaire,
   // pour que la personne qui le reçoit arrive d'abord sur l'agenda.
   var SHARE_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>';
+  // Page de partage e/<id>/ quand le déploiement l'a générée (aperçu riche dans les
+  // réseaux sociaux : affiche, titre, date) ; sinon lien direct vers l'agenda.
   function lienPartage(ev){
-    return location.href.split(/[?#]/)[0] + "?e=" + encodeURIComponent(ev.id);
+    var page = location.href.split(/[?#]/)[0];
+    if (ev.pagePartage) return new URL("e/" + ev.id + "/", page).href;
+    return page + "?e=" + encodeURIComponent(ev.id);
   }
   function partager(ev){
     var url = lienPartage(ev);
     if (navigator.share){
-      // Feuille de partage native (mobile, Safari, Chrome/Edge de bureau)
-      navigator.share({ title: ev.title, text: ev.title + " — " + whenLabel(ev) + " · " + partnerOf(ev), url: url })
+      // Feuille de partage native (mobile, Safari, Chrome/Edge de bureau). Le lien
+      // seul, sans « text » : avec un texte, l'action « Copier » de certains
+      // téléphones ne copie que ce texte, sans l'URL. Le titre, la date et
+      // l'affiche viennent de l'aperçu de la page de partage.
+      navigator.share({ title: ev.title, url: url })
         .catch(function(err){ if (!err || err.name !== "AbortError") copier(url); });
     } else {
       copier(url);
@@ -1529,7 +1541,9 @@
             debutIso: iso,             // heures exactes, pour « Ajouter au calendrier »
             finIso: e.date_fin || null,
             lien: e.lien || null,
-            image: e.image || null
+            image: e.image || null,
+            id: e.id || undefined,     // fourni avec les pages de partage (culturecentro pages)
+            pagePartage: !!e.id
           };
         }).filter(function(e){ return /^\d{4}-\d{2}-\d{2}$/.test(e.date); });
         if (!mapped.length) return;
