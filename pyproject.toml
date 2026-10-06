@@ -21,6 +21,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "coverage>=7",
+    "pre-commit>=3",
     "pytest>=8",
     # ruff et mypy sont épinglés : leur formatage / leurs règles de typage
     # évoluent d'une version à l'autre, donc une version figée garantit un CI
