@@ -518,10 +518,13 @@ La section **Lieux partenaires** est un plan du centre-ville (tracé d'après
 OpenStreetMap, comme celui de la variante 4) : chaque partenaire y a un repère
 numéroté, de sa couleur, posé à son adresse géocodée (`lat` / `lon` dans
 `PARTNERS`). La légende, à côté du plan (dessous sur mobile), donne pour chaque
-numéro le nom du lieu, son type et le lien vers son site ; les numéros vont du
-nord au sud. Survoler un lieu, dans la légende ou sur le plan, le met en
-évidence et affiche son nom sur le plan ; un clic sur le repère ou sur la
-légende ouvre le site du partenaire.
+numéro le nom du lieu, son type, le lien vers son site et un lien **Google
+Maps** ; les numéros vont du nord au sud. Survoler un lieu, dans la légende ou
+sur le plan, le met en évidence et affiche son nom sur le plan ; un clic sur le
+repère ou sur la tuile de la légende ouvre le site du partenaire. Le lien Google
+Maps est une simple URL de recherche (`https://www.google.com/maps/search/?api=1&query=…`,
+sans clé ni script) sur « nom du lieu, Sherbrooke, QC », qui ouvre la fiche du
+lieu (adresse, horaires, itinéraire).
 
 **Logo.** Le logo actuel (deux étincelles sur tuile sombre) est **provisoire**,
 en attendant le logo officiel. Il tient dans un seul fichier,
