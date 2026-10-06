@@ -89,6 +89,7 @@ culturecentro/
 │   ├── filtrage.py             # déduplication, filtre temporel et tri
 │   ├── exporters.py            # sorties texte / CSV / JSON
 │   ├── aggregate.py            # agrège toutes les salles, tolérant aux pannes
+│   ├── partage.py              # pages de partage (aperçu riche Open Graph)
 │   ├── cli.py                  # interfaces en ligne de commande
 │   └── sources/                # une source par salle, derrière une interface commune
 │       ├── base.py             # classe abstraite Source (orchestration partagée)
@@ -105,7 +106,9 @@ culturecentro/
 │   └── sources/                # une salle par fichier, sur des fixtures HTML
 ├── web/                        # page publique autonome + feed généré
 │   ├── index.html
-│   └── data/evenements.json
+│   ├── img/partage.png         # image d'aperçu par défaut (1200×630)
+│   ├── data/evenements.json
+│   └── e/<id>/index.html       # pages de partage (générées au déploiement)
 ├── docs/                       # architecture, guide d'ajout de source, partenaires
 ├── scripts/                    # utilitaires (ex. génération du badge de couverture)
 ├── .github/workflows/          # intégration continue et publication GitHub Pages
@@ -474,18 +477,34 @@ en journées entières, et une durée de 2 h est supposée quand l'heure de fin
 manque.
 
 Chaque carte porte aussi un bouton **Partager** dont le lien ramène vers Culture
-Centro, et non vers le site du partenaire : `…/?e=<id>`, où `<id>` est tiré
-du titre et de la date (ex. `?e=les-belles-soeurs-2026-10-03`). Sur mobile, le
-bouton ouvre la feuille de partage du système ; ailleurs, il copie le lien.
-À l'arrivée, la page réinitialise les filtres, fait défiler jusqu'à
-l'événement et le met en évidence. Si l'événement n'est plus au feed (passé,
-renommé par le partenaire), un bandeau le signale au-dessus de l'agenda.
+Centro, et non vers le site du partenaire. Sur mobile, le bouton ouvre la
+feuille de partage du système ; ailleurs, il copie le lien. Seuls le lien et le
+titre sont transmis, sans texte d'accompagnement : avec un texte, l'action
+« Copier » de certains téléphones ne copiait que ce texte, sans l'URL. Le lien partagé est
+la **page de partage** de l'événement, `…/e/<id>/`, où `<id>` est tiré du titre
+et de la date (ex. `e/les-belles-soeurs-2026-10-03/`). Cette page statique porte
+les balises Open Graph — affiche, titre, date, partenaire — pour que Facebook,
+Messenger, WhatsApp, etc. affichent un **aperçu riche** ; elle renvoie aussitôt
+le visiteur vers l'agenda (`…/?e=<id>`), qui réinitialise les filtres, fait
+défiler jusqu'à l'événement et le met en évidence. Un événement sans affiche
+prend l'image par défaut [`web/img/partage.png`](web/img/partage.png). Si
+l'événement n'est plus au feed (passé, renommé par le partenaire), la page
+404 renvoie vers l'agenda, où un bandeau le signale.
 
-On génère le feed avec la CLI :
+On génère le feed, puis les pages de partage, avec la CLI :
 
 ```bash
 python -m culturecentro lister --format json -o web/data/evenements.json
+python -m culturecentro pages --url-base https://remtav.github.io/culturecentro/
 ```
+
+`pages` lit le feed (`--feed`, défaut `web/data/evenements.json`), y ajoute
+l'identifiant `id` de chaque événement daté, puis écrit `web/e/<id>/index.html`
+et `web/404.html` (`--dossier`, défaut `web`), en supprimant les pages du
+déploiement précédent. `--url-base` est l'adresse publique du site : les
+balises Open Graph exigent des URL absolues. Ces fichiers générés ne sont pas
+versionnés. Sans pages de partage (démo, feed sans `id`), le bouton partage
+directement le lien `?e=<id>`, sans aperçu riche.
 
 **Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
 datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
@@ -496,7 +515,8 @@ conteneur), pas celle de l'écran.
 ### Publication (GitHub Pages)
 
 Le workflow [`publish.yml`](.github/workflows/publish.yml) régénère le feed et
-déploie `web/` sur **GitHub Pages** — quotidiennement (cron), à chaque `push`
+les pages de partage (l'adresse publique vient de `actions/configure-pages`),
+puis déploie `web/` sur **GitHub Pages** — quotidiennement (cron), à chaque `push`
 sur `main` touchant `web/` ou le paquet, et à la demande. Prérequis (une seule
 fois) : **Settings → Pages → Source = GitHub Actions**.
 

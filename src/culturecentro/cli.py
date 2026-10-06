@@ -7,6 +7,7 @@ avec son instance de :class:`~culturecentro.sources.base.Source`.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 from collections.abc import Sequence
 from pathlib import Path
@@ -112,7 +113,52 @@ def _construire_parseur_principal() -> argparse.ArgumentParser:
     lister.add_argument(
         "-v", "--verbose", action="store_true", help="Journalisation détaillée (DEBUG)."
     )
+
+    pages = sous.add_parser(
+        "pages",
+        help="Génère les pages de partage (aperçu riche) ; ajoute leurs identifiants au feed.",
+    )
+    pages.add_argument(
+        "--feed",
+        type=Path,
+        default=Path("web/data/evenements.json"),
+        help="Feed JSON produit par « lister » (défaut : web/data/evenements.json).",
+    )
+    pages.add_argument(
+        "--dossier", type=Path, default=Path("web"), help="Racine du site (défaut : web)."
+    )
+    pages.add_argument(
+        "--url-base",
+        required=True,
+        help="Adresse publique du site, ex. https://remtav.github.io/culturecentro/",
+    )
+    pages.add_argument(
+        "-v", "--verbose", action="store_true", help="Journalisation détaillée (DEBUG)."
+    )
     return parseur
+
+
+def _generer_pages(feed_chemin: Path, dossier: Path, url_base: str) -> int:
+    """Sous-commande ``pages`` : identifiants dans le feed, puis une page par événement."""
+    from culturecentro.partage import attribuer_identifiants, generer_pages
+
+    try:
+        feed = json.loads(feed_chemin.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        _LOG.error("Feed illisible (%s) : %s", feed_chemin, exc)
+        return 1
+    if not isinstance(feed, list) or not all(isinstance(ev, dict) for ev in feed):
+        _LOG.error("Feed inattendu (%s) : une liste d'événements est attendue.", feed_chemin)
+        return 1
+    try:
+        attribuer_identifiants(feed)
+        ecrites = generer_pages(feed, dossier, url_base)
+    except ValueError as exc:
+        _LOG.error("%s", exc)
+        return 2
+    feed_chemin.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _LOG.info("%d pages de partage écrites dans %s", ecrites, dossier / "e")
+    return 0
 
 
 def principal(argv: Sequence[str] | None = None) -> int:
@@ -132,6 +178,9 @@ def principal(argv: Sequence[str] | None = None) -> int:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
     )
+
+    if args.commande == "pages":
+        return _generer_pages(args.feed, args.dossier, args.url_base)
 
     if args.source:
         try:

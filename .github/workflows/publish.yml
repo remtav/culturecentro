@@ -44,14 +44,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
 
+      - name: Configurer Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
       - name: Générer le feed agrégé
         run: |
           mkdir -p web/data
           python -m culturecentro lister --format json -o web/data/evenements.json \
             || echo "[]" > web/data/evenements.json
 
-      - name: Configurer Pages
-        uses: actions/configure-pages@v5
+      # Une page par événement (web/e/<id>/), avec les balises Open Graph pour
+      # l'aperçu des liens partagés ; l'adresse publique vient de configure-pages.
+      - name: Générer les pages de partage
+        run: |
+          python -m culturecentro pages --feed web/data/evenements.json --dossier web \
+            --url-base "${{ steps.pages.outputs.base_url }}/"
 
       - name: Téléverser l'artefact du site
         uses: actions/upload-pages-artifact@v3

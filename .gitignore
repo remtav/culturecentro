@@ -7,6 +7,10 @@ __pycache__/
 build/
 dist/
 
+# Pages de partage générées au déploiement (culturecentro pages)
+web/e/
+web/404.html
+
 # Artefacts de couverture (le badge coverage.svg reste versionné)
 .coverage
 .coverage.*
