@@ -112,6 +112,29 @@ class TestAgreger(unittest.TestCase):
         res = agreger([a, b], a_partir_de=SEUIL)
         self.assertEqual(len(res), 1)
 
+    def test_fusionne_un_spectacle_annonce_par_deux_salles(self):
+        meme = datetime(2026, 10, 13, 20, 0)
+        a = _SourceFactice(
+            "a",
+            "Théâtre Granada",
+            [
+                Evenement(
+                    "Maxime Gervais",
+                    meme,
+                    sous_titre="Les découvertes",
+                    lieu="La Petite Boîte Noire",
+                )
+            ],
+        )
+        b = _SourceFactice(
+            "b", "La Petite Boîte Noire", [Evenement("Maxime Gervais : C'était magnifique", meme)]
+        )
+        res = agreger([a, b], a_partir_de=SEUIL, lire_fiches=False)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0].titre, "Maxime Gervais : C'était magnifique")
+        self.assertEqual(res[0].partenaire, "Théâtre Granada")
+        self.assertEqual(res[0].lieu, "La Petite Boîte Noire")
+
     def test_une_salle_en_echec_est_ignoree(self):
         ok = _SourceFactice("ok", "OK", [Evenement("Vivant", datetime(2026, 10, 1, 20, 0))])
         ko = _SourceFactice("ko", "KO", exc=requests.RequestException("réseau"))

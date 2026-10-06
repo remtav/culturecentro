@@ -173,6 +173,33 @@ centre-ville et de marqueurs hors périmètre sont la « carte » éditable du
 projet. Une salle indisponible est ignorée avec un avertissement (les autres
 sont conservées).
 
+### Spectacle annoncé par deux partenaires
+
+Un même spectacle figure parfois sur la page de deux partenaires : celui qui
+le présente et celui qui l'accueille (le Théâtre Granada annonce les
+spectacles qu'il présente à La Petite Boîte Noire ; la Maison des arts de la
+parole, la clôture de son festival au Grand-Espace). L'agrégation n'en garde
+qu'**un** (`culturecentro.filtrage.fusionner_doublons`). Deux annonces sont
+considérées comme le même événement si :
+
+- elles viennent de **deux partenaires différents** (un même partenaire qui
+  annonce deux fois un titre le même jour donne deux représentations) ;
+- elles tombent le **même jour à la même heure** (ou l'heure manque d'un côté) ;
+- elles sont de même nature : deux représentations ponctuelles, ou deux
+  événements sur plusieurs jours (une soirée n'est pas fondue dans la série du
+  même nom) ;
+- les mots significatifs d'un titre figurent tous dans l'autre (« Maxime
+  Gervais » / « Maxime Gervais : C'était Magnifique »).
+
+L'annonce **la plus complète** est conservée (le plus de champs renseignés :
+sous-titre, heure, fin, affiche, lien ; puis le texte le plus long ; à
+égalité, la première salle du registre) : son partenaire, son lieu et son lien
+font foi. Elle est complétée par ce que seule l'autre apporte : le titre le
+plus complet, l'heure de début, et le sous-titre, la fin ou l'affiche qui lui
+manquent. Chaque fusion est journalisée (`INFO`). Sur la page web, le filtre
+par partenaire retient aussi le lieu : l'événement fusionné reste visible sous
+les deux partenaires.
+
 ```bash
 culturecentro sources                     # liste les salles enregistrées
 culturecentro lister                      # agrège toutes les salles (texte)
@@ -287,6 +314,13 @@ ne contient que 10 événements, mais un unique appel AJAX
 (`admin-ajax.php` / `vc_get_vc_grid_data`) renvoie **l'intégralité** des
 événements à venir. Le module reproduit cet appel, puis analyse chaque bloc
 `.vc_grid-item-mini` (titre, date en français, lien).
+
+Les catégories WordPress de chaque bloc mêlent genres (« Musique »,
+« Humour »…) et **salles** : le Granada annonce aussi des spectacles qu'il
+présente ailleurs, classés « La Petite Boîte Noire » ou « Le Grand-Espace -
+CAJB ». Le terme de salle donne le `lieu` (et n'est pas lu comme un genre :
+« Théâtre Granada » n'est pas du théâtre) ; les autres termes donnent la
+catégorie.
 
 Si cet appel échoue (thème modifié, nonce invalide…), le module se rabat
 successivement sur : la grille inline (10 événements), les données
@@ -486,8 +520,9 @@ d'aperçu `web/img/partage.png`, qui le reprennent.
 La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
 est présent et non vide ; sinon elle retombe sur un jeu de données de
 démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
-le **partenaire** ; chaque carte affiche le partenaire et, s'il diffère, le
-lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
+le **partenaire** : un événement y figure sous l'organisme qui le programme et
+sous celui qui l'accueille (son lieu) ; chaque carte affiche le partenaire et,
+s'il diffère, le lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
 « Humour » et « Jeunesse »). Chaque carte porte un bouton **Ajouter au
 calendrier** (icône sur la vignette) : il propose le *calendrier de l'appareil*
 — un fichier `.ics` généré dans le navigateur, qu'ouvrent Apple Calendrier,
