@@ -191,31 +191,22 @@
 
   .rows { display: flex; flex-direction: column; gap: 14px; }
 
-  /* Event card horizontale. L'enveloppe porte le lien (la carte) et, à côté, le bouton
-     Partager : un <button> ne peut pas être imbriqué dans un <a>. */
-  .event-wrap { position: relative; --cover-w: 176px; }
-  .event-wrap .event { height: 100%; }
+  /* Event card horizontale */
   .event {
-    display: grid; grid-template-columns: var(--cover-w, 176px) 1fr; gap: 0;
+    position: relative; isolation: isolate;
+    display: grid; grid-template-columns: 176px 1fr; gap: 0;
     background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
     overflow: hidden; box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .15s;
     text-decoration: none; color: inherit;
     scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--tb, 70px) + 14px);
   }
-  .event-wrap:hover .event { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(22,22,46,.08), 0 16px 34px rgba(22,22,46,.1); }
-
-  /* Bouton Partager : en bas à droite de la vignette, sur la zone assombrie par le dégradé */
-  .share-btn {
-    position: absolute; z-index: 3; left: calc(var(--cover-w) - 44px); bottom: 10px;
-    width: 34px; height: 34px; padding: 0; border-radius: 50%; cursor: pointer;
-    display: grid; place-items: center;
-    color: #fff; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.3);
-    backdrop-filter: blur(2px); transition: transform .12s ease, background .15s;
-  }
-  .share-btn:hover { background: rgba(0,0,0,.62); }
-  .share-btn:focus-visible { border-radius: 50%; }
-  .share-btn svg { display: block; }
-  .event-wrap:hover .share-btn { transform: translateY(-2px); }
+  /* Toute la carte est cliquable : le lien du titre s'étend sur la carte entière,
+     sauf les boutons « Partager » et « Ajouter au calendrier » posés au-dessus. */
+  .ev-link { text-decoration: none; }
+  .ev-link::after { content: ""; position: absolute; inset: 0; z-index: 3; }
+  .ev-link:focus-visible { outline: none; }
+  .ev-link:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius); }
+  .event:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(22,22,46,.08), 0 16px 34px rgba(22,22,46,.1); }
 
   /* Événement ouvert depuis un lien partagé (?e=…) */
   .event.is-shared { outline: 3px solid var(--accent); outline-offset: 3px; }
@@ -290,6 +281,30 @@
   .pill-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .tag-last { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: #241a08; background: var(--accent); }
   .tag-soon { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: var(--ink-soft); background: color-mix(in srgb, var(--ink) 8%, var(--card)); border: 1px solid var(--line); }
+  /* Ajouter au calendrier : bouton-icône sur la vignette (coin opposé à la pastille de date,
+     loin de la réglette des mois) + menu (calendrier de l'appareil ou Google Agenda) */
+  /* Partager : même bouton-icône, juste à gauche de celui du calendrier */
+  .cal-btn, .share-btn {
+    position: absolute; right: 10px; bottom: 10px; z-index: 4; padding: 0; border: 0;
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer;
+    color: #fff; background: rgba(0,0,0,.38); backdrop-filter: blur(2px); transition: background .15s;
+  }
+  .share-btn { right: 50px; }
+  .cal-btn:hover, .cal-btn[aria-expanded="true"], .share-btn:hover { background: rgba(0,0,0,.62); }
+  .cal-btn:focus-visible, .share-btn:focus-visible { border-radius: 10px; }
+  .cal-btn svg, .share-btn svg { display: block; }
+  .cal-menu {
+    position: absolute; z-index: 5; min-width: 196px; max-width: calc(100% - 16px);
+    display: flex; flex-direction: column; padding: 5px;
+    background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow);
+  }
+  .cal-opt {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; line-height: 1.25; color: var(--ink); text-decoration: none;
+  }
+  .cal-opt:hover, .cal-opt:focus-visible { background: var(--paper-2); }
+  .cal-opt:focus-visible { outline-offset: -2px; border-radius: 8px; }
+  .cal-opt svg { flex: none; color: var(--ink-faint); }
   .date-badge.cont { padding: 6px 10px; }
   .date-badge.cont b { font-size: 15px; letter-spacing: -0.01em; }
 
@@ -344,10 +359,12 @@
   }
 
   @media (max-width: 540px) {
-    .event-wrap { --cover-w: 104px; }
+    .event { grid-template-columns: 104px 1fr; }
     .cover { min-height: 100%; }
     .cover .date-badge { top: 8px; left: 8px; padding: 4px 7px; }
     .cover .date-badge b { font-size: 17px; }
+    .cal-btn, .share-btn { right: 8px; bottom: 8px; width: 32px; height: 32px; }
+    .share-btn { right: 46px; }
     .event .body { padding: 13px 14px; }
     .event h3 { font-size: 17px; }
     .now-rows { grid-template-columns: 1fr; }
@@ -883,41 +900,223 @@
     return html;
   }
 
+  // ---------- Ajouter au calendrier ----------
+  // Généré dans le navigateur à partir de l'événement : fichier .ics (calendrier de
+  // l'appareil — Apple, Outlook, Samsung…) ou lien Google Agenda pré-rempli.
+  var TZ = "America/Toronto";  // fuseau de Sherbrooke (heure de l'Est)
+  var HEURE = 3600000;
+  var DUREE_DEFAUT = 2 * HEURE; // quand la salle ne donne pas l'heure de fin
+  var IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var VTIMEZONE = [
+    "BEGIN:VTIMEZONE", "TZID:" + TZ,
+    "BEGIN:DAYLIGHT", "TZOFFSETFROM:-0500", "TZOFFSETTO:-0400", "TZNAME:EDT",
+    "DTSTART:19700308T020000", "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU", "END:DAYLIGHT",
+    "BEGIN:STANDARD", "TZOFFSETFROM:-0400", "TZOFFSETTO:-0500", "TZNAME:EST",
+    "DTSTART:19701101T020000", "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU", "END:STANDARD",
+    "END:VTIMEZONE"
+  ];
+
+  function pad2(n){ return (n < 10 ? "0" : "") + n; }
+  // Heure « murale » de la salle, manipulée en UTC pour ignorer les changements d'heure.
+  function mural(iso, h, m){ var p = iso.split("-"); return new Date(Date.UTC(+p[0], +p[1]-1, +p[2], h || 0, m || 0)); }
+  function ymd(dt){ return dt.getUTCFullYear() + pad2(dt.getUTCMonth() + 1) + pad2(dt.getUTCDate()); }
+  function ymdhms(dt){ return ymd(dt) + "T" + pad2(dt.getUTCHours()) + pad2(dt.getUTCMinutes()) + "00"; }
+
+  // « 20 h 00 », « Dès 11 h », « 10 h – 17 h » → [[20,0]], [[11,0]], [[10,0],[17,0]]
+  function heuresTexte(s){
+    var out = [], re = /(\d{1,2})\s*h\s*(\d{2})?/g, m;
+    while ((m = re.exec(s || ""))) if (+m[1] < 24 && +(m[2] || 0) < 60) out.push([+m[1], +(m[2] || 0)]);
+    return out;
+  }
+  // Heure d'un horodatage ISO du feed ; minuit = heure inconnue (comme à l'affichage).
+  function heureIso(iso){
+    var m = /T(\d{2}):(\d{2})/.exec(iso || "");
+    return m && !(m[1] === "00" && m[2] === "00") ? [+m[1], +m[2]] : null;
+  }
+
+  // Début et fin à inscrire : journées entières pour ce qui s'étale sur plusieurs
+  // jours ou n'a pas d'heure, sinon rendez-vous horaire (fin exclusive).
+  function bornes(ev){
+    var debutJour = mural(ev.date);
+    if (ev.dateEnd) return { jour: true, debut: debutJour, fin: new Date(mural(ev.dateEnd).getTime() + DAY) };
+    var txt = heuresTexte(ev.time);
+    var h1 = heureIso(ev.debutIso) || txt[0];
+    if (!h1) return { jour: true, debut: debutJour, fin: new Date(debutJour.getTime() + DAY) };
+    var h2 = heureIso(ev.finIso) || txt[1];
+    var debut = mural(ev.date, h1[0], h1[1]);
+    var fin = h2 ? mural(ev.date, h2[0], h2[1]) : null;
+    if (fin && fin < debut) fin = new Date(fin.getTime() + DAY); // se termine après minuit
+    if (!fin || fin <= debut) fin = new Date(debut.getTime() + DUREE_DEFAUT);
+    return { jour: false, debut: debut, fin: fin };
+  }
+
+  function calLieu(ev){
+    var lieu = ev.venue || partnerOf(ev) || "";
+    return lieu && !/sherbrooke/i.test(lieu) ? lieu + ", Sherbrooke (Québec)" : lieu;
+  }
+  function calLien(ev){ return ev.lien && /^https?:\/\//i.test(ev.lien) ? ev.lien.replace(/\s/g, "") : ""; }
+  function calDetails(ev, b){
+    var lignes = [];
+    if (ev.desc) lignes.push(ev.desc);
+    if (b.jour && ev.time) lignes.push("Horaire : " + ev.time);
+    var partner = partnerOf(ev);
+    if (partner && ev.venue && partner !== ev.venue) lignes.push("Présenté par " + partner);
+    if (calLien(ev)) lignes.push(calLien(ev));
+    return lignes.join("\n");
+  }
+
+  function icsTexte(s){ return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
+  // Repli des lignes longues à 75 octets (RFC 5545, § 3.1).
+  function plier(ligne){
+    var out = "", n = 0;
+    for (var i = 0; i < ligne.length; i++){
+      var c = ligne.charAt(i), code = ligne.charCodeAt(i);
+      if (code >= 0xD800 && code <= 0xDBFF && i + 1 < ligne.length) c += ligne.charAt(++i);
+      var octets = code < 0x80 ? 1 : code < 0x800 ? 2 : c.length === 2 ? 4 : 3;
+      if (n + octets > 75){ out += "\r\n "; n = 1; }
+      out += c; n += octets;
+    }
+    return out;
+  }
+  // Identifiant stable : réajouter le même événement le met à jour au lieu de le dupliquer.
+  function calUid(ev){
+    var s = ev.title + "|" + ev.date + "|" + partnerOf(ev), h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+    return "cc-" + ev.date.replace(/-/g, "") + "-" + h.toString(36) + "@culturecentro";
+  }
+  function calIcs(ev){
+    var b = bornes(ev);
+    function quand(nom, dt){ return b.jour ? nom + ";VALUE=DATE:" + ymd(dt) : nom + ";TZID=" + TZ + ":" + ymdhms(dt); }
+    var lignes = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Culture Centro//Agenda//FR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+    if (!b.jour) lignes = lignes.concat(VTIMEZONE);
+    lignes.push("BEGIN:VEVENT", "UID:" + calUid(ev),
+      "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""),
+      quand("DTSTART", b.debut), quand("DTEND", b.fin), "SUMMARY:" + icsTexte(ev.title));
+    var lieu = calLieu(ev), details = calDetails(ev, b), lien = calLien(ev);
+    if (lieu) lignes.push("LOCATION:" + icsTexte(lieu));
+    if (details) lignes.push("DESCRIPTION:" + icsTexte(details));
+    if (lien) lignes.push("URL:" + lien);
+    lignes.push("END:VEVENT", "END:VCALENDAR");
+    return lignes.map(plier).join("\r\n") + "\r\n";
+  }
+  function calGoogle(ev){
+    var b = bornes(ev);
+    var f = b.jour ? ymd : ymdhms;
+    var url = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      "&text=" + encodeURIComponent(ev.title) + "&dates=" + f(b.debut) + "%2F" + f(b.fin);
+    if (!b.jour) url += "&ctz=" + encodeURIComponent(TZ);
+    var lieu = calLieu(ev), details = calDetails(ev, b);
+    if (lieu) url += "&location=" + encodeURIComponent(lieu);
+    if (details) url += "&details=" + encodeURIComponent(details);
+    return url;
+  }
+  function calFichier(ev){
+    var base = ev.title.normalize ? ev.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ev.title;
+    base = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60).replace(/^-+|-+$/g, "");
+    return (base || "evenement") + ".ics";
+  }
+
+  var CAL_ICO = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>';
+  // Menu unique, déplacé dans la carte dont on a touché le bouton.
+  var calMenu = document.createElement("div");
+  calMenu.className = "cal-menu";
+  calMenu.id = "cal-menu";
+  calMenu.hidden = true;
+  calMenu.innerHTML =
+    '<a class="cal-opt" data-cal="ics" title="Fichier .ics : Apple Calendrier, Outlook, Samsung…">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>' +
+      'Calendrier de l\'appareil</a>' +
+    '<a class="cal-opt" data-cal="google" target="_blank" rel="noopener noreferrer">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>' +
+      'Google Agenda</a>';
+  var calIcsLink = calMenu.querySelector('[data-cal="ics"]');
+  var calGoogleLink = calMenu.querySelector('[data-cal="google"]');
+  var calBtnOuvert = null, calBlob = null;
+
+  function fermerCal(rendreFocus){
+    if (!calBtnOuvert) return;
+    var btn = calBtnOuvert;
+    calBtnOuvert = null;
+    btn.setAttribute("aria-expanded", "false");
+    calMenu.hidden = true;
+    if (rendreFocus) btn.focus();
+  }
+  function ouvrirCal(btn, ev){
+    fermerCal(false);
+    var ics = calIcs(ev);
+    if (calBlob){ URL.revokeObjectURL(calBlob); calBlob = null; }
+    // iOS : lien blob touché par l'utilisateur → Safari propose « Ajouter au calendrier ».
+    if (IOS && window.Blob && window.URL && URL.createObjectURL){
+      calBlob = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+      calIcsLink.href = calBlob;
+    } else {
+      calIcsLink.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
+    }
+    calIcsLink.download = calFichier(ev);
+    calGoogleLink.href = calGoogle(ev);
+
+    // Le menu va juste après la vignette (qui le rognerait) : ordre de tabulation
+    // bouton → menu → titre. Placé sous le bouton, ou au-dessus s'il n'y a pas la place.
+    var carte = btn.closest(".event");
+    carte.insertBefore(calMenu, btn.parentNode.nextSibling);
+    calMenu.hidden = false;
+    var x = 0, y = 0;
+    for (var n = btn; n && n !== carte; n = n.offsetParent){ x += n.offsetLeft; y += n.offsetTop; }
+    var haut = y + btn.offsetHeight + 6;
+    if (haut + calMenu.offsetHeight > carte.clientHeight - 4) haut = y - calMenu.offsetHeight - 6;
+    calMenu.style.top = Math.max(4, haut) + "px";
+    calMenu.style.left = Math.max(4, Math.min(x, carte.clientWidth - calMenu.offsetWidth - 4)) + "px";
+    btn.setAttribute("aria-expanded", "true");
+    calBtnOuvert = btn;
+    calIcsLink.focus();
+  }
+  calMenu.addEventListener("click", function(e){
+    if (e.target.closest && e.target.closest(".cal-opt")) setTimeout(function(){ fermerCal(false); }, 0);
+  });
+  document.addEventListener("click", function(e){
+    if (calBtnOuvert && !calMenu.contains(e.target) && !calBtnOuvert.contains(e.target)) fermerCal(false);
+  });
+  document.addEventListener("keydown", function(e){
+    if (calBtnOuvert && (e.key === "Escape" || e.key === "Esc")) fermerCal(true);
+  });
+  calMenu.addEventListener("focusout", function(e){
+    if (calBtnOuvert && e.relatedTarget && !calMenu.contains(e.relatedTarget) && e.relatedTarget !== calBtnOuvert) fermerCal(false);
+  });
+
   function card(ev, uid, cont){
     var d = DISC[ev.d];
     var started = parseD(ev.date) <= NOW;
     var tag = "";
     if (cont && started && daysUntil(endOf(ev)) <= 7) tag = '<span class="tag-last">Dernière chance</span>';
     else if (cont && !started && daysUntil(parseD(ev.date)) <= 30) tag = '<span class="tag-soon">Bientôt</span>';
-    var a = document.createElement("a");
-    a.className = "event";
-    a.id = "e-" + ev.id;
-    a.href = ev.lien || "#";
-    if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
-    a.style.setProperty("--dc", d.pill);
-    a.innerHTML =
-      '<div class="cover">' + SCENES[ev.d](uid) + photoHtml(ev) + badgeHtml(ev, cont) + '</div>' +
+    var el = document.createElement("article");
+    el.className = "event";
+    el.id = "e-" + ev.id;
+    el.style.setProperty("--dc", d.pill);
+    el.innerHTML =
+      '<div class="cover">' + SCENES[ev.d](uid) + photoHtml(ev) + badgeHtml(ev, cont) +
+        '<button class="share-btn" type="button" title="Partager">' + SHARE_ICO + '</button>' +
+        '<button class="cal-btn" type="button" aria-expanded="false" aria-controls="cal-menu" title="Ajouter au calendrier">' + CAL_ICO + '</button>' +
+      '</div>' +
       '<div class="body">' +
         '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>' +
-        '<h3>'+ ev.title +'</h3>' +
+        '<h3><a class="ev-link">'+ ev.title +'</a></h3>' +
         placeHtml(ev) +
         '<span class="when">'+ whenLine(ev, cont) +'</span>' +
         '<span class="desc">'+ ev.desc +'</span>' +
       '</div>';
-
-    var share = document.createElement("button");
-    share.type = "button";
-    share.className = "share-btn";
-    share.title = "Partager";
-    share.setAttribute("aria-label", "Partager « " + ev.title + " »");
-    share.innerHTML = SHARE_ICO;
+    var a = el.querySelector(".ev-link");
+    a.href = ev.lien || "#";
+    if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    var share = el.querySelector(".share-btn");
+    share.setAttribute("aria-label", "Partager « " + a.textContent + " »");
     share.addEventListener("click", function(){ partager(ev); });
-
-    var wrap = document.createElement("div");
-    wrap.className = "event-wrap";
-    wrap.appendChild(a);
-    wrap.appendChild(share);
-    return wrap;
+    var btn = el.querySelector(".cal-btn");
+    btn.setAttribute("aria-label", "Ajouter « " + a.textContent + " » au calendrier");
+    btn.addEventListener("click", function(){
+      if (calBtnOuvert === btn) fermerCal(false); else ouvrirCal(btn, ev);
+    });
+    return el;
   }
 
   // Partage : le lien pointe vers Culture Centro (?e=<id>), pas vers le partenaire,
@@ -956,6 +1155,7 @@
   var observer = null;
 
   function render(){
+    fermerCal(false); // les cartes vont être recréées
     var base = EVENTS.filter(function(ev){
       if (state.disc !== "all" && ev.d !== state.disc) return false;
       if (state.venue !== "all" && partnerOf(ev) !== state.venue) return false;
@@ -1231,6 +1431,8 @@
             dateEnd: (fin && fin !== debut) ? fin : undefined,
             time: heure,
             desc: e.sous_titre || "",
+            debutIso: iso,             // heures exactes, pour « Ajouter au calendrier »
+            finIso: e.date_fin || null,
             lien: e.lien || null,
             image: e.image || null
           };

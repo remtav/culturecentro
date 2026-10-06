@@ -464,9 +464,16 @@ est présent et non vide ; sinon elle retombe sur un jeu de données de
 démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
 le **partenaire** ; chaque carte affiche le partenaire et, s'il diffère, le
 lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
-« Humour » et « Jeunesse »).
+« Humour » et « Jeunesse »). Chaque carte porte un bouton **Ajouter au
+calendrier** (icône sur la vignette) : il propose le *calendrier de l'appareil*
+— un fichier `.ics` généré dans le navigateur, qu'ouvrent Apple Calendrier,
+Outlook ou Samsung Calendrier — ou *Google Agenda* (lien pré-rempli), pratique
+sur Android où l'app Google Agenda n'ouvre pas les `.ics`. Heures en
+`America/Toronto` ; un événement sur plusieurs jours (ou sans heure) est inscrit
+en journées entières, et une durée de 2 h est supposée quand l'heure de fin
+manque.
 
-Chaque carte porte un bouton **Partager** dont le lien ramène vers Culture
+Chaque carte porte aussi un bouton **Partager** dont le lien ramène vers Culture
 Centro, et non vers le site du partenaire : `…/?e=<id>`, où `<id>` est tiré
 du titre et de la date (ex. `?e=les-belles-soeurs-2026-10-03`). Sur mobile, le
 bouton ouvre la feuille de partage du système ; ailleurs, il copie le lien.
