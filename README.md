@@ -106,6 +106,8 @@ culturecentro/
 │   └── sources/                # une salle par fichier, sur des fixtures HTML
 ├── web/                        # page publique autonome + feed généré
 │   ├── index.html
+│   ├── logo.svg                # logo provisoire (en-tête, pied de page, icône d'onglet)
+│   ├── apple-touch-icon.png    # logo pour l'écran d'accueil iOS
 │   ├── img/partage.png         # image d'aperçu par défaut (1200×630)
 │   ├── data/evenements.json
 │   └── e/<id>/index.html       # pages de partage (générées au déploiement)
@@ -473,6 +475,13 @@ publics et fusionne les listes ; repli JSON-LD si aucun bloc n'est trouvé.
 Le dossier [`web/`](web/) contient la **page publique** (`index.html`,
 autonome, sans dépendance) : agenda filtrable par discipline, période et lieu,
 fil chronologique par mois, bande « En ce moment ».
+
+**Logo.** Le logo actuel (deux étincelles sur tuile sombre) est **provisoire**,
+en attendant le logo officiel. Il tient dans un seul fichier,
+[`web/logo.svg`](web/logo.svg), qu'utilisent l'en-tête, le pied de page et
+l'icône d'onglet : pour changer de logo, remplacer ce fichier, puis refaire
+`web/apple-touch-icon.png` (écran d'accueil iOS, 180 × 180) et l'image
+d'aperçu `web/img/partage.png`, qui le reprennent.
 
 La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
 est présent et non vide ; sinon elle retombe sur un jeu de données de
