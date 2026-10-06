@@ -528,6 +528,7 @@ GitHub Actions exécute, sur chaque `push` et *pull request*
 - [`docs/architecture.md`](docs/architecture.md) — vue d'ensemble du paquet et du flux de données.
 - [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md) — guide pour brancher une nouvelle salle.
 - [`docs/partenaires.md`](docs/partenaires.md) — partenaires culturels du centre-ville (feuille de route des sources).
+- [`docs/inspiration.md`](docs/inspiration.md) — sites d'agendas culturels agrégés servant d'inspiration pour le design.
 
 ## Licence
 
