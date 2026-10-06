@@ -21,6 +21,14 @@ Noire »…). On la normalise : la ville est retirée et toute variante du nom d
 la salle est ramenée au nom canonique :attr:`LaPetiteBoiteNoire.nom`, pour
 qu'un seul lieu apparaisse dans l'agrégation et le filtre du site.
 
+La catégorie (« Humour », « Arts littéraires »…) que l'organisateur déclare
+sur Lepointdevente n'est affichée ni dans la liste ni sur la fiche : seule la
+recherche du site permet de filtrer par catégorie. On y cherche donc la salle,
+une catégorie non musicale à la fois (:data:`CATEGORIES_LEPOINTDEVENTE`), et
+chaque événement trouvé reçoit la catégorie correspondante — y compris un
+spectacle d'humour dont ni le titre ni la description ne disent « humour ».
+Les autres restent au classement automatique (musique par défaut).
+
 Si la découverte échoue, on retombe sur l'URL de billetterie connue, puis sur
 les données schema.org ``Event`` (JSON-LD) de la page. Chaque repli émet un
 avertissement via ``logging``.
@@ -37,11 +45,13 @@ En ligne de commande ::
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import unicodedata
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from datetime import datetime
+from urllib.parse import urlencode, urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -74,6 +84,32 @@ URL_FICHE_PAR_ID = "https://lepointdevente.com/plugins/embed/redirect?event={id}
 #: Code de l'événement dans l'URL de son affiche :
 #: ``…/events/PBN/26/10/07/001/pbn261007001-1152x648-fr.png``.
 _CODE_DANS_IMAGE = re.compile(r"/events/[^/]+/\d{2}/\d{2}/\d{2}/\d+/([a-z0-9]+)-", re.IGNORECASE)
+
+#: Code de l'événement dans l'URL de sa fiche (``/billets/pbn261007001``).
+_CODE_DANS_LIEN = re.compile(r"/billets/([a-z0-9]+)/?$", re.IGNORECASE)
+
+#: Recherche Lepointdevente : la seule page qui filtre les événements par
+#: catégorie (paramètre ``categories``, JSON ``{"<id>": 0}``).
+URL_RECHERCHE = "https://lepointdevente.com/"
+
+#: Termes et localité (identifiant Lepointdevente de Sherbrooke) qui placent
+#: les événements de la salle en tête des résultats.
+RECHERCHE_SALLE = "Petite Boîte Noire"
+LOCALITE_SHERBROOKE = 2238
+
+#: Catégories Lepointdevente interrogées (identifiant → catégorie), par
+#: priorité décroissante. La musique, catégorie par défaut de la salle, ne
+#: l'est pas : un événement absent de ces résultats garde le classement
+#: automatique.
+CATEGORIES_LEPOINTDEVENTE: dict[int, str] = {
+    11: "humour",
+    4: "danse",
+    6: "litt",  # Arts littéraires
+    3: "theatre",
+}
+
+#: Garde-fou : pages de résultats lues au plus par catégorie.
+_PAGES_MAX = 5
 
 #: Nom canonique de la salle, tel qu'exposé dans le champ ``lieu``.
 NOM_SALLE = "La Petite Boîte Noire"
@@ -125,6 +161,90 @@ def lien_fiche(event_id: str | None, image: str | None) -> str | None:
     if event_id:
         return URL_FICHE_PAR_ID.format(id=event_id)
     return None
+
+
+def code_fiche(lien: str | None) -> str | None:
+    """Code de l'événement (``pbn261007001``) lu dans le lien de sa fiche."""
+    m = _CODE_DANS_LIEN.search(lien) if lien else None
+    return m.group(1).lower() if m else None
+
+
+# --------------------------------------------------------------------------- #
+# Catégorie déclarée sur Lepointdevente
+# --------------------------------------------------------------------------- #
+def url_recherche(categorie_id: int) -> str:
+    """Recherche Lepointdevente des événements de la salle dans une catégorie."""
+    parametres = {
+        "q": RECHERCHE_SALLE,
+        "locality": LOCALITE_SHERBROOKE,
+        "categories": json.dumps({str(categorie_id): 0}, separators=(",", ":")),
+    }
+    return f"{URL_RECHERCHE}?{urlencode(parametres)}"
+
+
+def _analyser_resultats(html: str) -> tuple[list[str], str | None]:
+    """Codes des événements d'une page de résultats, et URL de la page suivante."""
+    soup = BeautifulSoup(html, "html.parser")
+    codes = [
+        code
+        for lien in soup.select("a.feature-link[href]")
+        if (code := code_fiche(attribut(lien, "href")))
+    ]
+    suivant = soup.select_one("a#events-pages-next")
+    if suivant is None or "disabled" in suivant.get_attribute_list("class"):
+        return codes, None
+    href = attribut(suivant, "href")
+    if not href or href == "#":
+        return codes, None
+    return codes, urljoin(URL_RECHERCHE, href)
+
+
+def categories_lepointdevente(
+    codes: Iterable[str], timeout: float, session: requests.Session
+) -> dict[str, str]:
+    """Catégorie déclarée sur Lepointdevente pour chacun des ``codes`` d'événement.
+
+    Une recherche par catégorie de :data:`CATEGORIES_LEPOINTDEVENTE` ; les
+    résultats étant triés par pertinence, on cesse de tourner les pages dès
+    qu'une page ne contient plus aucun des ``codes``. Un code présent dans
+    plusieurs catégories reçoit la première. Un échec réseau laisse les
+    événements concernés au classement automatique (avertissement).
+    """
+    cherches = set(codes)
+    categories: dict[str, str] = {}
+    for categorie_id, categorie in CATEGORIES_LEPOINTDEVENTE.items():
+        url: str | None = url_recherche(categorie_id)
+        for _ in range(_PAGES_MAX):
+            if url is None:
+                break
+            try:
+                html = telecharger(url, timeout, session=session)
+            except requests.RequestException as exc:
+                _LOG.warning("Recherche Lepointdevente « %s » échouée : %s", categorie, exc)
+                break
+            codes_page, url = _analyser_resultats(html)
+            trouves = cherches.intersection(codes_page)
+            if not trouves:
+                break
+            for code in trouves:
+                categories.setdefault(code, categorie)
+    return categories
+
+
+def _appliquer_categories(
+    evenements: list[Evenement], timeout: float, session: requests.Session
+) -> None:
+    """Renseigne ``categorie`` des événements classés sur Lepointdevente."""
+    codes = [code for ev in evenements if (code := code_fiche(ev.lien))]
+    if not codes:
+        return
+    categories = categories_lepointdevente(codes, timeout, session)
+    for ev in evenements:
+        code = code_fiche(ev.lien)
+        if code and code in categories:
+            ev.categorie = categories[code]
+    if categories:
+        _LOG.info("Catégories Lepointdevente : %d événements classés.", len(categories))
 
 
 # --------------------------------------------------------------------------- #
@@ -214,6 +334,7 @@ def _extraire_evenements(html: str, timeout: float, session: requests.Session) -
         evenements = _extraire_depuis_lepointdevente(liste_html)
         if evenements:
             _LOG.info("Liste Lepointdevente analysée : %d événements.", len(evenements))
+            _appliquer_categories(evenements, timeout, session)
             return evenements
         _LOG.warning("Aucun événement dans la liste Lepointdevente (structure modifiée ?).")
 
@@ -235,8 +356,8 @@ class LaPetiteBoiteNoire(Source):
     nom = NOM_SALLE
     url_defaut = URL_EVENEMENTS
     categorie_defaut = "musique"
-    # La fiche Lepointdevente n'apporte rien de plus au classement que le
-    # titre : on évite une requête par événement.
+    # La catégorie déclarée sur Lepointdevente est lue par la recherche (une
+    # requête par catégorie) : inutile de lire chaque fiche.
     fiche_categorisable = False
 
     def extraire(self, html: str, timeout: float, session: requests.Session) -> list[Evenement]:

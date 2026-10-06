@@ -4,8 +4,9 @@ Plutôt qu'une catégorie fixée par partenaire, chaque événement est classé 
 partir de **ses propres données**, par ordre de fiabilité décroissante :
 
 1. la catégorie que la source a pu lire sur le site même (taxonomie
-   WordPress du Théâtre Granada, page « jeune public » du Grand-Espace,
-   nature du partenaire pour un musée ou un centre d'art) ;
+   WordPress du Théâtre Granada, catégorie déclarée sur la billetterie
+   Lepointdevente pour La Petite Boîte Noire, page « jeune public » du
+   Grand-Espace, nature du partenaire pour un musée ou un centre d'art) ;
 2. les mots-clés du titre et du sous-titre (genre, distribution) ;
 3. la **fiche de l'événement** (page `lien`) : catégories et étiquettes du
    site, type schema.org (``MusicEvent``, ``TheaterEvent``…), description ;

@@ -18,12 +18,16 @@ from culturecentro.sources.lapetiteboitenoire import (
     URL_BILLETTERIE_DEFAUT,
     Evenement,
     LaPetiteBoiteNoire,
+    _analyser_resultats,
     _extraire_depuis_lepointdevente,
     _extraire_evenements,
     _trouver_url_billetterie,
+    categories_lepointdevente,
+    code_fiche,
     lien_fiche,
     main,
     normaliser_lieu,
+    url_recherche,
 )
 
 FRAGMENT_LISTE = """
@@ -60,6 +64,45 @@ JSONLD = """
 """
 
 URL_BASE = "https://lepointdevente.com/billets/programmationavenir"
+
+
+def page_resultats(*codes: str, suivant: str | None = None) -> str:
+    """Page de résultats de la recherche Lepointdevente (cartes + pagination)."""
+    cartes = "".join(
+        f'<div class="feature-col is-small"><article class="feature-canvas">'
+        f'<a href="/billets/{code}" class="feature-link embed-self">'
+        f'<h3 class="feature-title">{code}</h3></a></article></div>'
+        for code in codes
+    )
+    if suivant:
+        nav = f'<a id="events-pages-next" class="btn next embed-self" href="{suivant}">Suivant</a>'
+    else:
+        nav = (
+            '<a id="events-pages-next" class="btn next embed-self disabled" href="#" '
+            'onclick="return false;">Suivant</a>'
+        )
+    return (
+        f'<div id="events-list" class="feature feature-grid"><div class="feature-row">'
+        f'{cartes}</div></div><nav id="events-pages" class="nav-pagination">{nav}</nav>'
+    )
+
+
+def faux_telecharger(pages: dict[str, str]):
+    """``telecharger`` simulé : contenu par URL (page vide si absente)."""
+
+    def telecharger(url, timeout, session=None):
+        contenu = pages.get(url, "<html></html>")
+        if isinstance(contenu, Exception):
+            raise contenu
+        return contenu
+
+    return telecharger
+
+
+# Recherches par catégorie (identifiants Lepointdevente).
+URL_HUMOUR = url_recherche(11)
+URL_LITT = url_recherche(6)
+URL_THEATRE = url_recherche(3)
 
 
 class TestTrouverUrlBilletterie(unittest.TestCase):
@@ -158,6 +201,92 @@ class TestLienFiche(unittest.TestCase):
         self.assertIsNone(lien_fiche(None, None))
 
 
+class TestCodeFiche(unittest.TestCase):
+    def test_code_lu_dans_le_lien(self):
+        self.assertEqual(
+            code_fiche("https://lepointdevente.com/billets/pbn261104001"), "pbn261104001"
+        )
+        self.assertEqual(code_fiche("/billets/PBN261104001/"), "pbn261104001")
+
+    def test_lien_permanent_ou_absent_vaut_none(self):
+        self.assertIsNone(
+            code_fiche("https://lepointdevente.com/plugins/embed/redirect?event=541978")
+        )
+        self.assertIsNone(code_fiche(None))
+
+
+class TestRechercheParCategorie(unittest.TestCase):
+    """La catégorie déclarée sur Lepointdevente, lue via sa recherche."""
+
+    def test_url_recherche(self):
+        self.assertEqual(
+            url_recherche(11),
+            "https://lepointdevente.com/?q=Petite+Bo%C3%AEte+Noire&locality=2238"
+            "&categories=%7B%2211%22%3A0%7D",
+        )
+
+    def test_analyser_resultats(self):
+        codes, suivant = _analyser_resultats(
+            page_resultats("roa261010001", "pbn261007001", suivant="/?q=x&page=2")
+        )
+        self.assertEqual(codes, ["roa261010001", "pbn261007001"])
+        self.assertEqual(suivant, "https://lepointdevente.com/?q=x&page=2")
+
+    def test_derniere_page_sans_suivant(self):
+        self.assertEqual(_analyser_resultats(page_resultats("pbn1")), (["pbn1"], None))
+        self.assertEqual(_analyser_resultats("<html></html>"), ([], None))
+
+    def test_codes_classes_par_categorie(self):
+        pages = {
+            # Anas Hassouna : aucune mention d'humour, mais classé « Humour ».
+            URL_HUMOUR: page_resultats("roa261010001", "pbn261007001", "pbn261104001"),
+            URL_LITT: page_resultats("pbn261021001"),
+        }
+        with mock.patch.object(lpbn, "telecharger", side_effect=faux_telecharger(pages)):
+            categories = categories_lepointdevente(
+                ["pbn261007001", "pbn261104001", "pbn261021001", "pbn261009001"],
+                5.0,
+                mock.Mock(),
+            )
+        self.assertEqual(
+            categories,
+            {"pbn261007001": "humour", "pbn261104001": "humour", "pbn261021001": "litt"},
+        )
+
+    def test_premiere_categorie_prioritaire(self):
+        pages = {URL_HUMOUR: page_resultats("pbn1"), URL_THEATRE: page_resultats("pbn1")}
+        with mock.patch.object(lpbn, "telecharger", side_effect=faux_telecharger(pages)):
+            categories = categories_lepointdevente(["pbn1"], 5.0, mock.Mock())
+        self.assertEqual(categories, {"pbn1": "humour"})
+
+    def test_pages_suivantes_tant_qu_elles_contiennent_la_salle(self):
+        page2 = "https://lepointdevente.com/?page=2"
+        page3 = "https://lepointdevente.com/?page=3"
+        pages = {
+            URL_HUMOUR: page_resultats("pbn1", suivant=page2),
+            page2: page_resultats("autre1", "pbn2", suivant=page3),
+            page3: page_resultats("autre2", suivant="https://lepointdevente.com/?page=4"),
+        }
+        appels = faux_telecharger(pages)
+        with mock.patch.object(lpbn, "telecharger", side_effect=appels) as telecharger:
+            categories = categories_lepointdevente(["pbn1", "pbn2", "pbn9"], 5.0, mock.Mock())
+        self.assertEqual(categories, {"pbn1": "humour", "pbn2": "humour"})
+        # Page 3 sans événement de la salle : la page 4 n'est pas demandée.
+        urls = [appel.args[0] for appel in telecharger.call_args_list]
+        self.assertIn(page3, urls)
+        self.assertNotIn("https://lepointdevente.com/?page=4", urls)
+
+    def test_echec_reseau_n_empeche_pas_les_autres_categories(self):
+        pages = {
+            URL_HUMOUR: requests.RequestException("boom"),
+            URL_LITT: page_resultats("pbn1"),
+        }
+        with mock.patch.object(lpbn, "telecharger", side_effect=faux_telecharger(pages)):
+            with self.assertLogs(lpbn._LOG.name, level="WARNING"):
+                categories = categories_lepointdevente(["pbn1"], 5.0, mock.Mock())
+        self.assertEqual(categories, {"pbn1": "litt"})
+
+
 class TestNormaliserLieu(unittest.TestCase):
     """Le lieu Lepointdevente varie en casse/accents et porte un suffixe de ville."""
 
@@ -192,6 +321,13 @@ class TestExtraireEvenements(unittest.TestCase):
         with mock.patch.object(lpbn, "telecharger", return_value=FRAGMENT_LISTE):
             evs = _extraire_evenements(page, 5.0, mock.Mock())
         self.assertEqual(len(evs), 2)
+
+    def test_categorie_lepointdevente_appliquee(self):
+        page = '<a href="https://lepointdevente.com/billets/programmationavenir">x</a>'
+        pages = {URL_BASE: FRAGMENT_LISTE, URL_HUMOUR: page_resultats("pbn260930001")}
+        with mock.patch.object(lpbn, "telecharger", side_effect=faux_telecharger(pages)):
+            evs = _extraire_evenements(page, 5.0, mock.Mock())
+        self.assertEqual([e.categorie for e in evs], ["humour", None])
 
     def test_repli_jsonld_si_liste_vide(self):
         page = '<a href="https://lepointdevente.com/billets/programmationavenir">x</a>'
