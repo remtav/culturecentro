@@ -514,6 +514,15 @@ autonome, sans dépendance) : agenda filtrable par discipline, période et lieu,
 fil chronologique par mois, bande « En ce moment », et une flèche « Revenir en
 haut » qui apparaît en bas à droite dès que l'on descend dans la liste.
 
+La section **Lieux partenaires** est un plan du centre-ville (tracé d'après
+OpenStreetMap, comme celui de la variante 4) : chaque partenaire y a un repère
+numéroté, de sa couleur, posé à son adresse géocodée (`lat` / `lon` dans
+`PARTNERS`). La légende, à côté du plan (dessous sur mobile), donne pour chaque
+numéro le nom du lieu, son type et le lien vers son site ; les numéros vont du
+nord au sud. Survoler un lieu, dans la légende ou sur le plan, le met en
+évidence et affiche son nom sur le plan ; un clic sur le repère ou sur la
+légende ouvre le site du partenaire.
+
 **Logo.** Le logo actuel (deux étincelles sur tuile sombre) est **provisoire**,
 en attendant le logo officiel. Il tient dans un seul fichier,
 [`web/logo.svg`](web/logo.svg), qu'utilisent l'en-tête, le pied de page et

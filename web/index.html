@@ -45,6 +45,10 @@
     --d-humour: #E0672F;
     --d-jeunesse: #4CAF50;
 
+    /* Plan des lieux partenaires */
+    --map-land: #EAE2D2; --map-street: #FFFDF8; --map-water: #B9D3E2; --map-park: #CFDFBC;
+    --map-water-ink: #4F7389; --pin-ring: #FFFFFF;
+
     --shadow: 0 1px 2px rgba(22,22,46,.04), 0 8px 22px rgba(22,22,46,.06);
     --radius: 14px;
     --maxw: 1140px;
@@ -58,6 +62,8 @@
       --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
       --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
       --d-humour: #F58A57; --d-jeunesse: #7BD37F;
+      --map-land: #23233A; --map-street: #3A3A58; --map-water: #1D3652; --map-park: #1F3729;
+      --map-water-ink: #8FB2CC; --pin-ring: #F2EEF6;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px rgba(0,0,0,.34);
       color-scheme: dark;
     }
@@ -69,6 +75,8 @@
     --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
     --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
     --d-humour: #F58A57; --d-jeunesse: #7BD37F;
+    --map-land: #23233A; --map-street: #3A3A58; --map-water: #1D3652; --map-park: #1F3729;
+    --map-water-ink: #8FB2CC; --pin-ring: #F2EEF6;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px rgba(0,0,0,.34);
     color-scheme: dark;
   }
@@ -442,21 +450,45 @@
     background: color-mix(in srgb, var(--dc) 14%, var(--card));
   }
 
-  /* ---------- Partenaires (condensé) ---------- */
+  /* ---------- Lieux partenaires : plan du centre-ville + légende numérotée ---------- */
   .partners-sec { background: var(--paper-2); border-top: 1px solid var(--line); scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--tb, 70px) + 8px); }
-  .partners-sec .wrap { padding-block: 34px; }
+  .partners-sec .wrap { padding-block: 34px; container: lieux / inline-size; }
   .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
   .sec-head h2 { font-size: clamp(19px, 2.6vw, 25px); font-weight: 800; }
   .sec-head .count { font-size: 13px; color: var(--ink-faint); font-weight: 600; }
-  .partners { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 12px; }
-  .partner { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; gap: 12px; align-items: center; text-decoration: none; color: inherit; transition: border-color .15s, transform .1s, box-shadow .15s; }
-  .partner:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+  /* Plan à gauche, légende à droite ; légende sous le plan quand la place manque
+     (seuil en requête de conteneur : il suit aussi la taille du texte A− / A+). */
+  .lieux { display: grid; gap: 16px; align-items: start; }
+  .plan { width: 100%; max-width: 560px; justify-self: center; margin: 0; background: var(--map-land); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  @container lieux (min-width: 760px) {
+    .lieux { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 24px; }
+    .plan { max-width: none; }
+  }
+  .plan svg { display: block; width: 100%; height: auto; }
+  .plan .street { stroke: var(--map-street); fill: none; stroke-linecap: round; }
+  .plan .lbl { fill: var(--ink-faint); font-family: "Instrument Sans", sans-serif; font-size: 17px; font-weight: 600; paint-order: stroke; stroke: var(--map-land); stroke-width: 4px; stroke-linejoin: round; }
+  .plan .lbl.w { font-style: italic; font-size: 19px; fill: var(--map-water-ink); stroke: none; }
+  .plan .pin circle { stroke: var(--pin-ring); stroke-width: 4; transition: stroke .15s, stroke-width .15s; }
+  .plan .pin text { fill: #fff; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 21px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .plan .pin { transition: opacity .15s; }
+  .plan .pin.dim { opacity: .35; }
+  .plan .pin.on circle { stroke: var(--accent); stroke-width: 6; }
+  .plan .tip { pointer-events: none; }
+  .plan .tip rect { fill: var(--ink); }
+  .plan .tip text { fill: var(--paper); font-family: "Instrument Sans", sans-serif; font-size: 22px; font-weight: 600; dominant-baseline: central; }
+  /* Mention OpenStreetMap sous le dessin (et non par-dessus : elle couvrirait un repère sur mobile) */
+  .plan .osm { padding: 5px 10px; font-size: 11.5px; text-align: right; color: var(--ink-faint); background: var(--card); border-top: 1px solid var(--line); }
+  .plan .osm a { color: inherit; }
+  /* Légende : chaque lieu, son numéro sur le plan et le lien vers son site */
+  .partners { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 10px; }
+  .partner { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: flex; gap: 12px; align-items: center; text-decoration: none; color: inherit; transition: border-color .15s, transform .1s, box-shadow .15s; }
+  .partner:hover, .partner.on { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
   .partner .p-info { min-width: 0; flex: 1; }
   .partner .p-ext { flex: none; color: var(--ink-faint); transition: color .15s; }
-  .partner:hover .p-ext { color: var(--accent); }
-  .partner .glyph { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 15px; color: #fff; background: var(--pc, var(--ink)); }
+  .partner:hover .p-ext, .partner.on .p-ext { color: var(--accent); }
+  .partner .num { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 15px; color: #fff; background: var(--pc, var(--ink)); font-variant-numeric: tabular-nums; }
   .partner b { display: block; font-size: 14.5px; }
-  .partner span { font-size: 12px; color: var(--ink-faint); }
+  .partner .p-info span { font-size: 12px; color: var(--ink-faint); }
 
   /* ---------- Footer ---------- */
   /* Le pied de page est toujours sombre : ses couleurs de texte sont fixes (claires) et ne
@@ -559,7 +591,15 @@
       <h2>Lieux partenaires</h2>
       <span class="count">Le réseau culturel du centre-ville</span>
     </div>
-    <div class="partners" id="partners"></div>
+    <div class="lieux">
+      <!-- Le plan double la légende pour la souris ; les lecteurs d'écran et le
+           clavier passent par la légende, qui porte les mêmes liens. -->
+      <figure class="plan">
+        <svg id="plan" aria-hidden="true" focusable="false"></svg>
+        <figcaption class="osm">Fond de carte © contributeurs <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a></figcaption>
+      </figure>
+      <ol class="partners" id="partners" aria-label="Légende du plan : lieux partenaires"></ol>
+    </div>
   </div>
 </section>
 
@@ -814,14 +854,16 @@
   // Lieux partenaires : les organismes du centre-ville dont la programmation
   // est agrégée par un extracteur (voir docs/partenaires.md et
   // src/culturecentro/sources/). Noms et sites repris des sources scrapées.
+  // lat / lon : géocodage OpenStreetMap des adresses (comme variantes/commun.js),
+  // pour placer le repère du lieu sur le plan ; null = hors du plan.
   var PARTNERS = [
-    { name:"Théâtre Granada",                    kind:"Salle patrimoniale",         d:"theatre",  url:"https://theatregranada.com" },
-    { name:"Le Grand-Espace",                    kind:"Arts de la scène",           d:"theatre",  url:"https://legrandespace.ca" },
-    { name:"Musée des beaux-arts de Sherbrooke", kind:"Arts visuels",               d:"arts",     url:"https://mbas.qc.ca" },
-    { name:"Sporobole",                          kind:"Centre en art actuel",       d:"arts",     url:"https://sporobole.org" },
-    { name:"La Petite Boîte Noire",              kind:"Salle de musique",           d:"musique",  url:"https://lapetiteboitenoire.com" },
-    { name:"Le Tremplin 16-30",                  kind:"Diffusion de la relève",     d:"musique",  url:"https://tremplin16-30.com" },
-    { name:"Maison des arts de la parole",       kind:"Contes · Arts de la parole", d:"litt",     url:"https://maisondesartsdelaparole.com" }
+    { name:"Théâtre Granada",                    kind:"Salle patrimoniale",         url:"https://theatregranada.com",          lat:45.40229, lon:-71.89107 },
+    { name:"Le Grand-Espace",                    kind:"Arts de la scène",           url:"https://legrandespace.ca",            lat:45.39787, lon:-71.88758 },
+    { name:"Musée des beaux-arts de Sherbrooke", kind:"Arts visuels",               url:"https://mbas.qc.ca",                  lat:45.40513, lon:-71.89460 },
+    { name:"Sporobole",                          kind:"Centre en art actuel",       url:"https://sporobole.org",               lat:45.40266, lon:-71.89021 },
+    { name:"La Petite Boîte Noire",              kind:"Salle de musique",           url:"https://lapetiteboitenoire.com",      lat:45.40341, lon:-71.89069 },
+    { name:"Le Tremplin 16-30",                  kind:"Diffusion de la relève",     url:"https://tremplin16-30.com",           lat:45.39980, lon:-71.88949 },
+    { name:"Maison des arts de la parole",       kind:"Contes · Arts de la parole", url:"https://maisondesartsdelaparole.com", lat:45.40368, lon:-71.89156 }
   ];
 
   var PIN = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>';
@@ -1387,22 +1429,94 @@
     setActive(groups[0].key);
   }
 
-  // Partenaires
+  // Lieux partenaires : plan du centre-ville et légende numérotée. Le plan est
+  // tracé d'après OpenStreetMap (rues, rivières, parcs ; simplifié), comme celui
+  // de la variante 4 ; chaque lieu y a un repère numéroté, de sa couleur, posé à
+  // son adresse. Numéros du nord au sud : la légende se lit comme le plan.
+  // Survoler un lieu (légende ou repère) le met en évidence et affiche son nom
+  // sur le plan ; un clic ouvre le site du partenaire.
+  var PCOL = ["#C8324A", "#7A3FC4", "#0F7F74", "#1F5FBF", "#B4460F", "#A2337E", "#2D6B2F", "#8A5A00", "#3E4C9B", "#00707F"];
+  // Projection équirectangulaire, nord en haut ; VB = portion du plan affichée.
+  var PLAN = {"W":926,"water":["M-40 822 L-16 786 L-15 781 L42 789 L41 796 L78 802 L83 805 L87 811 L89 816 L89 823 L84 842 L63 887 L56 898 L12 955 L-8 965 L-40 976 L-40 822Z","M489 -40 L540 14 L556 57 L553 81 L595 159 L612 185 L621 204 L652 240 L744 331 L791 394 L832 441 L841 469 L894 558 L912 635 L914 670 L900 737 L889 822 L902 894 L920 947 L966 1009 L966 542 L902 407 L893 394 L860 359 L852 355 L843 344 L827 322 L781 267 L704 169 L643 28 L631 -17 L617 -40 L489 -40Z","M240 260 L246 256 L256 260 L257 258 L261 259 L268 250 L286 232 L308 215 L323 207 L368 189 L375 194 L382 194 L392 189 L405 188 L416 184 L423 180 L426 172 L407 178 L407 172 L404 172 L403 169 L475 149 L494 139 L538 106 L553 81 L595 159 L578 154 L572 160 L563 164 L544 168 L530 175 L501 179 L454 200 L448 187 L425 196 L428 202 L373 212 L372 209 L354 214 L331 223 L337 238 L333 239 L337 252 L314 268 L288 283 L276 283 L264 292 L246 299 L231 301 L200 314 L179 314 L155 335 L104 386 L96 399 L90 415 L89 429 L79 439 L73 431 L77 428 L74 425 L78 421 L75 418 L86 401 L84 399 L70 410 L66 408 L65 410 L69 412 L61 421 L63 423 L55 428 L53 437 L55 443 L59 445 L74 464 L64 477 L66 483 L33 513 L3 528 L-4 534 L-6 542 L5 589 L13 643 L17 704 L28 708 L22 731 L28 750 L33 752 L40 772 L42 789 L-15 781 L-10 743 L-3 724 L-5 703 L-2 696 L-9 685 L-11 613 L-13 607 L-24 591 L-40 563 L-40 500 L-33 498 L-7 498 L-3 496 L13 456 L33 433 L38 425 L39 408 L57 396 L68 383 L80 381 L85 383 L93 380 L96 377 L132 313 L140 303 L159 291 L171 288 L180 288 L205 291 L212 289 L227 278 L240 260Z"],"parks":["M139 940 L173 932 L213 927 L217 877 L210 870 L150 884 L142 861 L133 855 L130 850 L127 832 L108 795 L91 797 L42 791 L41 796 L78 802 L83 805 L89 816 L88 831 L63 887 L56 898 L12 955 L-8 965 L-73 986 L-213 1019 L-246 1018 L-266 1020 L-377 1035 L-449 1042 L-560 1071 L-571 1072 L-595 1065 L-610 1072 L-628 1076 L-641 1076 L-670 1085 L-676 1081 L-679 1070 L-677 1068 L-669 1066 L-662 1061 L-651 1062 L-637 1047 L-636 1043 L-638 1038 L-647 1036 L-678 1042 L-699 1055 L-711 1071 L-739 1097 L-741 1106 L-784 1125 L-809 1141 L-827 1141 L-848 1145 L-860 1152 L-867 1159 L-871 1177 L-870 1182 L-39 983 L54 959 L53 950 L136 929 L139 940Z","M391 456 L370 467 L363 452 L359 454 L354 445 L359 441 L366 443 L375 442 L381 438 L391 456Z","M730 1054 L705 1064 L696 1044 L674 1052 L665 1042 L657 1045 L663 1060 L689 1075 L732 1059 L730 1054Z","M502 838 L598 802 L586 775 L492 812 L502 838Z","M372 209 L364 212 L371 229 L377 227 L372 209Z","M-733 807 L-745 821 L-755 829 L-763 834 L-782 838 L-1082 847 L-1209 852 L-1214 854 L-1220 933 L-1218 952 L-1221 1104 L-1224 1135 L-1224 1198 L-1221 1229 L-1194 1232 L-1146 1234 L-1089 1234 L-1012 1217 L-1027 1198 L-1030 1192 L-1042 1139 L-1053 1105 L-1065 1086 L-1074 1066 L-1075 1049 L-1081 1026 L-1079 1010 L-1071 998 L-1053 988 L-1040 983 L-1024 976 L-952 929 L-943 928 L-939 925 L-936 921 L-937 920 L-868 888 L-845 881 L-701 885 L-672 895 L-660 897 L-641 896 L-612 884 L-585 869 L-554 846 L-545 842 L-491 835 L-453 833 L-409 825 L-398 830 L-364 831 L-352 829 L-338 823 L-167 863 L-154 864 L-132 860 L-130 863 L-128 864 L-124 863 L-122 859 L-51 831 L-42 825 L-41 821 L-82 839 L-119 851 L-136 854 L-151 854 L-170 852 L-272 825 L-323 806 L-351 804 L-558 830 L-590 837 L-603 833 L-624 821 L-650 859 L-733 807Z","M901 297 L917 287 L925 304 L909 312 L901 297Z","M-123 -27 L-125 121 L-123 125 L-116 128 L-70 128 L-60 125 L-57 121 L-56 114 L-54 -27 L-57 -30 L-60 -31 L-118 -32 L-123 -30 L-123 -27Z","M162 2 L188 -11 L196 -11 L212 9 L212 13 L209 18 L184 37 L177 40 L174 40 L158 12 L158 5 L162 2Z"],"streets":{"m":["M187 783 L186 774 L178 756","M711 432 L719 456 L723 477 L728 528 L733 542 L802 737 L847 857","M746 891 L759 890 L856 853","M-90 344 L-32 423","M852 844 L781 651 L746 549 L734 477 L727 452 L717 428 L709 421","M897 975 L925 1027 L953 1100","M-21 770 L43 780","M43 780 L67 784","M220 916 L219 944","M219 944 L216 978","M-1 457 L46 506","M92 587 L154 714","M686 367 L709 421","M838 332 L846 327","M67 784 L85 788 L115 784 L171 759","M216 978 L212 985 L209 1058","M709 421 L653 461","M773 380 L761 383 L709 421","M773 380 L838 332","M852 844 L754 880 L746 891","M174 748 L162 721 L154 714","M187 783 L219 850 L222 863","M154 714 L155 724 L168 751","M171 759 L180 778 L187 783","M643 480 L668 462","M168 751 L116 775 L67 784","M711 432 L768 392 L773 380","M960 1093 L930 1017","M463 600 L426 622 L347 663","M178 756 L350 671","M408 642 L467 608 L588 520","M906 971 L870 888","M746 891 L774 982 L789 1024 L828 1112","M856 853 L852 844","M178 756 L174 748","M846 327 L881 301","M668 462 L711 432","M283 693 L174 748","M314 679 L283 693","M585 510 L463 600","M54 513 L92 587","M46 506 L54 513","M920 275 L953 251 L967 236","M311 -55 L322 -54 L340 -47 L349 -45","M349 -45 L331 -61 L326 -74","M546 226 L552 231 L592 241 L599 240","M599 240 L592 236 L553 226 L546 226","M645 279 L627 256 L612 245 L599 240","M374 -31 L359 -41 L349 -45","M546 226 L534 222 L522 215 L507 201 L498 187","M498 187 L471 138","M653 461 L585 510","M222 863 L220 916","M881 301 L920 275","M446 93 L422 43","M454 110 L446 93","M675 342 L686 367","M655 299 L675 342","M471 138 L463 126","M399 -1 L386 -19 L374 -31","M414 29 L399 -1","M655 299 L645 279","M-251 745 L-21 770","M463 126 L454 110","M350 671 L408 642","M347 663 L314 679","M847 857 L897 975","M930 1017 L906 971","M870 888 L856 853","M168 751 L171 759","M174 748 L168 751","M171 759 L178 756","M709 421 L711 432","M588 520 L643 480","M217 1059 L220 985 L216 978","M422 43 L414 29","M-32 423 L-1 457"],"r":["M585 510 L512 339 L476 261","M-51 633 L-147 631","M-44 675 L-44 639 L-48 634 L-51 633","M-70 450 L-32 423","M147 3 L176 51","M361 222 L373 247","M114 97 L177 186 L185 189","M273 77 L158 158","M28 374 L24 372 L-77 235","M63 351 L35 372 L28 374","M-42 211 L63 351","M-46 128 L-6 185","M-46 128 L-51 113","M151 433 L215 558","M234 543 L261 600","M298 485 L379 647","M238 413 L215 375","M422 518 L381 438","M352 438 L366 443 L375 442 L381 438","M409 231 L430 281","M238 413 L255 408 L259 408 L276 442","M393 758 L429 836","M222 863 L350 830","M580 1012 L567 1005 L551 965","M561 785 L620 938","M429 836 L561 785","M561 785 L483 611","M589 705 L658 674","M589 705 L527 566","M664 -20 L791 -67","M893 18 L1050 -1","M769 220 L823 201","M823 201 L865 287","M718 810 L736 799 L743 787 L745 776 L728 719 L721 660","M718 810 L713 797","M746 891 L684 913 L551 965","M347 191 L361 222","M56 1232 L56 1162 L62 1046 L53 998 L53 991 L55 989","M582 388 L553 321","M589 1044 L584 1041 L541 1062","M553 321 L512 339","M396 348 L434 357 L441 357 L459 351","M691 633 L648 652","M463 996 L518 1013","M222 863 L158 876 L133 883","M653 461 L658 469","M492 812 L408 642","M492 812 L551 965","M620 938 L660 1044","M817 72 L806 52 L798 48 L728 45","M55 989 L106 978 L128 976 L216 978","M540 406 L582 388","M132 889 L132 889","M893 18 L897 22 L984 195","M138 253 L108 212 L87 180 L87 176","M87 176 L142 136","M90 485 L138 444","M813 -16 L741 11 L720 -14","M817 72 L833 28 L791 -67","M658 469 L678 515 L686 543","M426 120 L390 135 L334 164","M397 296 L430 281","M366 413 L352 438 L342 449 L309 475 L234 543 L203 568","M430 213 L430 213","M151 433 L159 432 L218 379 L369 256 L373 247","M373 247 L366 251 L307 298 L153 428 L151 433","M185 189 L240 167 L260 162 L292 159 L320 141","M238 29 L320 141 L334 164 L347 191","M843 126 L835 107 L817 72","M286 701 L363 856 L367 859","M624 759 L686 736","M684 913 L624 759","M802 1178 L762 1115 L684 913","M138 253 L138 258 L123 273 L89 331 L63 351","M-51 113 L-49 -29 L-54 -34 L-57 -34 L-136 -35","M686 736 L648 652","M483 611 L481 605 L485 595","M408 642 L403 639 L396 637","M588 520 L585 510","M238 29 L224 12","M456 226 L450 213","M450 213 L422 226","M409 231 L373 247","M526 1029 L570 1121 L573 1133","M718 810 L746 891","M504 986 L526 1029","M429 836 L453 885 L504 986","M367 859 L375 857 L429 836","M203 568 L119 642","M373 247 L403 312 L404 324 L396 348 L366 413","M605 555 L588 520","M138 444 L151 433","M54 513 L90 485","M283 693 L286 701","M720 656 L692 571 L686 543","M-44 736 L-44 675","M-48 767 L-44 736","M791 140 L791 140","M881 301 L871 295 L865 287","M426 120 L454 110","M551 965 L504 986","M673 555 L673 555","M553 321 L592 304","M341 31 L273 77","M399 -1 L384 7","M769 644 L727 656 L721 660","M384 7 L341 31","M536 729 L589 705","M617 587 L605 555","M347 663 L350 671","M770 648 L779 643","M721 660 L720 656","M721 660 L728 661 L770 648","M779 643 L769 644","M422 226 L409 231","M476 261 L456 226","M430 281 L459 351","M713 797 L686 736","M858 -46 L888 13 L893 18","M803 -39 L858 -46","M833 28 L893 18","M799 91 L813 79 L817 72","M823 201 L871 181","M276 442 L298 485","M350 671 L393 758","M648 652 L634 626 L617 587","M460 594 L422 518","M467 608 L460 594","M381 438 L366 413","M561 785 L624 759"],"t":["M220 -10 L215 -10","M897 383 L905 388 L913 390 L965 364","M147 3 L62 53 L-29 119 L-39 125 L-65 134 L-82 135 L-117 135 L-132 141","M91 -99 L99 -94 L105 -87 L158 -3","M224 12 L204 -13","M-134 277 L176 51","M920 275 L843 126 L824 107 L814 100 L799 91 L769 79","M897 383 L905 395 L968 522","M817 291 L846 327","M215 -10 L204 -13","M965 364 L962 372 L907 401","M204 -13 L167 -68 L128 -120 L122 -123","M941 316 L920 275","M700 29 L664 -20 L626 -63 L574 -111","M769 79 L732 58 L700 29","M700 29 L715 57 L769 220 L783 248 L817 291","M207 31 L224 12","M960 354 L941 316","M224 12 L228 7","M846 327 L897 383","M228 7 L279 -46","M274 -53 L235 -15 L220 -10","M204 -13 L197 -16 L187 -18 L147 3","M176 51 L207 31"]},"labels":[["Wellington N.",482,372,67],["King O.",500,584,-35],["Dufferin",301,116,52],["Marquette",289,494,-42],["Frontenac",263,342,-40],["du Dépôt",734,742,71],["Belvédère N.",123,650,64],["King E.",863,314,-36],["Rivière Magog",215,215,-38],["Rivière Saint-François",590,150,62],["Lac des Nations",60,700,-70]],"proj":{"lat0":45.396,"lat1":45.407,"lon0":-71.8995,"k":90909.09090912661,"c":0.7021344119562468}};
+  var VB = [150, 40, 760, 860];
   var partnersEl = document.getElementById("partners");
-  PARTNERS.forEach(function(p){
-    var initials = p.name.replace(/^(Le |La |L')/,"").split(/[\s-]+/)
-      .filter(function(w){ return /^[A-Za-zÀ-ÿ]/.test(w); })
-      .slice(0,2).map(function(w){ return w[0]; }).join("").toUpperCase();
-    var el = document.createElement("a");
-    el.className = "partner";
-    el.href = p.url;
-    el.target = "_blank";
-    el.rel = "noopener noreferrer";
-    el.innerHTML = '<span class="glyph" style="--pc:'+ DISC[p.d].pill +'">'+ initials +'</span>' +
-      '<div class="p-info"><b>'+ p.name +'</b><span>'+ p.kind +'</span></div>' +
-      '<svg class="p-ext" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';
-    partnersEl.appendChild(el);
+  var planEl = document.getElementById("plan");
+  function nord(p){ return p.lat == null ? -90 : p.lat; }
+  var LIEUX = PARTNERS.slice().sort(function(a, b){ return nord(b) - nord(a); });
+  LIEUX.forEach(function(p, i){ p.n = i + 1; p.pc = PCOL[i % PCOL.length]; });
+  function xy(p){ var P = PLAN.proj; return [(p.lon - P.lon0) * P.c * P.k, (P.lat1 - p.lat) * P.k]; }
+  function attr(s){ return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+
+  (function dessinerPlan(){
+    var g = '<rect x="' + VB[0] + '" y="' + VB[1] + '" width="' + VB[2] + '" height="' + VB[3] + '" fill="var(--map-land)"/>';
+    PLAN.parks.forEach(function(d){ g += '<path d="' + d + '" fill="var(--map-park)"/>'; });
+    PLAN.water.forEach(function(d){ g += '<path d="' + d + '" fill="var(--map-water)"/>'; });
+    [["r", 5], ["t", 8], ["m", 12]].forEach(function(c){
+      PLAN.streets[c[0]].forEach(function(d){ g += '<path class="street" d="' + d + '" stroke-width="' + c[1] + '"/>'; });
+    });
+    PLAN.labels.forEach(function(l){
+      var eau = /Rivière|Lac/.test(l[0]);
+      g += '<text class="lbl' + (eau ? " w" : "") + '" x="' + l[1] + '" y="' + l[2] + '" transform="rotate(' + l[3] + ' ' + l[1] + ' ' + l[2] + ')" text-anchor="middle">' + attr(l[0]) + '</text>';
+    });
+    // Repères ; les lieux qui partagent une adresse sont posés côte à côte.
+    var spots = {};
+    LIEUX.forEach(function(p){ if (p.lat != null){ var k = p.lat + "," + p.lon; (spots[k] = spots[k] || []).push(p); } });
+    Object.keys(spots).forEach(function(k){
+      var grp = spots[k], c = xy(grp[0]);
+      if (grp.length > 1) g += '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="7" fill="var(--ink)"/>';
+      grp.forEach(function(p, i){
+        p.x = c[0] + (i - (grp.length - 1) / 2) * 54;
+        p.y = c[1] - (grp.length > 1 ? 40 : 0);
+        g += '<a class="pin" href="' + attr(p.url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" data-n="' + p.n + '">' +
+          '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="24" fill="' + p.pc + '"/>' +
+          '<text x="' + p.x.toFixed(1) + '" y="' + (p.y + 1).toFixed(1) + '">' + p.n + '</text></a>';
+      });
+    });
+    g += '<g class="tip" visibility="hidden"><rect height="44" rx="12"/><text></text></g>';
+    planEl.setAttribute("viewBox", VB.join(" "));
+    planEl.innerHTML = g;
+  })();
+
+  LIEUX.forEach(function(p){
+    var li = document.createElement("li");
+    li.innerHTML = '<a class="partner" href="' + attr(p.url) + '" target="_blank" rel="noopener noreferrer" data-n="' + p.n + '" style="--pc:' + p.pc + '">' +
+      '<span class="num" aria-hidden="true">' + p.n + '</span>' +
+      '<span class="p-info"><b>' + p.name + '</b><span>' + p.kind + (p.lat == null ? ' · hors du plan' : '') + '</span></span>' +
+      '<svg class="p-ext" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>';
+    partnersEl.appendChild(li);
   });
+
+  // Mise en évidence d'un lieu : repère cerclé (les autres s'estompent), nom
+  // affiché à côté du repère (à gauche s'il déborde du plan), légende soulignée.
+  var tipEl = planEl.querySelector(".tip");
+  function surligner(n){
+    var p = n ? LIEUX[n - 1] : null;
+    Array.prototype.forEach.call(planEl.querySelectorAll(".pin"), function(a){
+      a.classList.toggle("on", !!p && +a.dataset.n === n);
+      a.classList.toggle("dim", !!p && +a.dataset.n !== n);
+    });
+    Array.prototype.forEach.call(partnersEl.querySelectorAll(".partner"), function(a){
+      a.classList.toggle("on", !!p && +a.dataset.n === n);
+    });
+    if (!p || p.x == null){ tipEl.setAttribute("visibility", "hidden"); return; }
+    var txt = tipEl.querySelector("text"), rect = tipEl.querySelector("rect");
+    txt.textContent = p.name;
+    var w = txt.getComputedTextLength() + 28;
+    var x = p.x + 34;
+    if (x + w > VB[0] + VB[2] - 8) x = p.x - 34 - w;
+    rect.setAttribute("x", x.toFixed(1)); rect.setAttribute("y", (p.y - 22).toFixed(1)); rect.setAttribute("width", w.toFixed(1));
+    txt.setAttribute("x", (x + 14).toFixed(1)); txt.setAttribute("y", (p.y + 1).toFixed(1));
+    tipEl.setAttribute("visibility", "visible");
+  }
+  function suivre(el){
+    var n = +el.dataset.n;
+    el.addEventListener("mouseenter", function(){ surligner(n); });
+    el.addEventListener("mouseleave", function(){ surligner(null); });
+    el.addEventListener("focus", function(){ surligner(n); });
+    el.addEventListener("blur", function(){ surligner(null); });
+  }
+  Array.prototype.forEach.call(planEl.querySelectorAll(".pin"), suivre);
+  Array.prototype.forEach.call(partnersEl.querySelectorAll(".partner"), suivre);
 
   // Thème : 3 modes en cycle — selon l'appareil (auto) → clair → sombre
   var themeBtn = document.getElementById("theme");
