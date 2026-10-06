@@ -187,8 +187,10 @@ déterminée pour chaque événement, dans cet ordre (`culturecentro.categories`
 
 1. ce que le site du partenaire expose lui-même — taxonomie WordPress du
    Théâtre Granada (« Musique », « Humour », « Hommage »…, lue via l'API REST
-   `wp/v2/categories`), page « jeune public » du Grand-Espace (`jeunesse`),
-   nature du partenaire pour un musée ou un centre d'art (`arts`) ;
+   `wp/v2/categories`), catégorie déclarée sur la billetterie Lepointdevente
+   pour La Petite Boîte Noire (« Humour », « Arts littéraires »…), page
+   « jeune public » du Grand-Espace (`jeunesse`), nature du partenaire pour
+   un musée ou un centre d'art (`arts`) ;
 2. les **mots-clés** du titre et du sous-titre (genre, distribution : « Théâtre
    classique revisité », « Spectacle de conte », « En rodage », « Hommage à
    Pink Floyd »…) ; un public jeunesse explicite (« dès 4 ans », « jeune
@@ -329,6 +331,16 @@ dans l'URL de l'affiche, sinon on utilise le lien permanent
 `/plugins/embed/redirect?event=<id>`, qui redirige vers la même fiche. Le lieu « <salle>, Sherbrooke, QC » est normalisé : la ville est
 retirée et toute graphie du nom de la salle (casse, accents) est ramenée à
 « La Petite Boîte Noire », pour qu'un seul lieu apparaisse dans l'agrégation.
+
+La **catégorie** que l'organisateur déclare sur Lepointdevente (« Humour »,
+« Arts littéraires », « Théâtre », « Danse ») n'apparaît ni dans la liste ni
+sur la fiche : seule la recherche du site filtre par catégorie. Le module y
+cherche donc la salle à Sherbrooke, une catégorie à la fois (4 requêtes), et
+attribue la catégorie correspondante aux événements trouvés — un spectacle
+d'humour est ainsi reconnu même quand ni son titre ni sa description ne
+disent « humour ». Les autres événements suivent le classement automatique
+(musique par défaut). En cas d'échec de la recherche, un avertissement est
+émis et ce classement automatique s'applique.
 
 Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
 puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
