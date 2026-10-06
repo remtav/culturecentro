@@ -464,7 +464,17 @@ est présent et non vide ; sinon elle retombe sur un jeu de données de
 démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
 le **partenaire** ; chaque carte affiche le partenaire et, s'il diffère, le
 lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
-« Humour » et « Jeunesse »). On génère le feed avec la CLI :
+« Humour » et « Jeunesse »).
+
+Chaque carte porte un bouton **Partager** dont le lien ramène vers Culture
+Centro, et non vers le site du partenaire : `…/?e=<id>`, où `<id>` est tiré
+du titre et de la date (ex. `?e=les-belles-soeurs-2026-10-03`). Sur mobile, le
+bouton ouvre la feuille de partage du système ; ailleurs, il copie le lien.
+À l'arrivée, la page réinitialise les filtres, fait défiler jusqu'à
+l'événement et le met en évidence. Si l'événement n'est plus au feed (passé,
+renommé par le partenaire), un bandeau le signale au-dessus de l'agenda.
+
+On génère le feed avec la CLI :
 
 ```bash
 python -m culturecentro lister --format json -o web/data/evenements.json
