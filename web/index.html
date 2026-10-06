@@ -844,7 +844,7 @@
     { k: "programme",  l: "4 · Programme" },
     { k: "calendrier", l: "5 · Calendrier" }
   ];
-  var VUE_DEFAUT = "affiches";
+  var VUE_DEFAUT = "billet";
   var vueParam = null;
   try { vueParam = new URLSearchParams(location.search).get("vue"); } catch(e){}
   function vueValide(k){ return VUES.some(function(v){ return v.k === k; }); }
