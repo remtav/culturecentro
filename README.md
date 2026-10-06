@@ -470,14 +470,11 @@ lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
 python -m culturecentro lister --format json -o web/data/evenements.json
 ```
 
-**Maquettes d'affichage.** La liste datée existe en cinq variantes, choisies par
-`VUE_DEFAUT` dans `index.html` (par défaut : `billet`). Ajouter `?vue=<clé>` à
-l'adresse en force une et affiche un sélecteur flottant pour comparer :
-`duo` (2 colonnes de cartes horizontales), `affiches` (grille de cartes
-verticales), `billet` (carte pleine largeur et talon de date à droite),
-`programme` (un panneau par mois, une ligne par événement), `calendrier`
-(grille mensuelle sur tablette et ordinateur, liste sur téléphone) ; `actuelle`
-redonne l'ancienne liste pleine largeur. Exemple : `index.html?vue=programme`.
+**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
+datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
+téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
+reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
+conteneur), pas celle de l'écran.
 
 ### Publication (GitHub Pages)
 

@@ -301,112 +301,37 @@
     .agenda { padding-block: 20px 40px; }
   }
 
-  /* ---------- Variantes d'affichage de la liste datée (data-vue sur #list) ---------- */
-  /* Seuils en requêtes de conteneur : ils suivent la largeur réelle de la liste,
-     donc aussi la taille du texte choisie (A− / A+). La bande « En ce moment »
-     n'est pas concernée. Sans data-vue reconnu : cartes horizontales d'origine. */
+  /* ---------- Billet : talon de date détachable à droite des cartes de la liste ---------- */
+  /* Seuil en requête de conteneur : il suit la largeur réelle de la liste, donc
+     aussi la taille du texte choisie (A− / A+). En deçà (téléphone, texte très
+     agrandi), le talon est masqué et la carte garde sa pastille de date. La bande
+     « En ce moment » n'a pas de talon. */
   #list { container: liste / inline-size; }
-  .stub, .side, .cal { display: none; }
-  .event .time { font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  /* Talon de date (vues Billet et Programme) */
-  .stub { flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; line-height: 1; min-width: 0; }
-  .stub span { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
-  .stub b { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
-
-  /* 1 · Duo : deux colonnes de cartes horizontales */
-  @container liste (min-width: 700px) {
-    [data-vue="duo"] .rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    [data-vue="duo"] .event { grid-template-columns: 132px 1fr; }
-  }
-  @container liste (min-width: 1000px) { [data-vue="duo"] .event { grid-template-columns: 164px 1fr; } }
-
-  /* 2 · Affiches : grille de cartes verticales, l'image en tête */
-  @container liste (min-width: 500px) {
-    [data-vue="affiches"] .rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
-    [data-vue="affiches"] .event { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-    [data-vue="affiches"] .cover { aspect-ratio: 3 / 2; min-height: 0; }
-    [data-vue="affiches"] .event .body { padding: 13px 15px 16px; }
-    [data-vue="affiches"] .event h3 { font-size: 17.5px; }
-    [data-vue="affiches"] .event .desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  }
-
-  /* 3 · Billet : carte pleine largeur + talon de date détachable à droite */
+  .stub { display: none; }
   @container liste (min-width: 640px) {
-    [data-vue="billet"] .event { grid-template-columns: 168px 1fr 136px; }
-    [data-vue="billet"] .cover .date-badge, [data-vue="billet"] .event .when { display: none; }
-    [data-vue="billet"] .stub {
-      display: flex; position: relative; padding: 14px 10px;
+    #list .event { grid-template-columns: 168px 1fr 136px; }
+    #list .cover .date-badge, #list .event .when { display: none; }
+    #list .stub {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      position: relative; padding: 14px 10px; min-width: 0; text-align: center; line-height: 1;
       border-left: 2px dashed var(--line-strong);
       background: color-mix(in srgb, var(--dc) 6%, var(--card));
     }
-    [data-vue="billet"] .stub::before, [data-vue="billet"] .stub::after {
+    /* encoches du talon, en haut et en bas du pointillé */
+    #list .stub::before, #list .stub::after {
       content: ""; position: absolute; left: -9px; width: 16px; height: 16px; border-radius: 50%;
       background: var(--paper); border: 1px solid var(--line);
     }
-    [data-vue="billet"] .stub::before { top: -9px; }
-    [data-vue="billet"] .stub::after { bottom: -9px; }
-    [data-vue="billet"] .stub .time { margin-top: 8px; padding: 4px 9px; border-radius: 999px; background: color-mix(in srgb, var(--dc) 14%, var(--card)); }
+    #list .stub::before { top: -9px; }
+    #list .stub::after { bottom: -9px; }
   }
-
-  /* 4 · Programme : un seul panneau par mois, une ligne par événement */
-  [data-vue="programme"] .rows { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-  [data-vue="programme"] .event {
-    grid-template-columns: 52px 1fr; grid-template-areas: "stub body" "stub side";
-    gap: 6px 14px; align-items: center; padding: 13px 14px;
-    border: 0; border-radius: 0; box-shadow: none; transition: background .15s;
+  .stub span { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+  .stub b { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .stub .time {
+    margin-top: 8px; padding: 4px 9px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-soft); font-variant-numeric: tabular-nums;
+    background: color-mix(in srgb, var(--dc) 14%, var(--card));
   }
-  [data-vue="programme"] .event + .event { border-top: 1px solid var(--line); }
-  [data-vue="programme"] .event:hover { transform: none; box-shadow: none; background: color-mix(in srgb, var(--dc) 6%, var(--card)); }
-  [data-vue="programme"] .cover { display: none; }
-  [data-vue="programme"] .stub { display: flex; grid-area: stub; align-self: start; padding-top: 2px; }
-  [data-vue="programme"] .stub b { font-size: 26px; }
-  [data-vue="programme"] .event .body { grid-area: body; padding: 0; gap: 4px; }
-  [data-vue="programme"] .event h3 { font-size: 17px; }
-  [data-vue="programme"] .side { display: flex; grid-area: side; align-items: center; gap: 8px; flex-wrap: wrap; }
-  @container liste (min-width: 640px) {
-    [data-vue="programme"] .event { grid-template-columns: 60px 112px 1fr auto; grid-template-areas: "stub cover body side"; gap: 18px; padding: 12px 18px; }
-    [data-vue="programme"] .stub { align-self: center; padding-top: 0; }
-    [data-vue="programme"] .cover { display: block; grid-area: cover; aspect-ratio: 4 / 3; min-height: 0; border-radius: 10px; }
-    [data-vue="programme"] .cover .date-badge { display: none; }
-    [data-vue="programme"] .event .desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    [data-vue="programme"] .side { flex-direction: column; align-items: flex-end; text-align: right; gap: 7px; }
-    [data-vue="programme"] .side .pill-row { justify-content: flex-end; }
-  }
-
-  /* 5 · Calendrier : grille mensuelle (la liste reste affichée sur téléphone) */
-  .cal { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-  @container liste (min-width: 640px) {
-    [data-vue="calendrier"] .cal { display: grid; }
-    [data-vue="calendrier"] .rows { display: none; }
-  }
-  .cal-wd { background: var(--paper-2); padding: 7px 9px; font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
-  .cal-day { background: var(--card); min-height: 94px; padding: 6px 5px 8px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-  .cal-day.out { background: color-mix(in srgb, var(--paper-2) 55%, var(--card)); }
-  .cal-n { align-self: flex-start; font-family: "Bricolage Grotesque", sans-serif; font-size: 13px; font-weight: 700; color: var(--ink-soft); padding: 1px 5px; font-variant-numeric: tabular-nums; }
-  .cal-day.out .cal-n, .cal-day.past .cal-n { color: var(--ink-faint); opacity: .6; }
-  .cal-day.today .cal-n { background: var(--accent); color: #241a08; border-radius: 999px; padding-inline: 7px; opacity: 1; }
-  .cal-ev {
-    display: block; text-decoration: none; color: var(--ink); font-size: 12px; line-height: 1.25;
-    padding: 4px 6px; border-radius: 6px; border-left: 3px solid var(--dc);
-    background: color-mix(in srgb, var(--dc) 13%, var(--card)); transition: background .15s;
-  }
-  .cal-ev:hover { background: color-mix(in srgb, var(--dc) 24%, var(--card)); }
-  .cal-ev i { display: block; font-style: normal; font-size: 10.5px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
-  .cal-ev b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 600; overflow-wrap: anywhere; }
-
-  /* Sélecteur de maquette : visible seulement avec ?vue=… dans l'adresse */
-  .vue-switch {
-    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 40;
-    display: flex; align-items: center; gap: 3px; padding: 5px; border-radius: 999px;
-    background: var(--ink); color: var(--paper); box-shadow: 0 8px 28px rgba(0,0,0,.28);
-    max-width: calc(100vw / var(--text-zoom, 1) - 24px); overflow-x: auto; scrollbar-width: none;
-  }
-  .vue-switch::-webkit-scrollbar { display: none; }
-  .vue-switch > span { padding: 0 8px 0 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .65; white-space: nowrap; }
-  .vue-switch button { border: 0; background: none; color: inherit; font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; opacity: .8; }
-  .vue-switch button:hover { opacity: 1; }
-  .vue-switch button[aria-pressed="true"] { background: var(--paper); color: var(--ink); opacity: 1; }
-  body.has-switch footer.site { padding-bottom: 84px; }
 
   /* ---------- Partenaires (condensé) ---------- */
   .partners-sec { background: var(--paper-2); border-top: 1px solid var(--line); scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--tb, 70px) + 8px); }
@@ -553,8 +478,6 @@
     </div>
   </div>
 </footer>
-
-<div class="vue-switch" id="vueSwitch" role="group" aria-label="Maquette d'affichage de l'agenda" hidden><span>Maquette</span></div>
 
 <script>
 (function () {
@@ -833,23 +756,7 @@
     return '<span class="date-badge"><span>'+ JOURS[s.getDay()] +'</span><b>'+ s.getDate() +'</b></span>';
   }
 
-  // Variantes d'affichage de la liste datée. La vue par défaut est VUE_DEFAUT ;
-  // ?vue=<clé> dans l'adresse en force une autre et affiche le sélecteur de
-  // maquette (comparaison). « actuelle » = l'ancienne liste pleine largeur.
-  var VUES = [
-    { k: "actuelle",   l: "Actuelle" },
-    { k: "duo",        l: "1 · Duo" },
-    { k: "affiches",   l: "2 · Affiches" },
-    { k: "billet",     l: "3 · Billet" },
-    { k: "programme",  l: "4 · Programme" },
-    { k: "calendrier", l: "5 · Calendrier" }
-  ];
-  var VUE_DEFAUT = "billet";
-  var vueParam = null;
-  try { vueParam = new URLSearchParams(location.search).get("vue"); } catch(e){}
-  function vueValide(k){ return VUES.some(function(v){ return v.k === k; }); }
-
-  var state = { disc: "all", q: "", period: "all", venue: "all", vue: vueValide(vueParam) ? vueParam : VUE_DEFAUT };
+  var state = { disc: "all", q: "", period: "all", venue: "all" };
   var listEl = document.getElementById("list");
   var trackEl = document.getElementById("track");
   var railEl = document.getElementById("rail");
@@ -893,30 +800,6 @@
     });
   });
 
-  // Sélecteur de maquette (comparaison des vues), affiché avec ?vue=… ou si
-  // <html data-maquettes> est présent.
-  var vueSwitch = document.getElementById("vueSwitch");
-  if (vueParam !== null || document.documentElement.hasAttribute("data-maquettes")){
-    VUES.forEach(function(v){
-      var b = document.createElement("button");
-      b.type = "button";
-      b.dataset.v = v.k;
-      b.textContent = v.l;
-      b.setAttribute("aria-pressed", v.k === state.vue ? "true" : "false");
-      b.addEventListener("click", function(){
-        state.vue = v.k;
-        Array.prototype.forEach.call(vueSwitch.querySelectorAll("button"), function(x){ x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-        try { history.replaceState(null, "", "?vue=" + v.k + location.hash); } catch(e){}
-        render();
-      });
-      vueSwitch.appendChild(b);
-    });
-    vueSwitch.hidden = false;
-    document.body.classList.add("has-switch");
-    var actif = vueSwitch.querySelector('[aria-pressed="true"]');
-    if (actif) vueSwitch.scrollLeft = actif.offsetLeft - 60; // sur téléphone, la vue active reste visible
-  }
-
   // Filtre par partenaire (l'organisme qui programme l'événement). Le lieu,
   // parfois différent (programmation hors les murs), reste affiché sur la carte.
   var venueEl = document.getElementById("venue");
@@ -952,7 +835,7 @@
     return html;
   }
 
-  // Talon de date (vues Billet et Programme) : [petit libellé, grand chiffre, mois]
+  // Talon de date de la vue Billet : [petit libellé, grand chiffre, mois] + heure
   function stubParts(ev, cont){
     var s = parseD(ev.date), e = endOf(ev);
     if (cont){
@@ -965,15 +848,14 @@
     }
     return [JOURS[s.getDay()], s.getDate(), MOIS_ABBR[s.getMonth()]];
   }
-  function stubHtml(ev, cont, withTime){
+  function stubHtml(ev, cont){
     var p = stubParts(ev, cont);
     return '<div class="stub"><span>'+ p[0] +'</span><b>'+ p[1] +'</b><span>'+ p[2] +'</span>' +
-      (withTime && ev.time ? '<span class="time">'+ ev.time +'</span>' : '') + '</div>';
+      (ev.time ? '<span class="time">'+ ev.time +'</span>' : '') + '</div>';
   }
 
-  // vue : variante d'affichage de la liste datée (voir VUES) ; la bande « En ce
-  // moment » appelle card() sans vue et garde les cartes horizontales d'origine.
-  function card(ev, uid, cont, vue){
+  // talon : carte de la liste datée (billet) ; la bande « En ce moment » n'en a pas.
+  function card(ev, uid, cont, talon){
     var d = DISC[ev.d];
     var started = parseD(ev.date) <= NOW;
     var tag = "";
@@ -984,65 +866,17 @@
     a.href = ev.lien || "#";
     if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
     a.style.setProperty("--dc", d.pill);
-    var cover = '<div class="cover">' + SCENES[ev.d](uid) + photoHtml(ev) + badgeHtml(ev, cont) + '</div>';
-    var pills = '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>';
-    var desc = ev.desc ? '<span class="desc">'+ ev.desc +'</span>' : '';
-    if (vue === "programme"){
-      a.innerHTML = stubHtml(ev, cont, false) + cover +
-        '<div class="body"><h3>'+ ev.title +'</h3>' + placeHtml(ev) + desc + '</div>' +
-        '<div class="side">' + (ev.time ? '<span class="time">'+ ev.time +'</span>' : '') + pills + '</div>';
-      return a;
-    }
-    a.innerHTML = cover +
+    a.innerHTML =
+      '<div class="cover">' + SCENES[ev.d](uid) + photoHtml(ev) + badgeHtml(ev, cont) + '</div>' +
       '<div class="body">' +
-        pills +
+        '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>' +
         '<h3>'+ ev.title +'</h3>' +
         placeHtml(ev) +
         '<span class="when">'+ whenLine(ev, cont) +'</span>' +
-        desc +
+        (ev.desc ? '<span class="desc">'+ ev.desc +'</span>' : '') +
       '</div>' +
-      (vue === "billet" ? stubHtml(ev, cont, true) : '');
+      (talon ? stubHtml(ev, cont) : '');
     return a;
-  }
-
-  // Vue Calendrier : une grille lundi → dimanche par mois. Un événement de
-  // quelques jours apparaît chaque jour (dans son mois de début) ; une exposition
-  // longue seulement à son premier jour. Les semaines déjà passées et sans
-  // événement sont omises.
-  var JOURS_SEM = ["lun.","mar.","mer.","jeu.","ven.","sam.","dim."];
-  function attr(s){ return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
-  function calHtml(g){
-    var byDay = {};
-    g.items.forEach(function(o){
-      var s = parseD(o.ev.date), e = o.cont ? s : endOf(o.ev);
-      for (var dt = new Date(s); dt <= e; dt.setDate(dt.getDate() + 1)){
-        if (dt.getMonth() !== g.m) continue;
-        (byDay[dt.getDate()] = byDay[dt.getDate()] || []).push(o);
-      }
-    });
-    var first = new Date(g.y, g.m, 1), last = new Date(g.y, g.m + 1, 0);
-    var start = new Date(g.y, g.m, 1 - (first.getDay() + 6) % 7);
-    var end = new Date(g.y, g.m + 1, 6 - (last.getDay() + 6) % 7);
-    var html = JOURS_SEM.map(function(j){ return '<div class="cal-wd">'+ j +'</div>'; }).join("");
-    for (var wk = new Date(start); wk <= end; wk.setDate(wk.getDate() + 7)){
-      var wkEnd = new Date(wk.getFullYear(), wk.getMonth(), wk.getDate() + 6);
-      if (wkEnd < NOW && !g.items.some(function(o){ return parseD(o.ev.date) >= wk && parseD(o.ev.date) <= wkEnd; })) continue;
-      for (var i = 0; i < 7; i++){
-        var day = new Date(wk.getFullYear(), wk.getMonth(), wk.getDate() + i);
-        var inMonth = day.getMonth() === g.m;
-        var cls = "cal-day" + (inMonth ? "" : " out") + (day < NOW ? " past" : "") + (day.getTime() === NOW.getTime() ? " today" : "");
-        var evs = inMonth ? (byDay[day.getDate()] || []) : [];
-        html += '<div class="'+ cls +'"><span class="cal-n">'+ day.getDate() +'</span>' +
-          evs.map(function(o){
-            var ev = o.ev;
-            var link = ev.lien ? ' href="'+ attr(ev.lien) +'" target="_blank" rel="noopener noreferrer"' : ' href="#"';
-            var tip = ev.title + " — " + partnerOf(ev) + " · " + whenLine(ev, o.cont);
-            return '<a class="cal-ev"'+ link +' style="--dc:'+ DISC[ev.d].pill +'" title="'+ attr(tip) +'">' +
-              (ev.time ? '<i>'+ ev.time +'</i>' : '') + '<b>'+ ev.title +'</b></a>';
-          }).join("") + '</div>';
-      }
-    }
-    return '<div class="cal">' + html + '</div>';
   }
 
   var observer = null;
@@ -1081,7 +915,6 @@
     dated.sort(function(a, b){ return parseD(a.ev.date) - parseD(b.ev.date); });
 
     listEl.innerHTML = "";
-    listEl.setAttribute("data-vue", state.vue);
     trackEl.innerHTML = "";
     railSelect.innerHTML = "";
 
@@ -1103,9 +936,8 @@
       wrap.appendChild(head);
       var rows = document.createElement("div");
       rows.className = "rows";
-      g.items.forEach(function(o){ rows.appendChild(card(o.ev, uid++, o.cont, state.vue)); });
+      g.items.forEach(function(o){ rows.appendChild(card(o.ev, uid++, o.cont, true)); });
       wrap.appendChild(rows);
-      if (state.vue === "calendrier") wrap.insertAdjacentHTML("beforeend", calHtml(g));
       listEl.appendChild(wrap);
 
       var node = document.createElement("button");
