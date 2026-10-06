@@ -316,9 +316,27 @@
   .tl-node[aria-current="true"] .dot { width: 12px; height: 12px; background: var(--accent); opacity: 1; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
   @media (prefers-reduced-motion: no-preference) { .rail { transition: opacity .2s ease; } }
 
-  /* ---------- Mobile : les filtres se replient sur plusieurs rangées (défaut) ---------- */
+  /* ---------- Mobile : barre de filtres compacte (elle reste collée en haut de l'écran) ---------- */
   @media (max-width: 720px) {
     .search input, .venue-wrap select { font-size: 16px; } /* évite le zoom auto iOS */
+    .toolbar { padding-block: 9px; }
+    .toolbar-inner { gap: 8px; }
+    /* Disciplines : une seule rangée qui défile au doigt, d'un bord à l'autre de l'écran
+       (la pastille coupée au bord invite à faire glisser). */
+    .chips {
+      flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+      margin-inline: -22px; padding-inline: 22px; scroll-padding-inline: 22px;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { flex: none; padding-block: 6px; }
+    .seg button { padding-block: 5px; }
+    /* Partenaire et recherche se partagent une rangée */
+    .venue-wrap, .search { flex: 1 1 120px; min-width: 0; }
+    .venue-wrap select { width: 100%; max-width: none; padding-block: 7px; }
+    .search input { padding-block: 7px; }
+  }
+  @media (min-width: 431px) and (max-width: 720px) {
+    .venue-wrap, .search { flex-basis: 150px; } /* sinon trop étroits à côté des périodes */
   }
 
   @media (max-width: 540px) {
@@ -809,6 +827,16 @@
       .sort(function(a, b){ return a.localeCompare(b, "fr"); });
     venueEl.innerHTML = '<option value="all">Tous les partenaires</option>' +
       partners.map(function(v){ return '<option value="' + v.replace(/"/g, "&quot;") + '">' + v + '</option>'; }).join("");
+    libelleTous();
+  }
+  // Sur téléphone, la liste partage sa rangée avec la recherche : libellé court.
+  var ecranEtroit = window.matchMedia ? window.matchMedia("(max-width: 720px)") : null;
+  function libelleTous(){
+    if (venueEl.options[0]) venueEl.options[0].textContent = ecranEtroit && ecranEtroit.matches ? "Partenaires" : "Tous les partenaires";
+  }
+  if (ecranEtroit){
+    if (ecranEtroit.addEventListener) ecranEtroit.addEventListener("change", libelleTous);
+    else if (ecranEtroit.addListener) ecranEtroit.addListener(libelleTous);
   }
   populateVenues();
   venueEl.addEventListener("change", function(){
