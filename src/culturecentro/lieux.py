@@ -193,6 +193,17 @@ def normaliser_lieu(texte: str | None) -> str | None:
     return original[: m.start()] if m else original
 
 
+def lieu_connu(texte: str | None) -> str | None:
+    """Nom canonique si ``texte`` désigne un lieu connu, sinon ``None``.
+
+    Les lieux connus sont ceux de :data:`LIEUX_CENTRE_VILLE`. Sert à
+    reconnaître un lieu parmi des libellés hétérogènes (ex. : la taxonomie
+    d'un site mêle genres et salles).
+    """
+    lieu = normaliser_lieu(texte)
+    return lieu if lieu is not None and cle(lieu) in LIEUX_CENTRE_VILLE else None
+
+
 def est_centre_ville(lieu: str | None, adresse: str | None = None) -> bool:
     """Vrai si l'événement se tient au centre-ville de Sherbrooke.
 

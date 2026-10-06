@@ -31,11 +31,12 @@ exporters          web/data/evenements.json  ──► web/index.html (GitHub Pa
 | `dates.py` | Analyse ISO 8601 et dates françaises : date simple, heure, listes de dates et plages (« du 7 au 17 octobre 2026 », « jusqu'en mai »). |
 | `jsonld.py` | Extraction schema.org `Event` (repli commun). |
 | `scraping.py` | `attribut()`, `url_image()`, `premiere_image()` : accès normalisé aux attributs HTML et aux images (lazy, `srcset`, fonds CSS). |
-| `filtrage.py` | `finaliser()` (dédup/filtre/tri) et `minuit_utc()`. |
+| `filtrage.py` | `finaliser()` (dédup/filtre/tri), `fusionner_doublons()` (un spectacle annoncé par deux partenaires) et `minuit_utc()`. |
 | `categories.py` | Catégorie artistique automatique : libellés de taxonomie, mots-clés, fiche de l'événement (`Categorisation`). |
-| `lieux.py` | `normaliser_lieu()` (noms canoniques, alias) et `est_centre_ville()` (périmètre du centre-ville : lieux connus, rues, marqueurs hors périmètre). |
+| `lieux.py` | `normaliser_lieu()` (noms canoniques, alias), `lieu_connu()` et `est_centre_ville()` (périmètre du centre-ville : lieux connus, rues, marqueurs hors périmètre). |
 | `exporters.py` | Exports texte / CSV / JSON. |
 | `aggregate.py` | `agreger()` : fusion multi-salles, tolérante aux pannes. |
+| `partage.py` | Pages de partage : `attribuer_identifiants()` (id stable par événement du feed) et `generer_pages()` (une page Open Graph par événement, `web/e/<id>/`, + `404.html`). |
 | `cli.py` | CLI par-source (`executer`) et CLI unifiée (`principal`). |
 | `__main__.py` | Point d'entrée `python -m culturecentro`. |
 | `sources/base.py` | `Source` (ABC) + orchestration `lister_evenements_a_venir`. |
@@ -64,11 +65,17 @@ exports uniformes. `date_fin` sert aux événements qui s'étalent dans le temps
 1. `agreger()` interroge toutes les salles, renseigne le `partenaire`, remplit
    le `lieu` manquant avec le nom de la salle, ramène les lieux à leur nom
    canonique, écarte les événements hors du centre-ville, détermine la
-   catégorie artistique, déduplique et trie.
+   catégorie artistique, déduplique (un spectacle annoncé par deux
+   partenaires n'apparaît qu'une fois) et trie.
 2. La CLI écrit le feed : `python -m culturecentro lister --format json -o web/data/evenements.json`.
-3. `web/index.html` charge ce feed (repli sur des données de démo s'il est
-   absent) et l'affiche.
-4. Le workflow `publish.yml` régénère le feed et déploie `web/` sur GitHub Pages.
+3. `python -m culturecentro pages --url-base <adresse du site>` ajoute à chaque
+   événement du feed son identifiant et écrit sa page de partage
+   (`web/e/<id>/index.html`, balises Open Graph pour l'aperçu des liens
+   partagés, redirection vers `?e=<id>`) ainsi que `web/404.html`.
+4. `web/index.html` charge ce feed (repli sur des données de démo s'il est
+   absent) et l'affiche ; le bouton Partager pointe vers la page de partage.
+5. Le workflow `publish.yml` régénère le feed et les pages de partage, puis
+   déploie `web/` sur GitHub Pages.
 
 ## Qualité
 

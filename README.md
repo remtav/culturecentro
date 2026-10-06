@@ -89,6 +89,7 @@ culturecentro/
 │   ├── filtrage.py             # déduplication, filtre temporel et tri
 │   ├── exporters.py            # sorties texte / CSV / JSON
 │   ├── aggregate.py            # agrège toutes les salles, tolérant aux pannes
+│   ├── partage.py              # pages de partage (aperçu riche Open Graph)
 │   ├── cli.py                  # interfaces en ligne de commande
 │   └── sources/                # une source par salle, derrière une interface commune
 │       ├── base.py             # classe abstraite Source (orchestration partagée)
@@ -105,7 +106,11 @@ culturecentro/
 │   └── sources/                # une salle par fichier, sur des fixtures HTML
 ├── web/                        # page publique autonome + feed généré
 │   ├── index.html
-│   └── data/evenements.json
+│   ├── logo.svg                # logo provisoire (en-tête, pied de page, icône d'onglet)
+│   ├── apple-touch-icon.png    # logo pour l'écran d'accueil iOS
+│   ├── img/partage.png         # image d'aperçu par défaut (1200×630)
+│   ├── data/evenements.json
+│   └── e/<id>/index.html       # pages de partage (générées au déploiement)
 ├── docs/                       # architecture, guide d'ajout de source, partenaires
 ├── scripts/                    # utilitaires (ex. génération du badge de couverture)
 ├── .github/workflows/          # intégration continue et publication GitHub Pages
@@ -168,6 +173,33 @@ centre-ville et de marqueurs hors périmètre sont la « carte » éditable du
 projet. Une salle indisponible est ignorée avec un avertissement (les autres
 sont conservées).
 
+### Spectacle annoncé par deux partenaires
+
+Un même spectacle figure parfois sur la page de deux partenaires : celui qui
+le présente et celui qui l'accueille (le Théâtre Granada annonce les
+spectacles qu'il présente à La Petite Boîte Noire ; la Maison des arts de la
+parole, la clôture de son festival au Grand-Espace). L'agrégation n'en garde
+qu'**un** (`culturecentro.filtrage.fusionner_doublons`). Deux annonces sont
+considérées comme le même événement si :
+
+- elles viennent de **deux partenaires différents** (un même partenaire qui
+  annonce deux fois un titre le même jour donne deux représentations) ;
+- elles tombent le **même jour à la même heure** (ou l'heure manque d'un côté) ;
+- elles sont de même nature : deux représentations ponctuelles, ou deux
+  événements sur plusieurs jours (une soirée n'est pas fondue dans la série du
+  même nom) ;
+- les mots significatifs d'un titre figurent tous dans l'autre (« Maxime
+  Gervais » / « Maxime Gervais : C'était Magnifique »).
+
+L'annonce **la plus complète** est conservée (le plus de champs renseignés :
+sous-titre, heure, fin, affiche, lien ; puis le texte le plus long ; à
+égalité, la première salle du registre) : son partenaire, son lieu et son lien
+font foi. Elle est complétée par ce que seule l'autre apporte : le titre le
+plus complet, l'heure de début, et le sous-titre, la fin ou l'affiche qui lui
+manquent. Chaque fusion est journalisée (`INFO`). Sur la page web, le filtre
+par partenaire retient aussi le lieu : l'événement fusionné reste visible sous
+les deux partenaires.
+
 ```bash
 culturecentro sources                     # liste les salles enregistrées
 culturecentro lister                      # agrège toutes les salles (texte)
@@ -184,12 +216,17 @@ déterminée pour chaque événement, dans cet ordre (`culturecentro.categories`
 
 1. ce que le site du partenaire expose lui-même — taxonomie WordPress du
    Théâtre Granada (« Musique », « Humour », « Hommage »…, lue via l'API REST
-   `wp/v2/categories`), page « jeune public » du Grand-Espace (`jeunesse`),
-   nature du partenaire pour un musée ou un centre d'art (`arts`) ;
+   `wp/v2/categories`), catégorie déclarée sur la billetterie Lepointdevente
+   pour La Petite Boîte Noire (« Humour », « Arts littéraires »…), page
+   « jeune public » du Grand-Espace (`jeunesse`, sauf les spectacles dont
+   l'âge minimal dépasse 12 ans, comme « 15 ans et plus »), nature du
+   partenaire pour un musée ou un centre d'art (`arts`) ;
 2. les **mots-clés** du titre et du sous-titre (genre, distribution : « Théâtre
    classique revisité », « Spectacle de conte », « En rodage », « Hommage à
    Pink Floyd »…) ; un public jeunesse explicite (« dès 4 ans », « jeune
-   public », « en famille ») l'emporte sur le genre ;
+   public », « en famille ») l'emporte sur le genre. Un âge minimal de 13 ans
+   ou plus (« 15 ans et plus », « 18 ans et + ») est au contraire une
+   restriction : il ne désigne pas un public jeunesse ;
 3. la **fiche de l'événement** (page `lien`) : catégories et étiquettes du
    site, type schema.org (`MusicEvent`, `TheaterEvent`, `DanceEvent`…),
    description ; une requête par fiche, avec cache et garde-fou (désactivable
@@ -281,6 +318,13 @@ ne contient que 10 événements, mais un unique appel AJAX
 événements à venir. Le module reproduit cet appel, puis analyse chaque bloc
 `.vc_grid-item-mini` (titre, date en français, lien).
 
+Les catégories WordPress de chaque bloc mêlent genres (« Musique »,
+« Humour »…) et **salles** : le Granada annonce aussi des spectacles qu'il
+présente ailleurs, classés « La Petite Boîte Noire » ou « Le Grand-Espace -
+CAJB ». Le terme de salle donne le `lieu` (et n'est pas lu comme un genre :
+« Théâtre Granada » n'est pas du théâtre) ; les autres termes donnent la
+catégorie.
+
 Si cet appel échoue (thème modifié, nonce invalide…), le module se rabat
 successivement sur : la grille inline (10 événements), les données
 structurées schema.org `Event` (JSON-LD), puis les sélecteurs du plugin
@@ -319,10 +363,23 @@ pas elle-même les spectacles : elle charge un **widget de la billetterie
 page, y découvre l'URL de la liste Lepointdevente (lien « Programmation
 complète » ou, à défaut, `widget.js`), télécharge cette liste et analyse
 chaque carte `.feature-col[data-tpos-event]` (titre, date en français, lieu,
-affiche). Le lien de la fiche est reconstruit à partir de l'identifiant de
-l'événement. Le lieu « <salle>, Sherbrooke, QC » est normalisé : la ville est
+affiche). Le lien mène à la fiche propre à l'événement sur Lepointdevente
+(`https://lepointdevente.com/billets/<code>`, le contenu de la fenêtre
+surgissante du widget) plutôt qu'à la programmation générale ; le code est lu
+dans l'URL de l'affiche, sinon on utilise le lien permanent
+`/plugins/embed/redirect?event=<id>`, qui redirige vers la même fiche. Le lieu « <salle>, Sherbrooke, QC » est normalisé : la ville est
 retirée et toute graphie du nom de la salle (casse, accents) est ramenée à
 « La Petite Boîte Noire », pour qu'un seul lieu apparaisse dans l'agrégation.
+
+La **catégorie** que l'organisateur déclare sur Lepointdevente (« Humour »,
+« Arts littéraires », « Théâtre », « Danse ») n'apparaît ni dans la liste ni
+sur la fiche : seule la recherche du site filtre par catégorie. Le module y
+cherche donc la salle à Sherbrooke, une catégorie à la fois (4 requêtes), et
+attribue la catégorie correspondante aux événements trouvés — un spectacle
+d'humour est ainsi reconnu même quand ni son titre ni sa description ne
+disent « humour ». Les autres événements suivent le classement automatique
+(musique par défaut). En cas d'échec de la recherche, un avertissement est
+émis et ce classement automatique s'applique.
 
 Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
 puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
@@ -454,14 +511,45 @@ publics et fusionne les listes ; repli JSON-LD si aucun bloc n'est trouvé.
 
 Le dossier [`web/`](web/) contient la **page publique** (`index.html`,
 autonome, sans dépendance) : agenda filtrable par discipline, période et lieu,
-fil chronologique par mois, bande « En ce moment ».
+fil chronologique par mois, bande « En ce moment », et une flèche « Revenir en
+haut » qui apparaît en bas à droite dès que l'on descend dans la liste.
+
+**Logo.** Le logo actuel (deux étincelles sur tuile sombre) est **provisoire**,
+en attendant le logo officiel. Il tient dans un seul fichier,
+[`web/logo.svg`](web/logo.svg), qu'utilisent l'en-tête, le pied de page et
+l'icône d'onglet : pour changer de logo, remplacer ce fichier, puis refaire
+`web/apple-touch-icon.png` (écran d'accueil iOS, 180 × 180) et l'image
+d'aperçu `web/img/partage.png`, qui le reprennent.
 
 La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
 est présent et non vide ; sinon elle retombe sur un jeu de données de
 démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
-le **partenaire** ; chaque carte affiche le partenaire et, s'il diffère, le
-lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
-« Humour » et « Jeunesse »).
+le **partenaire** : un événement y figure sous l'organisme qui le programme et
+sous celui qui l'accueille (son lieu) ; chaque carte affiche le partenaire et,
+s'il diffère, le lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
+« Humour » et « Jeunesse »). Chaque carte porte un bouton **Ajouter au
+calendrier** (icône sur la vignette) : il propose le *calendrier de l'appareil*
+— un fichier `.ics` généré dans le navigateur, qu'ouvrent Apple Calendrier,
+Outlook ou Samsung Calendrier — ou *Google Agenda* (lien pré-rempli), pratique
+sur Android où l'app Google Agenda n'ouvre pas les `.ics`. Heures en
+`America/Toronto` ; un événement sur plusieurs jours (ou sans heure) est inscrit
+en journées entières, et une durée de 2 h est supposée quand l'heure de fin
+manque.
+
+Chaque carte porte aussi un bouton **Partager** dont le lien ramène vers Culture
+Centro, et non vers le site du partenaire. Sur mobile, le bouton ouvre la
+feuille de partage du système ; ailleurs, il copie le lien. Seuls le lien et le
+titre sont transmis, sans texte d'accompagnement : avec un texte, l'action
+« Copier » de certains téléphones ne copiait que ce texte, sans l'URL. Le lien partagé est
+la **page de partage** de l'événement, `…/e/<id>/`, où `<id>` est tiré du titre
+et de la date (ex. `e/les-belles-soeurs-2026-10-03/`). Cette page statique porte
+les balises Open Graph — affiche, titre, date, partenaire — pour que Facebook,
+Messenger, WhatsApp, etc. affichent un **aperçu riche** ; elle renvoie aussitôt
+le visiteur vers l'agenda (`…/?e=<id>`), qui réinitialise les filtres, fait
+défiler jusqu'à l'événement et le met en évidence. Un événement sans affiche
+prend l'image par défaut [`web/img/partage.png`](web/img/partage.png). Si
+l'événement n'est plus au feed (passé, renommé par le partenaire), la page
+404 renvoie vers l'agenda, où un bandeau le signale.
 
 Le sous-dossier [`web/variantes/`](web/variantes/) propose **cinq variantes de
 design** à présenter au client (affiche, calendrier, application mobile, par
@@ -473,16 +561,32 @@ jours d'écart) ; sans feed, elles retombent sur un jeu de démonstration. Le
 plan de la variante 4 est tracé d'après OpenStreetMap et les lieux y sont
 placés à leur adresse géocodée.
 
-On génère le feed avec la CLI :
+On génère le feed, puis les pages de partage, avec la CLI :
 
 ```bash
 python -m culturecentro lister --format json -o web/data/evenements.json
+python -m culturecentro pages --url-base https://remtav.github.io/culturecentro/
 ```
+
+`pages` lit le feed (`--feed`, défaut `web/data/evenements.json`), y ajoute
+l'identifiant `id` de chaque événement daté, puis écrit `web/e/<id>/index.html`
+et `web/404.html` (`--dossier`, défaut `web`), en supprimant les pages du
+déploiement précédent. `--url-base` est l'adresse publique du site : les
+balises Open Graph exigent des URL absolues. Ces fichiers générés ne sont pas
+versionnés. Sans pages de partage (démo, feed sans `id`), le bouton partage
+directement le lien `?e=<id>`, sans aperçu riche.
+
+**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
+datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
+téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
+reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
+conteneur), pas celle de l'écran.
 
 ### Publication (GitHub Pages)
 
 Le workflow [`publish.yml`](.github/workflows/publish.yml) régénère le feed et
-déploie `web/` sur **GitHub Pages** — quotidiennement (cron), à chaque `push`
+les pages de partage (l'adresse publique vient de `actions/configure-pages`),
+puis déploie `web/` sur **GitHub Pages** — quotidiennement (cron), à chaque `push`
 sur `main` touchant `web/` ou le paquet, et à la demande. Prérequis (une seule
 fois) : **Settings → Pages → Source = GitHub Actions**.
 
