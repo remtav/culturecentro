@@ -257,10 +257,20 @@ _JEUNESSE = (
     r"\bpour (les )?(tout-?)?petits\b",
     r"\btout-?petits\b",
     r"\bpetits et grands\b",
-    r"\b(des|de|a partir de|pour les)\s+\d{1,2}\s+(a\s+\d{1,2}\s+)?ans\b",
-    r"\b\d{1,2}\s+ans\s*(et\s+plus|\+)",
     r"\bmarmots?\b",
     r"\bmarionnettes? pour",
+)
+
+#: Âge minimal le plus élevé d'un public jeunesse. Au-delà, la mention est une
+#: restriction (« 15 ans et plus », « 18 ans et + ») : public adolescent ou
+#: adulte, et non jeune public.
+AGE_MAX_JEUNESSE = 12
+
+# Mentions d'âge minimal (« dès 4 ans », « de 6 à 12 ans », « 8 ans et plus ») :
+# jeunesse seulement si l'âge (groupe ``age``) est au plus AGE_MAX_JEUNESSE.
+_AGES = (
+    r"\b(des|de|a partir de|pour les)\s+(?P<age>\d{1,2})\s+(a\s+\d{1,2}\s+)?ans\b",
+    r"\b(?P<age>\d{1,2})\s+ans\s*(et\s*(plus|\+)|\+)",
 )
 
 #: Ordre de priorité en cas d'égalité de score.
@@ -268,6 +278,23 @@ _PRIORITE = ("festival", "humour", "danse", "litt", "arts", "theatre", "musique"
 
 _COMPILES = {cat: [re.compile(m) for m in motifs] for cat, motifs in _MOTS_CLES.items()}
 _COMPILES_JEUNESSE = [re.compile(m) for m in _JEUNESSE]
+_COMPILES_AGES = [re.compile(m) for m in _AGES]
+
+
+def est_age_jeunesse(age_minimal: int) -> bool:
+    """Vrai si un spectacle accessible dès ``age_minimal`` ans vise un jeune public."""
+    return age_minimal <= AGE_MAX_JEUNESSE
+
+
+def _vise_jeune_public(texte: str) -> bool:
+    """Public jeunesse explicite dans ``texte`` (normalisé par :func:`_cle`)."""
+    if any(m.search(texte) for m in _COMPILES_JEUNESSE):
+        return True
+    return any(
+        est_age_jeunesse(int(m.group("age")))
+        for motif in _COMPILES_AGES
+        for m in motif.finditer(texte)
+    )
 
 
 def _cle(texte: str) -> str:
@@ -303,7 +330,7 @@ def deviner(*textes: str | None, seuil: int = 1, public: bool = True) -> str | N
     texte = _cle(" ".join(t for t in textes if t))
     if not texte:
         return None
-    if public and any(m.search(texte) for m in _COMPILES_JEUNESSE):
+    if public and _vise_jeune_public(texte):
         return "jeunesse"
     scores = {cat: sum(1 for m in motifs if m.search(texte)) for cat, motifs in _COMPILES.items()}
     meilleur = max(scores.values())
