@@ -235,6 +235,25 @@
     padding: 10px 18px; border-radius: 999px; box-shadow: var(--shadow); transition: opacity .2s, transform .2s;
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Bouton « Revenir en haut » : flèche flottante en bas à droite (par-dessus la
+     réglette des mois si elle descend jusque-là) ; il n'apparaît qu'une fois que
+     l'on descend dans la liste. */
+  .to-top {
+    position: fixed; z-index: 26;
+    right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%;
+    display: grid; place-items: center; cursor: pointer;
+    background: var(--ink); color: var(--paper);
+    /* liseré clair : le bouton reste visible sur le pied de page, sombre lui aussi */
+    box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--paper) 30%, transparent), var(--shadow);
+    opacity: 0; visibility: hidden; transform: translateY(10px);
+    transition: opacity .2s, transform .2s, visibility 0s .2s;
+  }
+  .to-top.show { opacity: 1; visibility: visible; transform: none; transition: opacity .2s, transform .2s; }
+  @media (hover: hover) { .to-top:hover { transform: translateY(-2px); } }
+  .to-top:focus-visible { border-radius: 50%; }
+  .to-top svg { display: block; }
   .cover { position: relative; min-height: 132px; color: #fff; overflow: hidden; background: #1a1a24; }
   .cover .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   /* Affiche fournie par la salle (feed) : recouvre la scène illustrée, qui reste en repli si l'image échoue. */
@@ -442,7 +461,8 @@
   /* ---------- Footer ---------- */
   /* Le pied de page est toujours sombre : ses couleurs de texte sont fixes (claires) et ne
      suivent pas --paper / --ink, qui s'inversent en mode sombre et rendraient les liens invisibles. */
-  footer.site { --f-bg: #16162E; --f-fg: #FBF7F0; background: var(--f-bg); color: color-mix(in srgb, var(--f-fg) 86%, transparent); padding-block: 34px 28px; }
+  /* Marge du bas élargie : la flèche « Revenir en haut » ne couvre pas la dernière ligne. */
+  footer.site { --f-bg: #16162E; --f-fg: #FBF7F0; background: var(--f-bg); color: color-mix(in srgb, var(--f-fg) 86%, transparent); padding-block: 34px 76px; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer.site { --f-bg: #0C0C18; } }
   :root[data-theme="dark"] footer.site { --f-bg: #0C0C18; }
   footer.site .cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,.14); }
@@ -574,6 +594,10 @@
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<button class="to-top" id="toTop" type="button" title="Revenir en haut" aria-label="Revenir en haut de la page">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
 
 <script>
 (function () {
@@ -1454,6 +1478,24 @@
   positionRail();
   window.addEventListener("scroll", positionRail, { passive: true });
   window.addEventListener("resize", positionRail);
+
+  // Revenir en haut : la flèche apparaît dès que l'on descend dans la liste,
+  // c'est-à-dire quand l'en-tête de l'agenda passe sous la barre d'outils collante.
+  var toTopEl = document.getElementById("toTop");
+  var agendaHeadEl = document.querySelector(".agenda-head");
+  function majToTop(){
+    var bas = toolbarEl ? toolbarEl.getBoundingClientRect().bottom : 0;
+    toTopEl.classList.toggle("show", agendaHeadEl.getBoundingClientRect().bottom < bas);
+  }
+  majToTop();
+  window.addEventListener("scroll", majToTop, { passive: true });
+  window.addEventListener("resize", majToTop);
+  toTopEl.addEventListener("click", function(){
+    // Le focus repart du haut de la page (le bouton, lui, va disparaître).
+    var marque = document.querySelector(".masthead .brand");
+    if (marque) marque.focus({ preventScroll: true });
+    window.scrollTo(0, 0); // défilement doux (scroll-behavior), instantané si mouvements réduits
+  });
 
   assignerIds();
   render();
