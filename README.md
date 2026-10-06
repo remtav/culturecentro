@@ -511,7 +511,8 @@ publics et fusionne les listes ; repli JSON-LD si aucun bloc n'est trouvé.
 
 Le dossier [`web/`](web/) contient la **page publique** (`index.html`,
 autonome, sans dépendance) : agenda filtrable par discipline, période et lieu,
-fil chronologique par mois, bande « En ce moment ».
+fil chronologique par mois, bande « En ce moment », et une flèche « Revenir en
+haut » qui apparaît en bas à droite dès que l'on descend dans la liste.
 
 **Logo.** Le logo actuel (deux étincelles sur tuile sombre) est **provisoire**,
 en attendant le logo officiel. Il tient dans un seul fichier,
