@@ -72,6 +72,7 @@
     font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     font-size: 16px; line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    zoom: var(--text-zoom, 1); /* taille du texte choisie par le visiteur (boutons A− / A+) */
   }
   h1, h2, h3, .display {
     font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
@@ -106,10 +107,23 @@
     width: 40px; height: 40px; border-radius: 11px; cursor: pointer; display: grid; place-items: center; flex: none;
   }
   .theme-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .theme-btn:disabled { opacity: .4; cursor: default; color: var(--ink-soft); border-color: var(--line-strong); }
+  .theme-btn svg { display: block; }
+  .brand { min-width: 0; } .brand-txt { min-width: 0; }
+  @media (max-width: 540px) { :root[data-text] .top-row { flex-wrap: wrap; row-gap: 12px; } }
+  .tools { display: flex; align-items: center; gap: 8px; flex: none; margin-left: auto; }
+  .text-btn { font: inherit; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; line-height: 1; }
+  .text-btn.minus { font-size: 13px; }
+  .text-btn.plus { font-size: 17px; }
+  #theme[data-mode="auto"] .ico-sun, #theme[data-mode="auto"] .ico-moon,
+  #theme[data-mode="light"] .ico-auto, #theme[data-mode="light"] .ico-moon,
+  #theme[data-mode="dark"] .ico-auto, #theme[data-mode="dark"] .ico-sun { display: none; }
+  @media (max-width: 420px) { .tools { gap: 6px; } .theme-btn { width: 36px; height: 36px; border-radius: 10px; } }
   @media (max-width: 680px) { nav.top { display: none; } }
 
   .mast-hero { margin-top: 20px; }
   .mast-hero h1 { font-size: clamp(21px, 3.1vw, 33px); font-weight: 800; white-space: nowrap; }
+  :root[data-text] .mast-hero h1 { white-space: normal; } /* texte agrandi : le titre peut passer à la ligne */
   .mast-hero h1 .hl { color: var(--accent); }
   @media (max-width: 620px) { .mast-hero h1 { white-space: normal; text-align: right; } }
 
@@ -142,7 +156,7 @@
   /* Filtre par lieu */
   .venue-wrap { position: relative; }
   .venue-wrap::after { content: "▾"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink-faint); font-size: 11px; }
-  .venue-wrap select { -webkit-appearance: none; appearance: none; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); background: var(--card); border: 1px solid var(--line-strong); border-radius: 999px; padding: 8px 30px 8px 14px; cursor: pointer; max-width: 200px; }
+  .venue-wrap select { -webkit-appearance: none; appearance: none; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); background: var(--card); border: 1px solid var(--line-strong); border-radius: 999px; padding: 8px 30px 8px 14px; cursor: pointer; max-width: min(200px, calc(100vw / var(--text-zoom, 1) - 48px)); }
   .venue-wrap select:hover { color: var(--ink); border-color: var(--ink-faint); }
   .venue-wrap select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .venue-wrap.active select { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -205,7 +219,7 @@
   .empty b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 20px; color: var(--ink); margin-bottom: 4px; }
 
   /* Filtre de période (segmenté) */
-  .seg { display: inline-flex; background: var(--card); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg { display: inline-flex; background: var(--card); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px; gap: 2px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
   .seg button { border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
   .seg button:hover { color: var(--ink); }
   .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
@@ -292,7 +306,7 @@
   .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
   .sec-head h2 { font-size: clamp(19px, 2.6vw, 25px); font-weight: 800; }
   .sec-head .count { font-size: 13px; color: var(--ink-faint); font-weight: 600; }
-  .partners { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .partners { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 12px; }
   .partner { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; gap: 12px; align-items: center; text-decoration: none; color: inherit; transition: border-color .15s, transform .1s, box-shadow .15s; }
   .partner:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
   .partner .p-info { min-width: 0; flex: 1; }
@@ -338,9 +352,15 @@
         <a href="#lieux">Partenaires</a>
         <a href="#apropos">À propos</a>
       </nav>
-      <button class="theme-btn" id="theme" title="Basculer le thème" aria-label="Basculer le thème clair / sombre">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-      </button>
+      <div class="tools">
+        <button class="theme-btn text-btn minus" id="text-down" type="button" title="Rapetisser le texte" aria-label="Rapetisser le texte">A−</button>
+        <button class="theme-btn text-btn plus" id="text-up" type="button" title="Grossir le texte" aria-label="Grossir le texte">A+</button>
+        <button class="theme-btn" id="theme" type="button" data-mode="auto" title="Thème : selon l'appareil" aria-label="Thème : selon l'appareil (cliquer pour changer)">
+          <svg class="ico-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <svg class="ico-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="ico-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </div>
     </div>
     <div class="mast-hero">
       <h1>Toute la culture du <span class="hl">centre-ville</span>, un seul agenda.</h1>
@@ -934,21 +954,55 @@
     partnersEl.appendChild(el);
   });
 
-  // Thème
+  // Thème : 3 modes en cycle — selon l'appareil (auto) → clair → sombre
   var themeBtn = document.getElementById("theme");
   var root = document.documentElement;
-  try { var saved = localStorage.getItem("cc-theme"); if (saved) root.setAttribute("data-theme", saved); } catch(e){}
-  function isDarkNow(){
-    var t = root.getAttribute("data-theme");
-    if (t === "dark") return true;
-    if (t === "light") return false;
-    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  var THEME_LABEL = { auto: "selon l'appareil", light: "clair", dark: "sombre" };
+  var THEME_NEXT = { auto: "light", light: "dark", dark: "auto" };
+  function applyTheme(mode){
+    if (mode === "light" || mode === "dark") root.setAttribute("data-theme", mode);
+    else { mode = "auto"; root.removeAttribute("data-theme"); }
+    themeBtn.setAttribute("data-mode", mode);
+    themeBtn.title = "Thème : " + THEME_LABEL[mode];
+    themeBtn.setAttribute("aria-label", "Thème : " + THEME_LABEL[mode] + " (cliquer pour changer)");
+    return mode;
   }
+  var themeMode = "auto";
+  try { themeMode = localStorage.getItem("cc-theme") || "auto"; } catch(e){}
+  themeMode = applyTheme(themeMode);
   themeBtn.addEventListener("click", function(){
-    var next = isDarkNow() ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    try { localStorage.setItem("cc-theme", next); } catch(e){}
+    themeMode = applyTheme(THEME_NEXT[themeMode]);
+    try {
+      if (themeMode === "auto") localStorage.removeItem("cc-theme");
+      else localStorage.setItem("cc-theme", themeMode);
+    } catch(e){}
   });
+
+  // Taille du texte : grossir / rapetisser (zoom de la page, mémorisé)
+  var TEXT_STEPS = [0.9, 1, 1.15, 1.3, 1.5];
+  var textDown = document.getElementById("text-down");
+  var textUp = document.getElementById("text-up");
+  var textIdx = 1;
+  function applyText(i){
+    textIdx = Math.max(0, Math.min(TEXT_STEPS.length - 1, i));
+    var z = TEXT_STEPS[textIdx];
+    if (z === 1) { root.style.removeProperty("--text-zoom"); root.removeAttribute("data-text"); }
+    else { root.style.setProperty("--text-zoom", z); root.setAttribute("data-text", String(z)); }
+    textDown.disabled = textIdx === 0;
+    textUp.disabled = textIdx === TEXT_STEPS.length - 1;
+  }
+  try { var savedText = TEXT_STEPS.indexOf(parseFloat(localStorage.getItem("cc-text"))); if (savedText >= 0) textIdx = savedText; } catch(e){}
+  applyText(textIdx);
+  function stepText(d){
+    applyText(textIdx + d);
+    try {
+      if (TEXT_STEPS[textIdx] === 1) localStorage.removeItem("cc-text");
+      else localStorage.setItem("cc-text", String(TEXT_STEPS[textIdx]));
+    } catch(e){}
+    if (typeof setToolbarHeight === "function") setToolbarHeight();
+  }
+  textDown.addEventListener("click", function(){ stepText(-1); });
+  textUp.addEventListener("click", function(){ stepText(1); });
 
   // Hauteur réelle de la barre d'outils collante → --tb (utilisé par les offsets mobiles)
   var toolbarEl = document.querySelector(".toolbar");
