@@ -218,12 +218,15 @@ déterminée pour chaque événement, dans cet ordre (`culturecentro.categories`
    Théâtre Granada (« Musique », « Humour », « Hommage »…, lue via l'API REST
    `wp/v2/categories`), catégorie déclarée sur la billetterie Lepointdevente
    pour La Petite Boîte Noire (« Humour », « Arts littéraires »…), page
-   « jeune public » du Grand-Espace (`jeunesse`), nature du partenaire pour
-   un musée ou un centre d'art (`arts`) ;
+   « jeune public » du Grand-Espace (`jeunesse`, sauf les spectacles dont
+   l'âge minimal dépasse 12 ans, comme « 15 ans et plus »), nature du
+   partenaire pour un musée ou un centre d'art (`arts`) ;
 2. les **mots-clés** du titre et du sous-titre (genre, distribution : « Théâtre
    classique revisité », « Spectacle de conte », « En rodage », « Hommage à
    Pink Floyd »…) ; un public jeunesse explicite (« dès 4 ans », « jeune
-   public », « en famille ») l'emporte sur le genre ;
+   public », « en famille ») l'emporte sur le genre. Un âge minimal de 13 ans
+   ou plus (« 15 ans et plus », « 18 ans et + ») est au contraire une
+   restriction : il ne désigne pas un public jeunesse ;
 3. la **fiche de l'événement** (page `lien`) : catégories et étiquettes du
    site, type schema.org (`MusicEvent`, `TheaterEvent`, `DanceEvent`…),
    description ; une requête par fiche, avec cache et garde-fou (désactivable

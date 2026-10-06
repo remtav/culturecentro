@@ -16,6 +16,12 @@ La source télécharge les deux publics de l'édition en cours (déduite de la
 date : la saison commence en août) et fusionne les listes ; les spectacles
 terminés sont ignorés. Repli JSON-LD si aucun bloc n'est trouvé.
 
+La page « jeune public » compte aussi des spectacles pour adolescents et
+adultes (« 15 ans et plus ») : l'âge minimal de chaque bloc (attribut
+``data-age``, sinon pastille « 15 ans ») décide de la catégorie « jeunesse »
+(voir :data:`culturecentro.categories.AGE_MAX_JEUNESSE`) ; au-delà, le
+spectacle suit le classement automatique.
+
 Utilisation en bibliothèque ::
 
     from culturecentro.sources.legrandespace import lister_evenements_a_venir
@@ -28,7 +34,9 @@ En ligne de commande ::
 
 from __future__ import annotations
 
+import json
 import logging
+import re
 from collections.abc import Sequence
 from datetime import date, datetime
 
@@ -36,6 +44,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 
 from culturecentro import cli
+from culturecentro.categories import est_age_jeunesse
 from culturecentro.dates import plage_dates_fr
 from culturecentro.exporters import exporter_csv, exporter_json  # noqa: F401 (API publique)
 from culturecentro.http import telecharger
@@ -78,11 +87,26 @@ def _sous_titre(bloc: Tag) -> str | None:
     return " — ".join(morceaux) if morceaux else None
 
 
+def _age_minimal(bloc: Tag) -> int | None:
+    """Âge minimal du spectacle : ``data-age='["15","16","17"]'``, sinon pastille « 15 ans »."""
+    try:
+        ages = json.loads(attribut(bloc, "data-age") or "[]")
+    except json.JSONDecodeError:
+        ages = []
+    entiers = [int(a) for a in ages if str(a).isdigit()] if isinstance(ages, list) else []
+    if entiers:
+        return min(entiers)
+    pastille = bloc.select_one(".pastille")
+    m = re.search(r"\d+", pastille.get_text(" ", strip=True)) if pastille else None
+    return int(m.group()) if m else None
+
+
 def _extraire_depuis_liste(html: str, categorie: str | None = None) -> list[Evenement]:
     """Analyse les blocs ``.spectacle`` de la liste (ceux qui ont un vrai lien).
 
     ``categorie`` est attribuée à tous les spectacles de la page (ex. la page
-    « jeune public » donne ``"jeunesse"``).
+    « jeune public » donne ``"jeunesse"``), sauf ``"jeunesse"`` à un spectacle
+    dont l'âge minimal dépasse celui d'un jeune public (« 15 ans et plus »).
     """
     soup = BeautifulSoup(html, "html.parser")
     conteneur = soup.select_one(".liste_spectacle_block") or soup
@@ -109,6 +133,11 @@ def _extraire_depuis_liste(html: str, categorie: str | None = None) -> list[Even
         sous_titre = _sous_titre(bloc)
         image = url_image(bloc.select_one("img.product_image")) or premiere_image(bloc)
 
+        categorie_bloc = categorie
+        age = _age_minimal(bloc)
+        if categorie == "jeunesse" and age is not None and not est_age_jeunesse(age):
+            categorie_bloc = None  # ados et adultes : classement automatique
+
         couples = [plage_dates_fr(t) for t in textes_dates if t] or [(None, None)]
         for debut, fin in couples:
             evenements.append(
@@ -119,7 +148,7 @@ def _extraire_depuis_liste(html: str, categorie: str | None = None) -> list[Even
                     lien=lien,
                     sous_titre=sous_titre,
                     image=image,
-                    categorie=categorie,
+                    categorie=categorie_bloc,
                 )
             )
 

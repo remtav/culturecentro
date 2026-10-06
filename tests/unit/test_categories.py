@@ -8,12 +8,14 @@ from unittest import mock
 import requests
 
 from culturecentro.categories import (
+    AGE_MAX_JEUNESSE,
     CATEGORIES,
     Categorisation,
     categoriser,
     depuis_libelle,
     depuis_page,
     deviner,
+    est_age_jeunesse,
 )
 from culturecentro.models import Evenement
 
@@ -85,6 +87,34 @@ class TestDeviner(unittest.TestCase):
         self.assertEqual(deviner("Heure du conte", "pour les tout-petits"), "jeunesse")
         # « enfant » seul n'est pas un public (titre d'humoriste).
         self.assertEqual(deviner("Daniel Grenier", "Cœur d'enfant"), None)
+
+    def test_age_minimal_d_enfant_vaut_jeunesse(self):
+        for texte in (
+            "dès 4 ans",
+            "8 ans et plus",
+            "12 ans et +",
+            "de 6 à 12 ans",
+            "à partir de 3 ans",
+        ):
+            with self.subTest(texte=texte):
+                self.assertEqual(deviner("Spectacle", texte), "jeunesse")
+
+    def test_age_minimal_d_ado_ou_d_adulte_n_est_pas_jeunesse(self):
+        # « 15 ans et plus » restreint l'accès : c'est l'inverse d'un jeune public.
+        for texte in (
+            "15 ans et plus",
+            "18 ans et +",
+            "à partir de 16 ans",
+            "pour les 13 à 17 ans",
+        ):
+            with self.subTest(texte=texte):
+                self.assertIsNone(deviner("Spectacle", texte))
+        self.assertEqual(deviner("Le songe d'une nuit d'été", "Théâtre, 15 ans et plus"), "theatre")
+
+    def test_seuil_age_jeunesse(self):
+        self.assertEqual(AGE_MAX_JEUNESSE, 12)
+        self.assertTrue(est_age_jeunesse(12))
+        self.assertFalse(est_age_jeunesse(13))
 
     def test_egalite_departagee_et_seuil(self):
         # théâtre + lecture : priorité à la littérature.

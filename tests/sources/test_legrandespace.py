@@ -19,6 +19,7 @@ from culturecentro.sources.legrandespace import (
     URL_JEUNE_PUBLIC,
     Evenement,
     LeGrandEspace,
+    _age_minimal,
     _extraire_depuis_liste,
     _extraire_evenements,
     edition_courante,
@@ -96,6 +97,34 @@ PAGE_JEUNE = """
 </div>
 """
 
+# Âges tels que publiés : ``data-age`` (liste non triée) et pastille « N ans ».
+PAGE_JEUNE_AGES = """
+<div class="liste_spectacle_block">
+  <div class="colonne spectacle" data-age='["15","16","17"]' data-public="jeune-public">
+    <p class="pastille">15 <span>ans</span></p>
+    <div class="spectacle_content"><div>
+      <span class="subtitle_spectacle">Shakesqueer déjanté</span>
+      <h2 class="titre_spectacle">Le songe d’une nuit d’été</h2>
+    </div></div>
+    <a class="cover_link" href="https://legrandespace.ca/spectacle/le-songe-dune-nuit-dete/"></a>
+  </div>
+  <div class="colonne spectacle" data-age='["10","11","12","8","9"]' data-public="jeune-public">
+    <p class="pastille">8 <span>ans</span></p>
+    <div class="spectacle_content"><div><h2 class="titre_spectacle">Petit bout de bois</h2></div></div>
+    <a class="cover_link" href="https://legrandespace.ca/spectacle/petit-bout-de-bois-2/"></a>
+  </div>
+  <div class="colonne spectacle" data-age='["12","13","14","15","16","17"]' data-public="jeune-public">
+    <div class="spectacle_content"><div><h2 class="titre_spectacle">Angle Mort</h2></div></div>
+    <a class="cover_link" href="https://legrandespace.ca/spectacle/angle-mort/"></a>
+  </div>
+  <div class="colonne spectacle" data-age="" data-public="jeune-public">
+    <p class="pastille">16 <span>ans</span></p>
+    <div class="spectacle_content"><div><h2 class="titre_spectacle">Pastille seule</h2></div></div>
+    <a class="cover_link" href="https://legrandespace.ca/spectacle/pastille-seule/"></a>
+  </div>
+</div>
+"""
+
 JSONLD = """
 <script type="application/ld+json">
 {"@type":"Event","name":"Repli JSON-LD","startDate":"2027-05-01T20:00:00","url":"https://x/e/"}
@@ -158,6 +187,38 @@ class TestExtractionListe(unittest.TestCase):
     def test_sans_conteneur_de_liste(self):
         html = PAGE_JEUNE.replace('class="liste_spectacle_block"', 'class="autre"')
         self.assertEqual(len(_extraire_depuis_liste(html)), 2)
+
+
+class TestAgeMinimal(unittest.TestCase):
+    """La page « jeune public » compte aussi des spectacles pour 15 ans et plus."""
+
+    def setUp(self):
+        self.evenements = _extraire_depuis_liste(PAGE_JEUNE_AGES, categorie="jeunesse")
+
+    def test_age_minimal(self):
+        from bs4 import BeautifulSoup
+
+        blocs = BeautifulSoup(PAGE_JEUNE_AGES, "html.parser").select(".spectacle")
+        self.assertEqual([_age_minimal(b) for b in blocs], [15, 8, 12, 16])
+        self.assertIsNone(
+            _age_minimal(BeautifulSoup("<div data-age='x'></div>", "html.parser").div)
+        )
+
+    def test_jeunesse_reservee_aux_enfants(self):
+        # 15 ans et plus : pas « jeunesse », classement automatique (théâtre).
+        self.assertEqual(
+            [(e.titre, e.categorie) for e in self.evenements],
+            [
+                ("Le songe d’une nuit d’été", None),
+                ("Petit bout de bois", "jeunesse"),
+                ("Angle Mort", "jeunesse"),
+                ("Pastille seule", None),
+            ],
+        )
+
+    def test_sans_age_la_page_decide(self):
+        evs = _extraire_depuis_liste(PAGE_JEUNE, categorie="jeunesse")
+        self.assertEqual({e.categorie for e in evs}, {"jeunesse"})
 
 
 class TestExtraireEvenements(unittest.TestCase):
