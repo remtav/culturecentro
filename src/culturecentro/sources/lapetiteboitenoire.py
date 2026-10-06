@@ -191,8 +191,10 @@ def _analyser_resultats(html: str) -> tuple[list[str], str | None]:
         if (code := code_fiche(attribut(lien, "href")))
     ]
     suivant = soup.select_one("a#events-pages-next")
-    href = attribut(suivant, "href") if suivant else None
-    if suivant is None or not href or href == "#" or "disabled" in suivant.get("class", []):
+    if suivant is None or "disabled" in suivant.get_attribute_list("class"):
+        return codes, None
+    href = attribut(suivant, "href")
+    if not href or href == "#":
         return codes, None
     return codes, urljoin(URL_RECHERCHE, href)
 
