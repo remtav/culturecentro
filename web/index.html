@@ -19,7 +19,7 @@
 <meta property="og:description" content="Théâtre, musique, arts visuels, littérature… La programmation culturelle du centre-ville de Sherbrooke, en un seul agenda.">
 <meta property="og:locale" content="fr_CA">
 <meta name="twitter:card" content="summary">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +35,6 @@
     --line: #E4DBCB;
     --line-strong: #D2C7B2;
     --accent: #B4741F;
-    --mark-tile: #16162E; /* tuile du logo : toujours sombre */
 
     --d-theatre: #D6435A;
     --d-musique: #6C5CE7;
@@ -55,7 +54,7 @@
     :root:not([data-theme="light"]) {
       --paper: #131322; --paper-2: #1B1B2E; --card: #1E1E33;
       --ink: #F2EEF6; --ink-soft: #C3C0D4; --ink-faint: #918EA8;
-      --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C; --mark-tile: #24243F;
+      --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C;
       --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
       --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
       --d-humour: #F58A57; --d-jeunesse: #7BD37F;
@@ -66,7 +65,7 @@
   :root[data-theme="dark"] {
     --paper: #131322; --paper-2: #1B1B2E; --card: #1E1E33;
     --ink: #F2EEF6; --ink-soft: #C3C0D4; --ink-faint: #918EA8;
-    --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C; --mark-tile: #24243F;
+    --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C;
     --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
     --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
     --d-humour: #F58A57; --d-jeunesse: #7BD37F;
@@ -105,9 +104,10 @@
   .mast-inner { padding-block: 20px 22px; }
   .top-row { display: flex; align-items: center; gap: 14px; }
   .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; margin-right: auto; }
-  /* Logo : dessin en couleurs fixes sur une tuile sombre (--mark-tile), qui s'éclaircit à
-     peine en mode sombre pour se détacher du fond. */
-  .mark { width: 40px; height: 40px; flex: none; display: block; }
+  /* Logo (fichier logo.svg, tuile sombre) : un liseré clair le détache des fonds sombres. */
+  .mark { width: 40px; height: 40px; flex: none; display: block; border-radius: 11px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mark { box-shadow: 0 0 0 1px rgba(255,255,255,.12); } }
+  :root[data-theme="dark"] .mark, footer.site .mark { box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
   .brand-txt strong { display: block; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 18px; line-height: 1; letter-spacing: -0.03em; }
   .brand-txt span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
   nav.top { display: flex; gap: 20px; font-size: 14.5px; font-weight: 500; }
@@ -442,7 +442,7 @@
   /* ---------- Footer ---------- */
   /* Le pied de page est toujours sombre : ses couleurs de texte sont fixes (claires) et ne
      suivent pas --paper / --ink, qui s'inversent en mode sombre et rendraient les liens invisibles. */
-  footer.site { --f-bg: #16162E; --f-fg: #FBF7F0; --mark-tile: color-mix(in srgb, var(--f-fg) 9%, var(--f-bg)); background: var(--f-bg); color: color-mix(in srgb, var(--f-fg) 86%, transparent); padding-block: 34px 28px; }
+  footer.site { --f-bg: #16162E; --f-fg: #FBF7F0; background: var(--f-bg); color: color-mix(in srgb, var(--f-fg) 86%, transparent); padding-block: 34px 28px; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer.site { --f-bg: #0C0C18; } }
   :root[data-theme="dark"] footer.site { --f-bg: #0C0C18; }
   footer.site .cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,.14); }
@@ -463,23 +463,11 @@
 </head>
 <body>
 
-<!-- Logo Culture Centro : deux C concentriques (Culture, Centro) ; le petit C se prolonge
-     en vague — la rivière Magog qui traverse le centre-ville de Sherbrooke — et le point
-     doré au cœur marque le centre-ville, comme un projecteur. Même dessin que favicon.svg. -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <symbol id="logo-cc" viewBox="0 0 48 48">
-    <rect width="48" height="48" rx="13" style="fill: var(--mark-tile, #16162E)"/>
-    <path d="M31.9 12.6A14.5 14.5 0 1 0 31.9 35.4" fill="none" stroke="#F0728A" stroke-width="4.4" stroke-linecap="round"/>
-    <path d="M28 18.6A7.4 7.4 0 1 0 28 29.4C30 27.2 31.8 26.9 33.6 28.9S37.6 31.6 40.2 29.2" fill="none" stroke="#37C3B1" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="23" cy="24" r="2.7" fill="#F2B34F"/>
-  </symbol>
-</svg>
-
 <header class="masthead">
   <div class="wrap mast-inner">
     <div class="top-row">
       <a class="brand" href="#">
-        <svg class="mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><use href="#logo-cc"/></svg>
+        <img class="mark" src="logo.svg" alt="" width="40" height="40">
         <span class="brand-txt"><strong>Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
       </a>
       <nav class="top">
@@ -560,7 +548,7 @@
     <div class="cols">
       <div>
         <a class="brand" href="#">
-          <svg class="mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><use href="#logo-cc"/></svg>
+          <img class="mark" src="logo.svg" alt="" width="40" height="40">
           <span class="brand-txt"><strong>Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
         </a>
         <p class="lede">Le guichet unique, gratuit et public, de la programmation culturelle du cœur de Sherbrooke.</p>

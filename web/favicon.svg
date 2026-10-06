@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- Logo Culture Centro : deux C concentriques (Culture, Centro) ; le petit C se
-       prolonge en vague — la rivière Magog qui traverse le centre-ville de Sherbrooke —
-       et le point doré au cœur marque le centre-ville, comme un projecteur. -->
-  <rect width="48" height="48" rx="13" fill="#16162E"/>
-  <path d="M31.9 12.6A14.5 14.5 0 1 0 31.9 35.4" fill="none" stroke="#F0728A" stroke-width="4.4" stroke-linecap="round"/>
-  <path d="M28 18.6A7.4 7.4 0 1 0 28 29.4C30 27.2 31.8 26.9 33.6 28.9S37.6 31.6 40.2 29.2" fill="none" stroke="#37C3B1" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="23" cy="24" r="2.7" fill="#F2B34F"/>
-</svg>
