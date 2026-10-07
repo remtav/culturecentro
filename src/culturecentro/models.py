@@ -9,8 +9,10 @@ le temps (exposition, série d'ateliers, spectacle à l'affiche plusieurs jours)
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 #: Colonnes utilisées pour la sérialisation CSV/JSON, dans l'ordre.
 CHAMPS = (
@@ -78,3 +80,34 @@ class Evenement:
             "partenaire": self.partenaire,
             "categorie": self.categorie,
         }
+
+    @classmethod
+    def from_dict(cls, donnees: Mapping[str, Any]) -> Evenement:
+        """Relit un événement sérialisé par :meth:`to_dict` (ex. : un feed JSON).
+
+        Les clés inconnues (``id`` des pages de partage…) sont ignorées.
+
+        Raises:
+            KeyError: ``titre`` absent.
+            ValueError: date qui n'est pas au format ISO 8601.
+        """
+
+        def texte(cle: str) -> str | None:
+            valeur = donnees.get(cle)
+            return None if valeur is None else str(valeur)
+
+        def date(cle: str) -> datetime | None:
+            valeur = donnees.get(cle)
+            return datetime.fromisoformat(str(valeur)) if valeur else None
+
+        return cls(
+            titre=str(donnees["titre"]),
+            date_debut=date("date_debut"),
+            lien=texte("lien"),
+            lieu=texte("lieu"),
+            sous_titre=texte("sous_titre"),
+            image=texte("image"),
+            date_fin=date("date_fin"),
+            partenaire=texte("partenaire"),
+            categorie=texte("categorie"),
+        )

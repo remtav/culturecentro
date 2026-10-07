@@ -43,3 +43,29 @@ class TestToDict(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestFromDict(unittest.TestCase):
+    def test_aller_retour(self):
+        ev = Evenement(
+            "Expo",
+            datetime(2026, 10, 15, 19, 30),
+            lien="https://x/",
+            lieu="Sporobole",
+            sous_titre="Vernissage",
+            image="https://x/a.jpg",
+            date_fin=datetime(2027, 3, 21),
+            partenaire="Sporobole",
+            categorie="arts",
+        )
+        self.assertEqual(Evenement.from_dict(ev.to_dict()), ev)
+
+    def test_cles_inconnues_ignorees_et_champs_absents(self):
+        ev = Evenement.from_dict({"titre": "Concert", "id": "concert-2026-10-01"})
+        self.assertEqual(ev, Evenement("Concert", None))
+
+    def test_titre_absent_ou_date_invalide(self):
+        with self.assertRaises(KeyError):
+            Evenement.from_dict({"date_debut": "2026-10-01T20:00:00"})
+        with self.assertRaises(ValueError):
+            Evenement.from_dict({"titre": "Concert", "date_debut": "1er octobre"})

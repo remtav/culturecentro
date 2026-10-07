@@ -266,8 +266,8 @@ Tremplin 16-30 »…) et les événements **hors du centre-ville** (autre
 municipalité, campus, quartier périphérique) sont écartés — voir
 `culturecentro.lieux`, dont les listes de lieux connus, de rues du
 centre-ville et de marqueurs hors périmètre sont la « carte » éditable du
-projet. Une salle indisponible est ignorée avec un avertissement (les autres
-sont conservées).
+projet. Une salle indisponible ne fait pas échouer l'agrégation (voir
+[Salle indisponible](#salle-indisponible--reprises-repli-et-alerte)).
 
 ```bash
 culturecentro sources                     # liste les salles enregistrées
@@ -276,6 +276,8 @@ culturecentro lister --format json        # agrège en JSON
 culturecentro lister --source theatre-granada --format csv -o prog.csv
 culturecentro lister --source mbas --source sporobole   # plusieurs salles (option répétable)
 culturecentro lister --sans-fiches        # sans lecture des fiches d'événement (catégories)
+culturecentro lister --format json --tentatives 3 --attente 120 \
+  --precedent ancien.json --rapport echecs.json   # reprises, repli et rapport d'échecs
 python -m culturecentro lister            # équivalent sans le script installé
 ```
 
@@ -291,6 +293,10 @@ option), `lister` et `pages`.
 | `lister` | `-o`, `--sortie FICHIER` | Écrit dans un fichier (sinon : sortie standard). |
 | `lister` | `--timeout SECONDES` | Délai réseau, par requête (défaut : 20). |
 | `lister` | `--sans-fiches` | Ne lit pas la fiche des événements pour les classer (plus rapide, classement moins fin). |
+| `lister` | `--tentatives N` | Essais au plus pour une salle en panne réseau (défaut : 1, sans reprise). |
+| `lister` | `--attente SECONDES` | Attente avant le 2e essai, doublée ensuite (défaut : 60). |
+| `lister` | `--precedent FEED` | Feed JSON précédent : une salle restée en échec y reprend ses événements. |
+| `lister` | `--rapport FICHIER` | Écrit en JSON la liste des salles restées en échec (vide si aucune). |
 | `lister` | `-v`, `--verbose` | Journalisation niveau DEBUG. |
 | `pages` | `--url-base URL` | **Obligatoire.** Adresse publique du site (URL absolue, pour Open Graph). |
 | `pages` | `--feed FICHIER` | Feed produit par `lister` (défaut : `web/data/evenements.json`). |
@@ -303,6 +309,26 @@ l'agrégation, ou un feed illisible ou qui n'est pas une liste d'événements
 qui ne commence pas par `http://` ou `https://` (`pages`). La CLI propre à
 chaque salle (voir [Utilisation en ligne de commande](#utilisation-en-ligne-de-commande))
 accepte en plus `--url`, pour analyser une autre page que la page officielle.
+
+### Salle indisponible : reprises, repli et alerte
+
+Le site d'un partenaire peut être momentanément hors ligne (connexion
+refusée, délai dépassé) ou avoir changé de structure. Dans ce cas :
+
+- **reprises** : avec `--tentatives N`, une salle en panne réseau est
+  interrogée de nouveau, jusqu'à N fois, après `--attente` secondes (délai
+  doublé à chaque essai). Seules les salles en panne sont réinterrogées. Une
+  erreur d'extraction (structure du site modifiée) n'est pas réessayée ;
+- **repli** : avec `--precedent FEED`, une salle restée en échec reprend ses
+  événements du feed précédent (ceux dont le `partenaire` est la salle, et
+  qui sont encore à venir), au lieu de disparaître du site ;
+- **rapport** : avec `--rapport FICHIER`, la liste des salles restées en
+  échec est écrite en JSON (`slug`, `nom`, `erreur`, `tentatives`,
+  `conserves`) ; elle est vide si tout a fonctionné. Le code de sortie reste 0 :
+  le feed est produit malgré l'échec.
+
+En publication, le workflow utilise les trois (voir
+[Publication](#publication-github-pages)).
 
 ### Spectacle annoncé par deux partenaires
 
@@ -598,13 +624,24 @@ fois) : **Settings → Pages → Source = GitHub Actions**.
 Précisions :
 
 - **Horaire** : le cron tourne chaque jour à 06:00 UTC (2 h du matin à
-  Sherbrooke en heure d'été, 1 h en heure normale).
+  Sherbrooke en heure d'été, 1 h en heure normale) ; GitHub retarde souvent
+  le lancement de quelques heures quand ses serveurs sont chargés.
 - **À la demande** : onglet **Actions** → « Publier le feed et la maquette » →
   **Run workflow**.
-- **En cas d'échec de l'agrégation** : le workflow écrit un feed vide (`[]`)
-  pour que le déploiement aboutisse quand même ; la page publique affiche alors
-  le jeu de démonstration. Une salle seule en panne n'a pas cet effet : elle est
-  simplement absente du feed (voir [Agrégation](#agrégation--cli-unifiée)).
+- **Salle en panne** : le feed déjà en ligne est d'abord téléchargé et sert de
+  repli. Une salle en panne réseau est réessayée deux fois (après 2 puis
+  4 minutes) ; si elle reste en échec, ses derniers événements connus sont
+  repris du feed en ligne (voir
+  [Salle indisponible](#salle-indisponible--reprises-repli-et-alerte)).
+- **En cas d'échec de toute l'agrégation** : le feed en ligne est republié tel
+  quel (au tout premier déploiement, un feed vide `[]` : la page publique
+  affiche alors le jeu de démonstration).
+- **Alerte par courriel** : une fois le site déployé, le dernier pas du
+  workflow **échoue** si une salle est restée en échec (ou si toute
+  l'agrégation a échoué) ; GitHub envoie alors un courriel de notification
+  (réglage **Settings → Notifications → Actions** du compte qui reçoit les
+  notifications du workflow), et le résumé du lancement liste les salles en
+  cause.
 - **Site publié** : <https://remtav.github.io/culturecentro/>.
 
 ## Développement

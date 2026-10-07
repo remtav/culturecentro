@@ -8,24 +8,30 @@ from unittest import mock
 
 import requests
 
-from culturecentro.aggregate import agreger
+from culturecentro.aggregate import Echec, agreger
 from culturecentro.models import Evenement
 from culturecentro.sources.base import Source
 
 
 class _SourceFactice(Source):
-    def __init__(self, slug, nom, evenements=None, exc=None):
+    def __init__(self, slug, nom, evenements=None, exc=None, echecs_avant_succes=None):
         self.slug = slug
         self.nom = nom
         self.url_defaut = f"https://exemple/{slug}"
         self._evenements = evenements or []
         self._exc = exc
+        # Nombre d'appels en échec (``exc``) avant de répondre ; None = toujours.
+        self._echecs_avant_succes = echecs_avant_succes
+        self.appels = 0
 
     def extraire(self, html, timeout, session):  # pragma: no cover - non utilisé
         return []
 
     def lister_evenements_a_venir(self, url=None, *, a_partir_de=None, timeout=20.0):
-        if self._exc is not None:
+        self.appels += 1
+        if self._exc is not None and (
+            self._echecs_avant_succes is None or self.appels <= self._echecs_avant_succes
+        ):
             raise self._exc
         return list(self._evenements)
 
@@ -151,3 +157,90 @@ class TestAgreger(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestReprisesEtRepli(unittest.TestCase):
+    PANNE = requests.ConnectionError("Connection refused")
+
+    def test_salle_reessayee_apres_attente(self):
+        ok = _SourceFactice("ok", "OK", [Evenement("Stable", datetime(2026, 10, 1, 20, 0))])
+        instable = _SourceFactice(
+            "instable",
+            "Instable",
+            [Evenement("Revenu", datetime(2026, 10, 2, 20, 0))],
+            exc=self.PANNE,
+            echecs_avant_succes=2,
+        )
+        echecs = []
+        with mock.patch("culturecentro.aggregate.time.sleep") as dormir:
+            with self.assertLogs("culturecentro.aggregate", level="WARNING"):
+                res = agreger(
+                    [ok, instable],
+                    a_partir_de=SEUIL,
+                    lire_fiches=False,
+                    tentatives=3,
+                    attente=120,
+                    echecs=echecs,
+                )
+        self.assertEqual([e.titre for e in res], ["Stable", "Revenu"])
+        self.assertEqual([c.args for c in dormir.call_args_list], [(120,), (240,)])
+        self.assertEqual((ok.appels, instable.appels), (1, 3))  # seule la salle en panne
+        self.assertEqual(echecs, [])
+
+    def test_sans_reprise_par_defaut(self):
+        ko = _SourceFactice("ko", "KO", exc=self.PANNE)
+        with mock.patch("culturecentro.aggregate.time.sleep") as dormir:
+            with self.assertLogs("culturecentro.aggregate", level="WARNING"):
+                agreger([ko], a_partir_de=SEUIL)
+        dormir.assert_not_called()
+        self.assertEqual(ko.appels, 1)
+
+    def test_salle_toujours_en_echec_reprend_le_feed_precedent(self):
+        ok = _SourceFactice("ok", "OK", [Evenement("Neuf", datetime(2026, 10, 3, 20, 0))])
+        ko = _SourceFactice("ko", "KO", exc=self.PANNE)
+        precedents = [
+            Evenement("Ancien de KO", datetime(2026, 10, 1, 20, 0), partenaire="KO", lieu="KO"),
+            Evenement("Passé de KO", datetime(2025, 10, 1, 20, 0), partenaire="KO", lieu="KO"),
+            Evenement("Ancien de OK", datetime(2026, 10, 2, 20, 0), partenaire="OK", lieu="OK"),
+        ]
+        echecs = []
+        with mock.patch("culturecentro.aggregate.time.sleep"):
+            with self.assertLogs("culturecentro.aggregate", level="WARNING"):
+                res = agreger(
+                    [ok, ko],
+                    a_partir_de=SEUIL,
+                    lire_fiches=False,
+                    tentatives=2,
+                    precedents=precedents,
+                    echecs=echecs,
+                )
+        # Seuls les événements de la salle en échec sont repris (et encore à venir) ;
+        # ceux d'une salle qui a répondu viennent de sa réponse du jour.
+        self.assertEqual([e.titre for e in res], ["Ancien de KO", "Neuf"])
+        self.assertEqual(
+            echecs, [Echec("ko", "KO", "Connection refused", tentatives=2, conserves=2)]
+        )
+
+    def test_erreur_d_extraction_non_reessayee(self):
+        cassee = _SourceFactice("cassee", "Cassée", exc=AttributeError("'NoneType'"))
+        echecs = []
+        with mock.patch("culturecentro.aggregate.time.sleep") as dormir:
+            with self.assertLogs("culturecentro.aggregate", level="ERROR"):
+                res = agreger([cassee], a_partir_de=SEUIL, tentatives=3, echecs=echecs)
+        self.assertEqual(res, [])
+        dormir.assert_not_called()
+        self.assertEqual(cassee.appels, 1)
+        self.assertEqual(echecs, [Echec("cassee", "Cassée", "AttributeError : 'NoneType'", 1)])
+
+    def test_ordre_du_registre_conserve_apres_reprise(self):
+        # La première salle du registre départage deux annonces aussi complètes :
+        # une salle réessayée garde son rang.
+        meme = datetime(2026, 10, 13, 20, 0)
+        a = _SourceFactice(
+            "a", "Salle A", [Evenement("Spectacle", meme)], exc=self.PANNE, echecs_avant_succes=1
+        )
+        b = _SourceFactice("b", "Salle B", [Evenement("Spectacle", meme)])
+        with mock.patch("culturecentro.aggregate.time.sleep"):
+            with self.assertLogs("culturecentro.aggregate", level="WARNING"):
+                res = agreger([a, b], a_partir_de=SEUIL, lire_fiches=False, tentatives=2)
+        self.assertEqual([e.partenaire for e in res], ["Salle A"])

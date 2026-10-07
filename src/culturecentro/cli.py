@@ -10,6 +10,7 @@ import argparse
 import json
 import logging
 from collections.abc import Sequence
+from dataclasses import asdict
 from pathlib import Path
 
 import requests
@@ -111,6 +112,30 @@ def _construire_parseur_principal() -> argparse.ArgumentParser:
         help="Ne pas lire la fiche des événements pour déterminer leur catégorie.",
     )
     lister.add_argument(
+        "--tentatives",
+        type=int,
+        default=1,
+        help="Essais au plus pour une salle en panne réseau (défaut : 1, sans reprise).",
+    )
+    lister.add_argument(
+        "--attente",
+        type=float,
+        default=60.0,
+        help="Secondes d'attente avant le 2e essai, doublées ensuite (défaut : 60).",
+    )
+    lister.add_argument(
+        "--precedent",
+        type=Path,
+        metavar="FEED",
+        help="Feed JSON précédent : une salle restée en échec y reprend ses événements.",
+    )
+    lister.add_argument(
+        "--rapport",
+        type=Path,
+        metavar="FICHIER",
+        help="Écrit en JSON la liste des salles restées en échec (vide si aucune).",
+    )
+    lister.add_argument(
         "-v", "--verbose", action="store_true", help="Journalisation détaillée (DEBUG)."
     )
 
@@ -136,6 +161,18 @@ def _construire_parseur_principal() -> argparse.ArgumentParser:
         "-v", "--verbose", action="store_true", help="Journalisation détaillée (DEBUG)."
     )
     return parseur
+
+
+def _charger_precedent(chemin: Path) -> list[Evenement]:
+    """Événements du feed précédent ; liste vide (avec un avertissement) s'il est illisible."""
+    try:
+        feed = json.loads(chemin.read_text(encoding="utf-8"))
+        if not isinstance(feed, list) or not all(isinstance(ev, dict) for ev in feed):
+            raise ValueError("une liste d'événements est attendue")
+        return [Evenement.from_dict(ev) for ev in feed]
+    except (OSError, ValueError, KeyError) as exc:
+        _LOG.warning("Feed précédent illisible (%s), aucun repli possible : %s", chemin, exc)
+        return []
 
 
 def _generer_pages(feed_chemin: Path, dossier: Path, url_base: str) -> int:
@@ -164,7 +201,7 @@ def _generer_pages(feed_chemin: Path, dossier: Path, url_base: str) -> int:
 def principal(argv: Sequence[str] | None = None) -> int:
     """Point d'entrée de la CLI unifiée ``culturecentro``."""
     # Imports différés : évite tout cycle d'import au chargement du module.
-    from culturecentro.aggregate import agreger
+    from culturecentro.aggregate import Echec, agreger
     from culturecentro.sources import SOURCES, obtenir
 
     args = _construire_parseur_principal().parse_args(argv)
@@ -191,11 +228,26 @@ def principal(argv: Sequence[str] | None = None) -> int:
     else:
         sources = None  # toutes
 
+    precedents = _charger_precedent(args.precedent) if args.precedent else None
+    echecs: list[Echec] = []
     try:
-        evenements = agreger(sources, timeout=args.timeout, lire_fiches=not args.sans_fiches)
+        evenements = agreger(
+            sources,
+            timeout=args.timeout,
+            lire_fiches=not args.sans_fiches,
+            tentatives=args.tentatives,
+            attente=args.attente,
+            precedents=precedents,
+            echecs=echecs,
+        )
     except requests.RequestException as exc:
         _LOG.error("Échec de l'agrégation : %s", exc)
         return 1
 
     _sortir(evenements, args.format, args.sortie)
+    if args.rapport:
+        args.rapport.write_text(
+            json.dumps([asdict(e) for e in echecs], ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
     return 0

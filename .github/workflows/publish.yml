@@ -48,11 +48,24 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
+      # Le feed actuellement en ligne sert de repli : un partenaire resté en
+      # échec y reprend ses derniers événements connus.
+      - name: Récupérer le feed publié
+        run: |
+          curl -fsSL --retry 3 --max-time 60 \
+            "${{ steps.pages.outputs.base_url }}/data/evenements.json" \
+            -o "$RUNNER_TEMP/precedent.json" \
+            || echo "[]" > "$RUNNER_TEMP/precedent.json"
+
+      # Un partenaire en panne réseau est réessayé deux fois (après 2 puis
+      # 4 minutes). Si toute l'agrégation échoue, le feed publié est conservé.
       - name: Générer le feed agrégé
         run: |
           mkdir -p web/data
           python -m culturecentro lister --format json -o web/data/evenements.json \
-            || echo "[]" > web/data/evenements.json
+            --tentatives 3 --attente 120 \
+            --precedent "$RUNNER_TEMP/precedent.json" --rapport "$RUNNER_TEMP/rapport.json" \
+            || cp "$RUNNER_TEMP/precedent.json" web/data/evenements.json
 
       # Une page par événement (web/e/<id>/), avec les balises Open Graph pour
       # l'aperçu des liens partagés ; l'adresse publique vient de configure-pages.
@@ -69,3 +82,21 @@ jobs:
       - name: Déployer sur GitHub Pages
         id: deploiement
         uses: actions/deploy-pages@v4
+
+      # Le site est déjà déployé : ce dernier pas fait échouer le workflow si un
+      # partenaire est resté en échec, pour que GitHub envoie un courriel.
+      - name: Signaler les partenaires en échec
+        run: |
+          rapport="$RUNNER_TEMP/rapport.json"
+          if [ ! -s "$rapport" ]; then
+            echo "::error::L'agrégation a échoué : le feed déjà en ligne a été republié tel quel."
+            exit 1
+          fi
+          if [ "$(jq length "$rapport")" -gt 0 ]; then
+            jq -r '.[] | "::error::\(.nom) indisponible après \(.tentatives) essai(s) : \(.erreur | gsub("[\r\n]+"; " ")). \(.conserves) événements repris du feed précédent."' "$rapport"
+            {
+              echo "### Partenaires en échec"
+              jq -r '.[] | "- **\(.nom)** : \(.erreur | gsub("[\r\n]+"; " ")) (\(.conserves) événements repris du feed précédent)"' "$rapport"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
