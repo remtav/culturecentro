@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Earshot</title>
+<meta name="description" content="Record a call from your computer: your microphone, the call audio, or both. Runs in the browser; nothing is uploaded.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23CF3426'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a recording console. Transport and timecode on top, one strip per input side by side, takes logged below. */
+:root {
+  --bg: #E8ECEF;
+  --surface: #F7F9FA;
+  --sunken: #D9E0E6;
+  --ink: #121920;
+  --ink-2: #4E5A66;
+  --line: #C3CCD5;
+  --live: #147A4B;
+  --rec: #CF3426;
+  --rec-ink: #FFFFFF;
+  --rec-bg: #FBE9E7;
+  --warn: #8F6200;
+  --warn-bg: #FFF3D1;
+  --focus: #2563C9;
+  --m-ok: #2F9D62;
+  --m-hot: #D7A019;
+  --m-clip: #D83A2C;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-label: "IBM Plex Sans Condensed", "Arial Narrow", "IBM Plex Sans", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --r: 6px;
+  --r-panel: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1317; --surface: #161D23; --sunken: #0A0E11; --ink: #E4EAEF; --ink-2: #97A3AE; --line: #2B353E;
+    --live: #3FBF7F; --rec: #EE5547; --rec-ink: #FFFFFF; --rec-bg: #3A1714; --warn: #E2AA3A; --warn-bg: #2E250F;
+    --focus: #75A6F7; --m-ok: #3FBF7F; --m-hot: #E8B53A; --m-clip: #F0564A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1317; --surface: #161D23; --sunken: #0A0E11; --ink: #E4EAEF; --ink-2: #97A3AE; --line: #2B353E;
+  --live: #3FBF7F; --rec: #EE5547; --rec-ink: #FFFFFF; --rec-bg: #3A1714; --warn: #E2AA3A; --warn-bg: #2E250F;
+  --focus: #75A6F7; --m-ok: #3FBF7F; --m-hot: #E8B53A; --m-clip: #F0564A;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--f-body); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+b { font-weight: 600; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.wrap {
+  max-width: 1040px; margin-inline: auto;
+  padding-inline: max(16px, env(safe-area-inset-left, 0px));
+  padding-block: calc(28px + env(safe-area-inset-top, 0px)) calc(56px + env(safe-area-inset-bottom, 0px));
+  display: grid; gap: 28px;
+}
+
+/* Header */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; }
+.brand { margin: 0; display: flex; align-items: center; gap: 10px; font: 600 32px/1 var(--f-label); letter-spacing: .01em; }
+.brand svg { width: 28px; height: 28px; flex: none; }
+.brand .dot { fill: var(--rec); }
+.brand .waves { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.tagline { margin: 8px 0 0; color: var(--ink-2); max-width: 60ch; text-wrap: pretty; }
+.local { margin: 0; font: 500 12px/1.4 var(--f-mono); color: var(--ink-2); }
+
+.banner { margin: 0; padding: 12px 14px; border: 1px solid var(--warn); background: var(--warn-bg); border-radius: var(--r); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 18px; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--surface); color: var(--ink); font: 600 15px/1 var(--f-body);
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.btn:hover:not(:disabled) { border-color: var(--ink-2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn svg { width: 16px; height: 16px; fill: currentColor; flex: none; }
+.btn-rec { background: var(--rec); border-color: var(--rec); color: var(--rec-ink); }
+.btn-rec:hover:not(:disabled) { border-color: var(--ink); }
+.btn-small { min-height: 36px; padding: 0 12px; font-size: 14px; }
+.btn-quiet { background: transparent; }
+.btn-dl svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Transport deck */
+.deck { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 20px; display: grid; gap: 16px; }
+.deck-main { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
+.readout { display: grid; gap: 8px; min-width: 0; }
+.clock-row { display: flex; align-items: center; gap: 14px; }
+.lamp { width: 14px; height: 14px; border-radius: 50%; background: var(--sunken); box-shadow: inset 0 0 0 1px var(--line); flex: none; }
+.deck[data-state="rec"] .lamp { background: var(--rec); box-shadow: 0 0 0 4px var(--rec-bg); animation: blink 1.2s steps(1) infinite; }
+.deck[data-state="paused"] .lamp, .deck[data-state="saving"] .lamp { background: var(--warn); box-shadow: none; }
+@keyframes blink { 50% { opacity: .3; } }
+.clock { font: 500 clamp(40px, 10vw, 64px)/1 var(--f-mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.deck[data-state="idle"] .clock { color: var(--ink-2); }
+.sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font: 400 13px/1.4 var(--f-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.pill { font: 600 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .08em; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); }
+.deck[data-state="rec"] .pill { background: var(--rec); border-color: var(--rec); color: var(--rec-ink); }
+.deck[data-state="paused"] .pill, .deck[data-state="saving"] .pill { border-color: var(--warn); color: var(--warn); }
+.transport { display: flex; flex-wrap: wrap; gap: 10px; }
+.deck-msg { margin: 0; font-size: 14px; color: var(--ink-2); }
+.deck-msg[data-kind="error"] { color: var(--ink); padding: 10px 12px; border: 1px solid var(--rec); background: var(--rec-bg); border-radius: var(--r); }
+
+.settings { display: flex; flex-wrap: wrap; gap: 16px 36px; border-top: 1px solid var(--line); padding-top: 16px; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 8px; font: 600 12px/1 var(--f-label); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg label { position: relative; display: block; cursor: pointer; }
+.seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+.seg span { display: grid; gap: 2px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); }
+.seg small { font: 400 12px/1.3 var(--f-mono); color: var(--ink-2); }
+.seg input:checked + span { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); background: var(--surface); }
+.seg input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+.seg input:disabled { cursor: not-allowed; }
+.seg input:disabled + span { opacity: .5; }
+
+/* Input strips */
+.strips { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+.strip { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 18px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.strip-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.strip h2 { margin: 0; font: 600 21px/1.2 var(--f-label); }
+.who { margin: 2px 0 0; color: var(--ink-2); font-size: 14px; }
+.head-right { display: flex; align-items: center; gap: 10px; flex: none; }
+.route { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; white-space: nowrap; }
+.state { display: flex; align-items: center; gap: 8px; font-size: 14px; min-width: 0; }
+.state i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); flex: none; }
+.strip[data-state="live"] .state i { background: var(--live); }
+.strip[data-state="muted"] .state i, .strip[data-state="pending"] .state i { background: var(--warn); }
+.state span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.switch { position: relative; flex: none; width: 52px; height: 30px; padding: 0; border-radius: 999px; border: 1px solid var(--line); background: var(--sunken); cursor: pointer; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgb(0 0 0 / .3); transition: transform .15s ease; }
+.switch[aria-checked="true"] { background: var(--live); border-color: var(--live); }
+.switch[aria-checked="true"]::after { transform: translateX(22px); }
+.switch[aria-busy="true"] { cursor: progress; opacity: .7; }
+.switch:disabled { opacity: .4; cursor: not-allowed; }
+
+.meter { display: grid; gap: 4px; }
+.meter-head { display: flex; justify-content: space-between; font: 600 11px/1 var(--f-label); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.clip { padding: 2px 5px; border-radius: 3px; border: 1px solid var(--line); }
+.clip[data-on] { background: var(--m-clip); border-color: var(--m-clip); color: var(--rec-ink); }
+.bar { position: relative; height: 14px; border-radius: 3px; overflow: hidden; background: linear-gradient(90deg, var(--m-ok) 0 80%, var(--m-hot) 80% 95%, var(--m-clip) 95% 100%); }
+.bar::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 5px, var(--surface) 5px 6px); }
+.cover { position: absolute; inset: 0; background: var(--sunken); transform-origin: right center; transform: scaleX(1); }
+.peak { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; margin-left: -1px; background: var(--ink); z-index: 1; }
+.strip[data-state="muted"] .bar, .strip[data-state="off"] .bar, .strip[data-state="unavailable"] .bar { opacity: .4; }
+.scale { position: relative; height: 14px; font: 400 10px/14px var(--f-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.scale span { position: absolute; top: 0; transform: translateX(-50%); }
+.scale span:first-child { transform: none; }
+.scale span:last-child { transform: translateX(-100%); }
+
+.ctl { display: grid; grid-template-columns: 4.5em minmax(0, 1fr) 3.5em; align-items: center; gap: 10px; font-size: 14px; }
+.ctl label { color: var(--ink-2); }
+input[type="range"] { width: 100%; min-width: 0; margin: 0; accent-color: var(--ink); }
+output { font: 400 13px/1 var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+select { width: 100%; min-width: 0; font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 10px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.check input { margin: 3px 0 0; accent-color: var(--ink); flex: none; }
+.check small { color: var(--ink-2); font-size: 13px; }
+.hint { margin: 0; font-size: 13.5px; color: var(--ink-2); text-wrap: pretty; }
+.msg { margin: 0; font-size: 14px; padding: 10px 12px; border-radius: var(--r); border: 1px solid var(--line); }
+.msg:empty { display: none; }
+.msg[data-kind="error"] { border-color: var(--rec); background: var(--rec-bg); }
+.msg[data-kind="warn"] { border-color: var(--warn); background: var(--warn-bg); }
+
+/* Recordings */
+.block { display: grid; gap: 12px; }
+.section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.section { margin: 0; font: 600 13px/1 var(--f-label); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.empty { margin: 0; padding: 22px; border: 1px dashed var(--line); border-radius: var(--r-panel); color: var(--ink-2); }
+.takes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.take { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: 12px 18px; align-items: center; }
+.take-id { min-width: 0; display: grid; gap: 4px; }
+.take-name { width: 100%; min-width: 0; margin-left: -7px; padding: 4px 6px; font: 600 16px/1.3 var(--f-body); color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: 4px; }
+.take-name:hover { border-color: var(--line); }
+.take-name:focus { background: var(--bg); }
+.take-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; font: 400 12.5px/1.5 var(--f-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.take-meta span + span::before { content: "/"; margin-right: 10px; color: var(--line); }
+.take audio { width: 100%; min-width: 0; height: 40px; }
+.take-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.badge { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; padding: 5px 8px; border-radius: 999px; border: 1px solid var(--warn); color: var(--warn); white-space: nowrap; }
+.badge[data-done] { border-color: var(--live); color: var(--live); }
+@media (max-width: 760px) { .take { grid-template-columns: minmax(0, 1fr); } }
+
+/* Help */
+.help { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 840px) { .help { grid-template-columns: minmax(0, 1fr); } }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); }
+table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font: 600 12px/1.2 var(--f-label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.yes { color: var(--live); font-weight: 600; }
+.no { color: var(--ink-2); font-weight: 600; }
+.tips { margin: 0; padding-left: 18px; display: grid; gap: 10px; font-size: 14px; }
+.foot { margin: 0; font: 400 12px/1.5 var(--f-mono); color: var(--ink-2); }
+
+@media (max-width: 520px) {
+  .deck, .strip { padding: 16px; }
+  .transport { width: 100%; }
+  .transport .btn { flex: 1 1 0; padding: 0 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deck[data-state="rec"] .lamp { animation: none; }
+  .switch::after { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 class="brand">
+        <svg viewBox="0 0 28 28" aria-hidden="true"><circle class="dot" cx="9" cy="14" r="5"/><path class="waves" d="M16.5 8.5a7.8 7.8 0 0 1 0 11M20.5 5a12.8 12.8 0 0 1 0 18"/></svg>
+        Earshot
+      </h1>
+      <p class="tagline">Record a call from your computer: your microphone, the call audio, or both. Then download the file.</p>
+    </div>
+    <p class="local">Runs in your browser. Nothing is uploaded.</p>
+  </header>
+
+  <p class="banner" id="env-banner" role="alert" hidden></p>
+
+  <section class="deck" id="deck" data-state="idle" aria-label="Recorder">
+    <div class="deck-main">
+      <div class="readout">
+        <div class="clock-row">
+          <span class="lamp" aria-hidden="true"></span>
+          <span class="clock" id="clock">00:00:00</span>
+        </div>
+        <div class="sub">
+          <span class="pill" id="status" role="status">Ready</span>
+          <span id="take-size"></span>
+          <span id="take-info"></span>
+        </div>
+      </div>
+      <div class="transport">
+        <button class="btn btn-rec" id="btn-record" type="button" disabled>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/></svg>Record
+        </button>
+        <button class="btn" id="btn-pause" type="button" disabled>
+          <svg viewBox="0 0 16 16" aria-hidden="true" id="icon-pause"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg>
+          <svg viewBox="0 0 16 16" aria-hidden="true" id="icon-resume" hidden><path d="M4 2.5v11a.8.8 0 0 0 1.2.7l9-5.5a.8.8 0 0 0 0-1.4l-9-5.5A.8.8 0 0 0 4 2.5z"/></svg>
+          <span id="pause-label">Pause</span>
+        </button>
+        <button class="btn" id="btn-stop" type="button" disabled>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="3" width="10" height="10" rx="1.5"/></svg>Stop
+        </button>
+      </div>
+    </div>
+    <p class="deck-msg" id="deck-msg" role="status"></p>
+    <div class="settings">
+      <fieldset id="fs-format">
+        <legend>File format</legend>
+        <div class="seg">
+          <label><input type="radio" name="format" value="compressed" id="fmt-compressed"><span><b>Compressed</b><small id="fmt-compressed-note">WebM · Opus · about 1 MB/min</small></span></label>
+          <label><input type="radio" name="format" value="wav" id="fmt-wav"><span><b>WAV</b><small id="fmt-wav-note">uncompressed</small></span></label>
+        </div>
+      </fieldset>
+      <fieldset id="fs-layout">
+        <legend>Channels</legend>
+        <div class="seg">
+          <label><input type="radio" name="layout" value="mixed" id="lay-mixed"><span><b>Mixed</b><small>everything together</small></span></label>
+          <label><input type="radio" name="layout" value="split" id="lay-split"><span><b>Split</b><small>mic left · device right</small></span></label>
+        </div>
+      </fieldset>
+    </div>
+  </section>
+
+  <div class="strips">
+    <section class="strip" id="ch-mic" data-state="off" aria-labelledby="mic-title">
+      <div class="strip-head">
+        <div>
+          <h2 id="mic-title">Microphone</h2>
+          <p class="who">Your voice</p>
+        </div>
+        <div class="head-right">
+          <span class="route" data-role="route">Both channels</span>
+          <button class="switch" type="button" role="switch" aria-checked="false" aria-labelledby="mic-title" data-role="switch"></button>
+        </div>
+      </div>
+      <div class="state"><i></i><span data-role="state">Off</span></div>
+      <div class="meter" aria-hidden="true">
+        <div class="meter-head"><span>Level · dBFS</span><span class="clip" data-role="clip">Clip</span></div>
+        <div class="bar"><div class="cover" data-role="cover"></div><div class="peak" data-role="peak" hidden></div></div>
+        <div class="scale"><span style="left:0">-60</span><span style="left:33.333%">-40</span><span style="left:66.667%">-20</span><span style="left:80%">-12</span><span style="left:90%">-6</span><span style="left:100%">0</span></div>
+      </div>
+      <div class="ctl">
+        <label for="vol-mic">Volume</label>
+        <input type="range" id="vol-mic" min="0" max="200" step="5" value="100" data-role="vol">
+        <output for="vol-mic" data-role="vol-out">100%</output>
+      </div>
+      <div class="ctl">
+        <label for="mic-select">Input</label>
+        <select id="mic-select" style="grid-column: span 2"><option value="">System default</option></select>
+      </div>
+      <label class="check" for="mic-clean">
+        <input type="checkbox" id="mic-clean" checked>
+        <span>Voice cleanup <small>echo, noise and level control. Turn off for music.</small></span>
+      </label>
+      <p class="msg" data-role="msg" role="status"></p>
+    </section>
+
+    <section class="strip" id="ch-dev" data-state="off" aria-labelledby="dev-title">
+      <div class="strip-head">
+        <div>
+          <h2 id="dev-title">Device audio</h2>
+          <p class="who">The other people on the call, and anything else playing</p>
+        </div>
+        <div class="head-right">
+          <span class="route" data-role="route">Both channels</span>
+          <button class="switch" type="button" role="switch" aria-checked="false" aria-labelledby="dev-title" data-role="switch"></button>
+        </div>
+      </div>
+      <div class="state"><i></i><span data-role="state">Off</span></div>
+      <div class="meter" aria-hidden="true">
+        <div class="meter-head"><span>Level · dBFS</span><span class="clip" data-role="clip">Clip</span></div>
+        <div class="bar"><div class="cover" data-role="cover"></div><div class="peak" data-role="peak" hidden></div></div>
+        <div class="scale"><span style="left:0">-60</span><span style="left:33.333%">-40</span><span style="left:66.667%">-20</span><span style="left:80%">-12</span><span style="left:90%">-6</span><span style="left:100%">0</span></div>
+      </div>
+      <div class="ctl">
+        <label for="vol-dev">Volume</label>
+        <input type="range" id="vol-dev" min="0" max="200" step="5" value="100" data-role="vol">
+        <output for="vol-dev" data-role="vol-out">100%</output>
+      </div>
+      <p class="hint" id="dev-hint">Your browser asks what to share. For Teams in a browser, pick its tab and keep <b>Share tab audio</b> on. For the Teams app or a softphone on Windows, pick <b>Entire screen</b> and turn on <b>Share system audio</b>. Only the sound is recorded, never the picture.</p>
+      <div><button class="btn btn-small" id="dev-change" type="button" hidden>Change what’s shared</button></div>
+      <p class="msg" data-role="msg" role="status"></p>
+    </section>
+  </div>
+
+  <section class="block" aria-labelledby="takes-title">
+    <div class="section-head">
+      <h2 class="section" id="takes-title">Recordings</h2>
+      <p class="hint">Kept in this tab only. Download them before you close or reload it.</p>
+    </div>
+    <p class="empty" id="takes-empty">No recordings yet. Each recording you stop lands here, ready to play back, rename and download.</p>
+    <ol class="takes" id="takes"></ol>
+    <template id="take-tpl">
+      <li class="take">
+        <div class="take-id">
+          <label class="sr">Recording name</label>
+          <input class="take-name" type="text" spellcheck="false" autocomplete="off">
+          <div class="take-meta"></div>
+        </div>
+        <audio controls preload="metadata"></audio>
+        <div class="take-actions">
+          <span class="badge">Not downloaded</span>
+          <a class="btn btn-small btn-dl"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10"/></svg>Download</a>
+          <button class="btn btn-small btn-quiet btn-del" type="button">Delete</button>
+        </div>
+      </li>
+    </template>
+  </section>
+
+  <section class="block" aria-labelledby="help-title">
+    <h2 class="section" id="help-title">What you can record</h2>
+    <div class="help">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Where you are</th><th scope="col">Your mic</th><th scope="col">Call audio</th></tr></thead>
+          <tbody>
+            <tr><td>Windows · Chrome, Edge</td><td class="yes">Yes</td><td><span class="yes">Yes, from anything.</span> Share <b>Entire screen</b> with <b>Share system audio</b> on to catch the Teams app, a softphone or any tab. Or share a single tab.</td></tr>
+            <tr><td>macOS, Linux · Chrome, Edge</td><td class="yes">Yes</td><td><span class="yes">From a browser tab,</span> such as Teams at teams.microsoft.com. Audio from the whole computer only if the share dialog offers <b>Share system audio</b>.</td></tr>
+            <tr><td>Firefox, Safari</td><td class="yes">Yes</td><td><span class="no">No.</span> These browsers share video without sound.</td></tr>
+            <tr><td>iPhone, iPad, Android</td><td class="yes">Yes</td><td><span class="no">No.</span> Phones don’t let web pages hear calls or other apps.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="tips">
+        <li><b>Wear headphones.</b> On speakers, your mic also picks up the other people, so they’re recorded twice and sound echoey.</li>
+        <li><b>Phone call?</b> Take it on your computer (Teams, a softphone) if you can. Otherwise put the phone on speaker next to the computer and record with the microphone.</li>
+        <li><b>Check the meters</b> before the call starts. Each one should move when its side talks.</li>
+        <li><b>Tell people you’re recording.</b> Teams won’t show them that this page is recording.</li>
+        <li><b>Long calls:</b> Compressed uses about 60 MB per hour. WAV uses 5 to 10 times that.</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="foot">Earshot is a single HTML file with no server. Audio stays on this computer until you download it.</p>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- helpers ----------
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem('earshot.' + key); return v === null ? fallback : JSON.parse(v); }
+      catch { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem('earshot.' + key, JSON.stringify(value)); } catch { /* storage unavailable */ }
+    },
+  };
+  const pad = (n) => String(n).padStart(2, '0');
+  function clock(ms) {
+    const s = Math.floor(ms / 1000);
+    return `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
+  }
+  function duration(ms) {
+    const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60;
+    return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}`;
+  }
+  function bytes(n) {
+    if (n < 1e6) return `${Math.max(1, Math.round(n / 1e3))} KB`;
+    if (n < 1e9) return `${(n / 1e6).toFixed(n < 1e7 ? 1 : 0)} MB`;
+    return `${(n / 1e9).toFixed(2)} GB`;
+  }
+
+  // ---------- what this browser can do ----------
+  const MIMES = [
+    ['audio/webm;codecs=opus', 'webm', 'WebM · Opus'],
+    ['audio/ogg;codecs=opus', 'ogg', 'Ogg · Opus'],
+    ['audio/mp4;codecs=mp4a.40.2', 'm4a', 'MP4 · AAC'],
+    ['audio/mp4', 'm4a', 'MP4 · AAC'],
+    ['audio/webm', 'webm', 'WebM'],
+  ];
+  const BITRATE = 128000;
+  const md = navigator.mediaDevices;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const support = {
+    secure: window.isSecureContext !== false,
+    audio: !!AC,
+    mic: !!(md && md.getUserMedia),
+    share: !!(md && md.getDisplayMedia),
+    wav: typeof AudioWorkletNode !== 'undefined',
+    compressed: (() => {
+      if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) return null;
+      for (const [mime, ext, label] of MIMES) if (MediaRecorder.isTypeSupported(mime)) return { mime, ext, label };
+      return null;
+    })(),
+    chromium: !!(navigator.userAgentData && navigator.userAgentData.brands.some((b) => /Chromium/.test(b.brand))),
+  };
+
+  // ---------- state ----------
+  const S = {
+    ctx: null, mixBus: null, merger: null,
+    format: store.get('format', 'compressed'),
+    layout: store.get('layout', 'mixed') === 'split' ? 'split' : 'mixed',
+    take: null, starting: false, takes: [], seq: 0,
+    deckError: '', tick: 0, wake: null,
+  };
+  if (S.format !== 'wav' && S.format !== 'compressed') S.format = 'compressed';
+  if (S.format === 'compressed' && !support.compressed) S.format = 'wav';
+  if (S.format === 'wav' && !support.wav) S.format = 'compressed';
+
+  function makeChannel(key, idx) {
+    const el = document.getElementById('ch-' + key);
+    const role = (r) => el.querySelector(`[data-role="${r}"]`);
+    const v = Number(store.get('vol.' + key, 100));
+    return {
+      key, idx, el,
+      sw: role('switch'), stateEl: role('state'), routeEl: role('route'), cover: role('cover'),
+      peakEl: role('peak'), clipEl: role('clip'), volIn: role('vol'), volOut: role('vol-out'), msgEl: role('msg'),
+      stream: null, src: null, vol: null, an: null, mute: null, buf: null,
+      on: false, pending: false, label: '', unavailable: false,
+      level: 0, peak: 0, peakAt: 0, clipAt: -1e9, lastT: 0,
+      volume: Number.isFinite(v) ? clamp(v, 0, 200) : 100,
+    };
+  }
+  const CH = { mic: makeChannel('mic', 0), dev: makeChannel('dev', 1) };
+  const channels = [CH.mic, CH.dev];
+  CH.mic.unavailable = !support.audio || !support.mic;
+  CH.dev.unavailable = !support.audio || !support.share;
+
+  const isLive = (ch) => ch.on && !!ch.stream;
+  const anyLive = () => channels.some(isLive);
+
+  // ---------- audio graph ----------
+  // source → volume ─┬→ analyser (meter)
+  //                  └→ mute → mix bus (Mixed) or merger input L/R (Split) → recorder
+  function ensureCtx() {
+    if (S.ctx) {
+      if (S.ctx.state === 'suspended') S.ctx.resume().catch(() => {});
+      return S.ctx;
+    }
+    const ctx = new AC({ latencyHint: 'playback' });
+    S.ctx = ctx;
+    S.mixBus = ctx.createGain();
+    S.mixBus.channelCount = 2;
+    S.mixBus.channelCountMode = 'explicit';
+    S.mixBus.channelInterpretation = 'speakers';
+    S.merger = ctx.createChannelMerger(2); // each input is downmixed to mono
+    for (const ch of channels) {
+      ch.vol = ctx.createGain();
+      ch.vol.gain.value = ch.volume / 100;
+      ch.an = ctx.createAnalyser();
+      ch.an.fftSize = 2048;
+      ch.buf = new Float32Array(ch.an.fftSize);
+      ch.mute = ctx.createGain();
+      ch.vol.connect(ch.an);
+      ch.vol.connect(ch.mute);
+    }
+    route();
+    requestAnimationFrame(drawMeters);
+    return ctx;
+  }
+
+  function route() {
+    if (!S.ctx) return;
+    for (const ch of channels) {
+      ch.mute.disconnect();
+      if (S.layout === 'split') ch.mute.connect(S.merger, 0, ch.idx);
+      else ch.mute.connect(S.mixBus);
+    }
+  }
+  const outputNode = () => (S.layout === 'split' ? S.merger : S.mixBus);
+
+  function setMuted(ch, muted) {
+    if (!ch.mute) return;
+    const g = ch.mute.gain;
+    g.cancelScheduledValues(S.ctx.currentTime);
+    g.setTargetAtTime(muted ? 0 : 1, S.ctx.currentTime, 0.01);
+  }
+
+  function attach(ch, stream, label) {
+    const old = ch.stream;
+    if (ch.src) ch.src.disconnect();
+    ch.stream = stream;
+    ch.label = label;
+    ch.src = S.ctx.createMediaStreamSource(new MediaStream(stream.getAudioTracks()));
+    ch.src.connect(ch.vol);
+    if (old && old !== stream) old.getTracks().forEach((t) => t.stop());
+    stream.getTracks().forEach((t) => t.addEventListener('ended', () => lost(ch, stream)));
+  }
+
+  function release(ch) {
+    if (ch.src) { ch.src.disconnect(); ch.src = null; }
+    if (ch.stream) { ch.stream.getTracks().forEach((t) => t.stop()); ch.stream = null; }
+    ch.label = '';
+  }
+
+  // The browser ended a source: mic unplugged, or "Stop sharing" clicked in the browser's bar.
+  function lost(ch, stream) {
+    if (ch.stream !== stream) return;
+    release(ch);
+    ch.on = false;
+    setMsg(ch, ch.key === 'mic'
+      ? 'The microphone stopped, maybe unplugged or taken over by the system. Switch it on again to reconnect.'
+      : 'Sharing stopped. Switch device audio on again to choose what to share.', 'warn');
+    render();
+  }
+
+  // ---------- sources ----------
+  async function acquireMic(ch) {
+    ensureCtx();
+    const id = store.get('micId', '');
+    const clean = $('#mic-clean').checked;
+    const audio = { echoCancellation: clean, noiseSuppression: clean, autoGainControl: clean };
+    if (id) audio.deviceId = { exact: id };
+    let stream;
+    try {
+      stream = await md.getUserMedia({ audio });
+    } catch (e) {
+      if (!id || (e.name !== 'NotFoundError' && e.name !== 'OverconstrainedError')) throw e;
+      delete audio.deviceId; // the remembered microphone is gone: fall back to the default one
+      store.set('micId', '');
+      stream = await md.getUserMedia({ audio });
+    }
+    const track = stream.getAudioTracks()[0];
+    attach(ch, stream, (track && track.label) || 'Microphone');
+    refreshMics();
+  }
+
+  async function acquireDevice(ch) {
+    ensureCtx();
+    // Called straight from a click: getDisplayMedia needs that user gesture.
+    const stream = await md.getDisplayMedia({
+      video: true, // browsers only offer audio alongside a picture; the picture is never recorded
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, suppressLocalAudioPlayback: false },
+      systemAudio: 'include',
+      selfBrowserSurface: 'exclude',
+      surfaceSwitching: 'include',
+    });
+    const video = stream.getVideoTracks()[0];
+    const surface = video && video.getSettings ? video.getSettings().displaySurface : '';
+    if (!stream.getAudioTracks().length) {
+      stream.getTracks().forEach((t) => t.stop());
+      const err = new Error('No audio was shared');
+      err.name = 'NoAudio';
+      err.surface = surface;
+      throw err;
+    }
+    if (video && video.applyConstraints) video.applyConstraints({ frameRate: { max: 1 } }).catch(() => {});
+    const what = { monitor: 'sharing your entire screen', browser: 'sharing a browser tab', window: 'sharing a window' }[surface];
+    attach(ch, stream, what || 'sharing audio');
+  }
+
+  function explain(ch, e) {
+    const n = e && e.name;
+    if (ch.key === 'mic') {
+      if (n === 'NotAllowedError' || n === 'SecurityError') return 'Microphone access is blocked. Allow it in the site settings (the icon at the left of the address bar), then switch the microphone on again.';
+      if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'No microphone was found. Plug one in, or pick another one under Input.';
+      if (n === 'NotReadableError' || n === 'AbortError') return 'The microphone is busy or blocked by the system. Check your system’s privacy settings for the microphone, then try again.';
+    } else {
+      if (n === 'NoAudio') {
+        if (e.surface === 'window') return 'A window can’t share its sound. Switch on again and pick a tab (with Share tab audio on) or Entire screen (with Share system audio on).';
+        if (e.surface === 'monitor') return 'The screen was shared without sound. Switch on again, pick Entire screen and turn on Share system audio. If that option is missing, this computer can’t share system audio: share the call’s browser tab instead.';
+        if (e.surface === 'browser') return 'The tab was shared without its sound. Switch on again, pick the tab and keep Share tab audio on.';
+        return support.chromium
+          ? 'Nothing with sound was shared. Switch on again and pick a tab or Entire screen with audio sharing on.'
+          : 'This browser shares pictures without sound. Use Chrome or Edge on a computer to record device audio.';
+      }
+      if (n === 'NotAllowedError') return 'Sharing was cancelled or blocked. Switch device audio on again to pick a tab or screen. On a Mac, the browser also needs Screen Recording permission in System Settings › Privacy & Security.';
+      if (n === 'NotReadableError' || n === 'AbortError') return 'The browser couldn’t start sharing. Try again, or pick a different tab or screen.';
+    }
+    return `Something went wrong (${((e && (e.message || n)) || 'unknown error').replace(/\.$/, '')}). Try again.`;
+  }
+
+  async function toggle(ch) {
+    if (ch.pending || ch.unavailable) return;
+    setMsg(ch, '');
+    if (ch.on) {
+      ch.on = false;
+      if (S.take) setMuted(ch, true); // keep the source so it can come back instantly in this recording
+      else release(ch);
+      render();
+      return;
+    }
+    if (ch.stream) {
+      ch.on = true;
+      setMuted(ch, false);
+      if (S.take) S.take.used.add(ch.key);
+      render();
+      return;
+    }
+    ch.pending = true;
+    render();
+    try {
+      await (ch.key === 'mic' ? acquireMic(ch) : acquireDevice(ch));
+      ch.on = true;
+      setMuted(ch, false);
+      if (S.take) S.take.used.add(ch.key);
+    } catch (e) {
+      setMsg(ch, explain(ch, e), 'error');
+    } finally {
+      ch.pending = false;
+      render();
+    }
+  }
+
+  async function reacquire(ch, fn) {
+    if (!ch.stream || ch.pending) return;
+    ch.pending = true;
+    render();
+    try { await fn(ch); setMsg(ch, ''); }
+    catch (e) { setMsg(ch, e && e.name === 'NotAllowedError' && ch.key === 'dev' ? 'Kept the current share.' : explain(ch, e), 'error'); }
+    finally { ch.pending = false; render(); }
+  }
+
+  async function refreshMics() {
+    if (!md || !md.enumerateDevices) return;
+    let list = [];
+    try { list = (await md.enumerateDevices()).filter((d) => d.kind === 'audioinput'); } catch { /* keep the default entry */ }
+    const sel = $('#mic-select');
+    const current = store.get('micId', '');
+    sel.textContent = '';
+    sel.append(new Option('System default', ''));
+    list.forEach((d, i) => {
+      if (!d.deviceId || d.deviceId === 'default' || d.deviceId === 'communications') return;
+      sel.append(new Option(d.label || `Microphone ${i + 1}`, d.deviceId));
+    });
+    sel.value = [...sel.options].some((o) => o.value === current) ? current : '';
+  }
+
+  // ---------- recording ----------
+  const TAP = `
+class EarshotTap extends AudioWorkletProcessor {
+  constructor(options) {
+    super();
+    this.channels = options.processorOptions.channels;
+    this.size = 16384;
+    this.bufs = Array.from({ length: this.channels }, () => new Float32Array(this.size));
+    this.n = 0;
+    this.paused = false;
+    this.done = false;
+    this.port.onmessage = (e) => {
+      if (e.data === 'pause') this.paused = true;
+      else if (e.data === 'resume') this.paused = false;
+      else if (e.data === 'flush') { this.send(); this.done = true; this.port.postMessage('flushed'); }
+    };
+  }
+  send() {
+    if (!this.n) return;
+    const out = this.bufs.map((b) => b.slice(0, this.n));
+    this.port.postMessage(out, out.map((b) => b.buffer));
+    this.n = 0;
+  }
+  process(inputs) {
+    if (this.done) return false;
+    if (this.paused) return true;
+    const input = inputs[0] || [];
+    const frames = input.length ? input[0].length : 128;
+    if (this.n + frames > this.size) this.send();
+    for (let c = 0; c < this.channels; c++) {
+      const src = input.length ? input[Math.min(c, input.length - 1)] : null;
+      if (src) this.bufs[c].set(src, this.n);
+      else this.bufs[c].fill(0, this.n, this.n + frames); // no source playing: keep time with silence
+    }
+    this.n += frames;
+    return true;
+  }
+}
+registerProcessor('earshot-tap', EarshotTap);
+`;
+  let workletReady = null;
+  function ensureWorklet(ctx) {
+    if (!workletReady) {
+      const url = URL.createObjectURL(new Blob([TAP], { type: 'text/javascript' }));
+      workletReady = ctx.audioWorklet.addModule(url)
+        // Pages opened from disk (file://) can't load blob: modules; a data: URL works there.
+        .catch(() => ctx.audioWorklet.addModule('data:text/javascript;charset=utf-8,' + encodeURIComponent(TAP)))
+        .catch((e) => { workletReady = null; throw e; })
+        .finally(() => URL.revokeObjectURL(url));
+    }
+    return workletReady;
+  }
+
+  function pushPcm(t, chans) {
+    if (t.closed) return;
+    const C = chans.length, len = chans[0].length, out = new Int16Array(len * C);
+    for (let i = 0, k = 0; i < len; i++) {
+      for (let c = 0; c < C; c++, k++) {
+        const s = clamp(chans[c][i] || 0, -1, 1);
+        out[k] = s < 0 ? s * 32768 : s * 32767;
+      }
+    }
+    t.pcm.push(out);
+    t.frames += len;
+    t.pending += out.byteLength;
+    if (t.pending >= 8 << 20) { // hand big runs to the browser's blob store instead of keeping them in JS memory
+      t.parts.push(new Blob(t.pcm));
+      t.pcm = [];
+      t.pending = 0;
+    }
+  }
+
+  function wavBlob(t) {
+    const C = t.channels, rate = t.rate, data = t.frames * C * 2;
+    const h = new DataView(new ArrayBuffer(44));
+    const tag = (o, s) => { for (let i = 0; i < 4; i++) h.setUint8(o + i, s.charCodeAt(i)); };
+    tag(0, 'RIFF'); h.setUint32(4, 36 + data, true); tag(8, 'WAVE');
+    tag(12, 'fmt '); h.setUint32(16, 16, true); h.setUint16(20, 1, true); h.setUint16(22, C, true);
+    h.setUint32(24, rate, true); h.setUint32(28, rate * C * 2, true); h.setUint16(32, C * 2, true); h.setUint16(34, 16, true);
+    tag(36, 'data'); h.setUint32(40, data, true);
+    return new Blob([h.buffer, ...t.parts, ...t.pcm], { type: 'audio/wav' });
+  }
+
+  // MediaRecorder writes WebM without a duration, so players can't show its length or seek.
+  // Insert a Duration element into the Segment's Info header.
+  function vint(n, len) {
+    if (!len) { len = 1; while (n >= 2 ** (7 * len) - 1) len++; }
+    if (len > 8 || n >= 2 ** (7 * len) - 1) return null;
+    const out = new Uint8Array(len);
+    let v = n;
+    for (let i = len - 1; i >= 0; i--) { out[i] = v % 256; v = Math.floor(v / 256); }
+    out[0] |= 0x80 >> (len - 1);
+    return out;
+  }
+  function patchWebmHead(b, ms) {
+    const el = (p) => {
+      if (p >= b.length) return null;
+      const f = b[p];
+      const idLen = f >= 0x80 ? 1 : f >= 0x40 ? 2 : f >= 0x20 ? 3 : f >= 0x10 ? 4 : 0;
+      if (!idLen) return null;
+      let id = 0;
+      for (let i = 0; i < idLen; i++) id = id * 256 + b[p + i];
+      const q = p + idLen;
+      if (q >= b.length) return null;
+      let len = 1, mask = 0x80;
+      while (len <= 8 && !(b[q] & mask)) { len++; mask >>= 1; }
+      if (len > 8 || q + len > b.length) return null;
+      let size = b[q] & (mask - 1), unknown = size === mask - 1;
+      for (let i = 1; i < len; i++) { size = size * 256 + b[q + i]; if (b[q + i] !== 0xff) unknown = false; }
+      const data = q + len;
+      return { id, start: p, sizeAt: q, sizeLen: len, data, size, unknown, end: unknown ? Infinity : data + size };
+    };
+    const ebml = el(0);
+    if (!ebml || ebml.id !== 0x1A45DFA3 || ebml.unknown) return null;
+    const seg = el(ebml.end);
+    if (!seg || seg.id !== 0x18538067) return null;
+    for (let p = seg.data; p < b.length;) {
+      const e = el(p);
+      if (!e) return null;
+      if (e.id === 0x1549A966) { // Info
+        if (e.unknown || e.end > b.length) return null;
+        let scale = 1e6;
+        for (let q = e.data; q < e.end;) {
+          const c = el(q);
+          if (!c || c.unknown || c.end > e.end) return null;
+          if (c.id === 0x4489) return null; // already has a Duration
+          if (c.id === 0x2AD7B1) { scale = 0; for (let i = c.data; i < c.end; i++) scale = scale * 256 + b[i]; }
+          q = c.end;
+        }
+        if (!scale) return null;
+        const dur = new Uint8Array(11);
+        dur.set([0x44, 0x89, 0x88]);
+        new DataView(dur.buffer).setFloat64(3, (ms * 1e6) / scale);
+        const size = vint(e.size + dur.length);
+        if (!size) return null;
+        const grow = dur.length + size.length - e.sizeLen;
+        const out = new Uint8Array(b.length + grow);
+        out.set(b.subarray(0, e.sizeAt));
+        out.set(size, e.sizeAt);
+        out.set(b.subarray(e.data, e.end), e.sizeAt + size.length);
+        out.set(dur, e.sizeAt + size.length + e.size);
+        out.set(b.subarray(e.end), e.sizeAt + size.length + e.size + dur.length);
+        if (!seg.unknown) { // a sized Segment must grow too
+          const s = vint(seg.size + grow, seg.sizeLen);
+          if (!s) return null;
+          out.set(s, seg.sizeAt);
+        }
+        return out;
+      }
+      // Stop at a SeekHead (its offsets would shift), a Cluster (audio started), or anything unsized.
+      if (e.id === 0x114D9B74 || e.id === 0x1F43B675 || e.unknown) return null;
+      p = e.end;
+    }
+    return null;
+  }
+  async function withWebmDuration(blob, ms) {
+    try {
+      const n = Math.min(blob.size, 65536);
+      const head = new Uint8Array(await blob.slice(0, n).arrayBuffer());
+      const patched = patchWebmHead(head, ms);
+      return patched ? new Blob([patched, blob.slice(n)], { type: blob.type }) : blob;
+    } catch {
+      return blob;
+    }
+  }
+
+  const elapsedMs = (t) => t.elapsed + (t.paused || t.stopping ? 0 : performance.now() - t.segStart);
+
+  async function startTake() {
+    if (S.take || S.starting || !anyLive()) return;
+    S.starting = true;
+    S.deckError = '';
+    const ctx = ensureCtx();
+    const format = (S.format === 'wav' && support.wav) || !support.compressed ? 'wav' : 'compressed';
+    const t = {
+      id: ++S.seq, started: new Date(), format, layout: S.layout, out: outputNode(),
+      used: new Set(channels.filter(isLive).map((c) => c.key)),
+      elapsed: 0, segStart: 0, paused: false, stopping: false, bytes: 0,
+    };
+    try {
+      if (ctx.state !== 'running') await ctx.resume();
+      if (format === 'wav') {
+        await ensureWorklet(ctx);
+        t.channels = S.layout === 'split' ? 2 : 1;
+        t.rate = ctx.sampleRate;
+        t.frames = 0; t.pcm = []; t.parts = []; t.pending = 0;
+        t.node = new AudioWorkletNode(ctx, 'earshot-tap', {
+          numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1],
+          channelCount: t.channels, channelCountMode: 'explicit', channelInterpretation: 'speakers',
+          processorOptions: { channels: t.channels },
+        });
+        t.node.port.onmessage = (e) => {
+          if (e.data === 'flushed') { if (t.onFlushed) t.onFlushed(); }
+          else pushPcm(t, e.data);
+        };
+        t.out.connect(t.node);
+        t.sink = ctx.createGain(); // keeps the tap running; silent
+        t.sink.gain.value = 0;
+        t.node.connect(t.sink);
+        t.sink.connect(ctx.destination);
+      } else {
+        t.dest = ctx.createMediaStreamDestination();
+        t.dest.channelCount = 2;
+        t.out.connect(t.dest);
+        t.rec = new MediaRecorder(t.dest.stream, { mimeType: support.compressed.mime, audioBitsPerSecond: BITRATE });
+        t.chunks = [];
+        t.rec.ondataavailable = (e) => { if (e.data && e.data.size) { t.chunks.push(e.data); t.bytes += e.data.size; } };
+        t.rec.start(1000);
+      }
+    } catch (e) {
+      cleanup(t);
+      S.starting = false;
+      S.deckError = `Recording couldn’t start (${(e.message || e.name).replace(/\.$/, '')}). Try the other file format, or reload the page.`;
+      render();
+      return;
+    }
+    t.segStart = performance.now();
+    S.take = t;
+    S.starting = false;
+    holdWake();
+    S.tick = setInterval(renderClock, 250);
+    render();
+  }
+
+  function togglePause() {
+    const t = S.take;
+    if (!t || t.stopping) return;
+    const now = performance.now();
+    if (t.paused) {
+      t.paused = false;
+      t.segStart = now;
+      if (t.format === 'wav') t.node.port.postMessage('resume'); else t.rec.resume();
+    } else {
+      t.elapsed += now - t.segStart;
+      t.paused = true;
+      if (t.format === 'wav') t.node.port.postMessage('pause'); else t.rec.pause();
+    }
+    render();
+  }
+
+  async function stopTake() {
+    const t = S.take;
+    if (!t || t.stopping) return;
+    if (!t.paused) t.elapsed += performance.now() - t.segStart;
+    t.stopping = true;
+    render();
+    let take = null;
+    try {
+      if (t.format === 'wav') {
+        await Promise.race([
+          new Promise((res) => { t.onFlushed = res; t.node.port.postMessage('flush'); }),
+          new Promise((res) => setTimeout(res, 3000)),
+        ]);
+        t.closed = true;
+        take = { blob: wavBlob(t), ms: (t.frames / t.rate) * 1000, ext: 'wav', format: `WAV · ${t.channels === 2 ? 'stereo' : 'mono'}` };
+      } else {
+        await new Promise((res) => {
+          t.rec.addEventListener('stop', res, { once: true });
+          if (t.rec.state === 'inactive') res(); else t.rec.stop();
+        });
+        const type = t.rec.mimeType || support.compressed.mime;
+        let blob = new Blob(t.chunks, { type });
+        if (/webm/i.test(type)) blob = await withWebmDuration(blob, t.elapsed);
+        const ext = /ogg/i.test(type) ? 'ogg' : /mp4/i.test(type) ? 'm4a' : 'webm';
+        take = { blob, ms: t.elapsed, ext, format: support.compressed.label };
+      }
+    } catch (e) {
+      S.deckError = `The recording couldn’t be saved (${(e.message || e.name).replace(/\.$/, '')}).`;
+    } finally {
+      cleanup(t);
+      clearInterval(S.tick);
+      dropWake();
+      S.take = null;
+      for (const ch of channels) if (!ch.on && ch.stream && !ch.pending) release(ch);
+    }
+    if (take) addTake(Object.assign(take, { started: t.started, layout: t.layout, used: t.used }));
+    render();
+  }
+
+  function cleanup(t) {
+    const off = (a, b) => { try { b ? a.disconnect(b) : a.disconnect(); } catch { /* not connected */ } };
+    if (t.node) { off(t.out, t.node); off(t.node); t.node.port.onmessage = null; }
+    if (t.sink) off(t.sink);
+    if (t.dest) { off(t.out, t.dest); t.dest.stream.getTracks().forEach((x) => x.stop()); }
+  }
+
+  async function holdWake() {
+    try { S.wake = navigator.wakeLock ? await navigator.wakeLock.request('screen') : null; } catch { S.wake = null; }
+  }
+  function dropWake() {
+    try { if (S.wake) S.wake.release(); } catch { /* already released */ }
+    S.wake = null;
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (S.take && document.visibilityState === 'visible' && (!S.wake || S.wake.released)) holdWake();
+  });
+
+  // ---------- recordings list ----------
+  const takesEl = $('#takes');
+  const fileName = (name, ext) => `${(name || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Recording'}.${ext}`;
+
+  function addTake(t) {
+    const d = t.started;
+    t.id = ++S.seq;
+    t.name = `Recording ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}.${pad(d.getMinutes())}`;
+    t.url = URL.createObjectURL(t.blob);
+    t.downloaded = false;
+    S.takes.push(t);
+
+    const li = $('#take-tpl').content.firstElementChild.cloneNode(true);
+    const name = $('.take-name', li), label = $('label', li), meta = $('.take-meta', li);
+    const audio = $('audio', li), dl = $('.btn-dl', li), del = $('.btn-del', li), badge = $('.badge', li);
+    name.id = `take-name-${t.id}`;
+    label.htmlFor = name.id;
+    name.value = t.name;
+    const used = ['mic', 'dev'].filter((k) => t.used.has(k));
+    const sources = used.length === 2 ? 'Mic + device audio' : used[0] === 'mic' ? 'Mic only' : used[0] === 'dev' ? 'Device audio only' : 'Silence';
+    for (const text of [duration(t.ms), bytes(t.blob.size), t.format, t.layout === 'split' ? 'Split L/R' : 'Mixed', sources]) {
+      const s = document.createElement('span');
+      s.textContent = text;
+      meta.append(s);
+    }
+    audio.src = t.url;
+    audio.setAttribute('aria-label', `Play ${t.name}`);
+    dl.href = t.url;
+    dl.download = fileName(t.name, t.ext);
+    name.addEventListener('input', () => {
+      t.name = name.value;
+      dl.download = fileName(t.name, t.ext);
+      audio.setAttribute('aria-label', `Play ${t.name}`);
+    });
+    dl.addEventListener('click', () => {
+      t.downloaded = true;
+      badge.textContent = 'Downloaded';
+      badge.dataset.done = '';
+    });
+    let disarm = 0;
+    del.addEventListener('click', () => {
+      if (del.dataset.armed) {
+        clearTimeout(disarm);
+        audio.pause();
+        URL.revokeObjectURL(t.url);
+        S.takes = S.takes.filter((x) => x !== t);
+        li.remove();
+        renderTakes();
+        return;
+      }
+      del.dataset.armed = '1';
+      del.textContent = t.downloaded ? 'Confirm delete' : 'Delete without saving?';
+      disarm = setTimeout(() => { delete del.dataset.armed; del.textContent = 'Delete'; }, 4000);
+    });
+    takesEl.prepend(li);
+    renderTakes();
+  }
+  function renderTakes() { $('#takes-empty').hidden = S.takes.length > 0; }
+
+  addEventListener('beforeunload', (e) => {
+    if (S.take || S.takes.some((t) => !t.downloaded)) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  // ---------- rendering ----------
+  const deck = $('#deck');
+  const STATUS = {
+    mic: { off: 'Off', pending: 'Waiting for microphone permission…', muted: 'Muted in this recording', unavailable: 'Not available here' },
+    dev: { off: 'Off', pending: 'Choose a tab or screen to share…', muted: 'Muted in this recording', unavailable: 'Not available here' },
+  };
+  function stateOf(ch) {
+    if (ch.unavailable) return 'unavailable';
+    if (ch.pending) return 'pending';
+    if (ch.on && ch.stream) return 'live';
+    if (ch.stream) return 'muted';
+    return 'off';
+  }
+  function setMsg(ch, text, kind) {
+    ch.msgEl.textContent = text;
+    ch.msgEl.dataset.kind = kind || '';
+  }
+
+  function render() {
+    const t = S.take;
+    for (const ch of channels) {
+      const st = stateOf(ch);
+      ch.el.dataset.state = st;
+      ch.stateEl.textContent = st === 'live' ? `Live · ${ch.label}` : STATUS[ch.key][st];
+      ch.stateEl.title = ch.stateEl.textContent;
+      ch.sw.setAttribute('aria-checked', String(ch.on || ch.pending));
+      ch.sw.setAttribute('aria-busy', String(ch.pending));
+      ch.sw.disabled = ch.unavailable;
+      ch.routeEl.textContent = S.layout === 'split' ? (ch.idx === 0 ? 'Left channel' : 'Right channel') : 'Both channels';
+    }
+    $('#dev-change').hidden = !CH.dev.stream;
+    $('#dev-change').disabled = CH.dev.pending;
+    $('#mic-select').disabled = !support.mic || CH.mic.pending;
+    $('#mic-clean').disabled = !support.mic || CH.mic.pending;
+
+    const state = !t ? 'idle' : t.stopping ? 'saving' : t.paused ? 'paused' : 'rec';
+    deck.dataset.state = state;
+    $('#status').textContent = { idle: 'Ready', rec: 'Recording', paused: 'Paused', saving: 'Saving…' }[state];
+    $('#btn-record').disabled = !!t || S.starting || !anyLive();
+    $('#btn-pause').disabled = !t || t.stopping;
+    $('#btn-stop').disabled = !t || t.stopping;
+    $('#pause-label').textContent = t && t.paused ? 'Resume' : 'Pause';
+    $('#icon-pause').hidden = !!(t && t.paused);
+    $('#icon-resume').hidden = !(t && t.paused);
+
+    for (const input of document.querySelectorAll('input[name="format"], input[name="layout"]')) {
+      input.disabled = !!t || S.starting
+        || (input.value === 'wav' && !support.wav)
+        || (input.value === 'compressed' && !support.compressed);
+    }
+    $(`#fmt-${S.format}`).checked = true;
+    $(`#lay-${S.layout}`).checked = true;
+    const rate = S.ctx ? S.ctx.sampleRate : 48000;
+    const wavCh = S.layout === 'split' ? 2 : 1;
+    $('#fmt-wav-note').textContent = `${wavCh === 2 ? 'stereo' : 'mono'} · about ${Math.round((rate * wavCh * 2 * 60) / 1e5) / 10} MB/min`;
+    $('#fmt-compressed-note').textContent = support.compressed ? `${support.compressed.label} · about 1 MB/min` : 'not supported here';
+    const fmtLabel = (t ? t.format : S.format) === 'wav' ? `WAV · ${wavCh === 2 ? 'stereo' : 'mono'}` : (support.compressed ? support.compressed.label : '');
+    $('#take-info').textContent = `${fmtLabel} · ${(t ? t.layout : S.layout) === 'split' ? 'split L/R' : 'mixed'}`;
+
+    const msg = $('#deck-msg');
+    msg.dataset.kind = S.deckError ? 'error' : '';
+    msg.textContent = S.deckError || (
+      state === 'rec' ? 'Recording. You can switch either source on or off without stopping.'
+      : state === 'paused' ? 'Paused. Resume continues the same file.'
+      : state === 'saving' ? 'Finishing the file…'
+      : anyLive() ? 'Ready. Press Record when the call starts.'
+      : 'Switch on the microphone, device audio, or both, then press Record.');
+    renderClock();
+  }
+
+  function renderClock() {
+    const t = S.take;
+    const ms = t ? elapsedMs(t) : 0;
+    $('#clock').textContent = clock(ms);
+    $('#take-size').textContent = t ? bytes(t.format === 'wav' ? 44 + t.frames * t.channels * 2 : t.bytes) : '';
+    document.title = t ? `${t.paused ? 'Paused' : '● Rec'} ${clock(ms)} · Earshot` : 'Earshot';
+  }
+
+  // Peak meter: instant attack, 24 dB/s fall, 1.5 s peak hold, clip lamp holds 2 s.
+  function drawMeters(now) {
+    for (const ch of channels) {
+      let db = -Infinity;
+      if (ch.src) {
+        ch.an.getFloatTimeDomainData(ch.buf);
+        let p = 0;
+        for (let i = 0; i < ch.buf.length; i++) { const a = Math.abs(ch.buf[i]); if (a > p) p = a; }
+        if (p > 0) db = 20 * Math.log10(p);
+      }
+      const target = clamp((db + 60) / 60, 0, 1);
+      const dt = ch.lastT ? (now - ch.lastT) / 1000 : 0;
+      ch.lastT = now;
+      ch.level = target >= ch.level ? target : Math.max(target, ch.level - dt * 0.4);
+      if (ch.level >= ch.peak || now - ch.peakAt > 1500) { ch.peak = ch.level; ch.peakAt = now; }
+      if (db > -0.5) ch.clipAt = now;
+      ch.cover.style.transform = `scaleX(${1 - ch.level})`;
+      ch.peakEl.hidden = ch.peak < 0.01;
+      ch.peakEl.style.left = `${ch.peak * 100}%`;
+      if (now - ch.clipAt < 2000) ch.clipEl.dataset.on = ''; else delete ch.clipEl.dataset.on;
+    }
+    requestAnimationFrame(drawMeters);
+  }
+
+  // ---------- wiring ----------
+  for (const ch of channels) {
+    ch.sw.addEventListener('click', () => toggle(ch));
+    ch.volIn.value = ch.volume;
+    ch.volOut.textContent = `${ch.volume}%`;
+    ch.volIn.addEventListener('input', () => {
+      ch.volume = Number(ch.volIn.value);
+      ch.volOut.textContent = `${ch.volume}%`;
+      if (ch.vol) ch.vol.gain.setTargetAtTime(ch.volume / 100, S.ctx.currentTime, 0.02);
+      store.set('vol.' + ch.key, ch.volume);
+    });
+  }
+  $('#btn-record').addEventListener('click', startTake);
+  $('#btn-pause').addEventListener('click', togglePause);
+  $('#btn-stop').addEventListener('click', stopTake);
+  $('#dev-change').addEventListener('click', () => reacquire(CH.dev, acquireDevice));
+  $('#mic-select').addEventListener('change', (e) => {
+    store.set('micId', e.target.value);
+    reacquire(CH.mic, acquireMic);
+  });
+  const clean = $('#mic-clean');
+  clean.checked = store.get('clean', true) !== false;
+  clean.addEventListener('change', () => {
+    store.set('clean', clean.checked);
+    reacquire(CH.mic, acquireMic);
+  });
+  for (const input of document.querySelectorAll('input[name="format"]')) {
+    input.addEventListener('change', () => { S.format = input.value; store.set('format', S.format); render(); });
+  }
+  for (const input of document.querySelectorAll('input[name="layout"]')) {
+    input.addEventListener('change', () => { S.layout = input.value; store.set('layout', S.layout); route(); render(); });
+  }
+  if (md && md.addEventListener) md.addEventListener('devicechange', refreshMics);
+
+  // ---------- environment notes ----------
+  const banner = $('#env-banner');
+  if (!support.secure) {
+    banner.textContent = 'The browser blocks the microphone and sharing on this address. Open the page from an https:// address or from http://localhost instead.';
+    banner.hidden = false;
+  } else if (!support.audio || (!support.compressed && !support.wav)) {
+    banner.textContent = 'This browser can’t record audio. Use a current version of Chrome, Edge, Firefox or Safari.';
+    banner.hidden = false;
+  }
+  if (CH.dev.unavailable && support.secure) {
+    $('#dev-hint').textContent = 'This browser can’t share device audio. That needs Chrome or Edge on a computer; phones and tablets can’t do it. You can still record the microphone.';
+  } else if (!support.chromium && support.share) {
+    setMsg(CH.dev, 'Firefox and Safari share pictures without sound, so device audio needs Chrome or Edge.', 'warn');
+  }
+
+  refreshMics();
+  renderTakes();
+  render();
+})();
+</script>
+</body>
+</html>
