@@ -13,49 +13,50 @@ organismes culturels du **centre-ville de Sherbrooke**.
   jour (voir [Publication](#publication-github-pages)).
 - **Salles couvertes** : 7 à ce jour (voir [Sources disponibles](#sources-disponibles)).
 - **Sorties** : texte, CSV, JSON, et le feed JSON du site.
+- **Fonctionnement** : un backend Python collecte chaque jour la programmation
+  des partenaires dans un feed JSON, qu'un frontend statique affiche (voir
+  [Architecture](#architecture)).
 
 [![Page publique de Culture Centro : filtres par discipline, période et partenaire, bande « En ce moment » et liste datée](docs/img/apercu.png)](https://remtav.github.io/culturecentro/)
 
 <sub>Page publique (`web/index.html`) affichée avec son jeu de données de démonstration.</sub>
 
-Récupère la liste des **événements à venir** de la programmation de salles de
-spectacle et permet de les exporter en texte, CSV ou JSON. Chaque salle est
-une **source** (`culturecentro.sources`) qui n'implémente que l'extraction
-propre à son site ; tout le reste — client HTTP, analyse des dates françaises,
-repli JSON-LD, modèle d'événement, déduplication, exports et CLI — est fourni
-par un **cœur partagé** (`culturecentro.models`, `.http`, `.dates`, `.jsonld`,
-`.filtrage`, `.exporters`). Ajouter une salle se limite ainsi à écrire sa
-logique d'extraction et à l'inscrire au registre.
-
 ## Sommaire
 
-- [Culture Centro — agenda culturel du centre-ville de Sherbrooke](#culture-centro--agenda-culturel-du-centre-ville-de-sherbrooke)
-  - [Démarrage rapide](#démarrage-rapide)
-  - [Installation](#installation)
+- [Démarrage rapide](#démarrage-rapide)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
   - [Structure du projet](#structure-du-projet)
+- [Backend — collecte et agrégation (Python)](#backend--collecte-et-agrégation-python)
+  - [Installation](#installation)
   - [Sources disponibles](#sources-disponibles)
   - [Schéma d'événement](#schéma-dévénement)
   - [Agrégation — CLI unifiée](#agrégation--cli-unifiée)
     - [Options de la CLI unifiée](#options-de-la-cli-unifiée)
+    - [Salle indisponible : reprises, repli et alerte](#salle-indisponible--reprises-repli-et-alerte)
     - [Spectacle annoncé par deux partenaires](#spectacle-annoncé-par-deux-partenaires)
     - [Catégorie artistique automatique](#catégorie-artistique-automatique)
   - [Utilisation en ligne de commande](#utilisation-en-ligne-de-commande)
   - [Utilisation en bibliothèque](#utilisation-en-bibliothèque)
   - [Fonctionnement par salle](#fonctionnement-par-salle)
-  - [Site web (web/) et feed](#site-web-web-et-feed)
-    - [Feed et filtres](#feed-et-filtres)
-    - [Ajouter au calendrier](#ajouter-au-calendrier)
-    - [Partage et aperçu riche](#partage-et-aperçu-riche)
-    - [Variantes de design](#variantes-de-design)
-    - [Générer le feed et les pages de partage](#générer-le-feed-et-les-pages-de-partage)
-    - [Publication (GitHub Pages)](#publication-github-pages)
-  - [Développement](#développement)
-    - [Écrire un test de source](#écrire-un-test-de-source)
+  - [Générer le feed et les pages de partage](#générer-le-feed-et-les-pages-de-partage)
+- [Frontend — site web statique (web/)](#frontend--site-web-statique-web)
+  - [Feed et filtres](#feed-et-filtres)
+  - [Affichage et accessibilité](#affichage-et-accessibilité)
+  - [Lieux partenaires](#lieux-partenaires)
+  - [Ajouter au calendrier](#ajouter-au-calendrier)
+  - [Partage et aperçu riche](#partage-et-aperçu-riche)
+  - [Logo](#logo)
+  - [Variantes de design](#variantes-de-design)
+- [Déploiement et intégration continue](#déploiement-et-intégration-continue)
+  - [Publication (GitHub Pages)](#publication-github-pages)
   - [Intégration continue](#intégration-continue)
-  - [Dépannage](#dépannage)
-  - [Contribuer](#contribuer)
-  - [Documentation](#documentation)
-  - [Licence](#licence)
+- [Développement](#développement)
+  - [Écrire un test de source](#écrire-un-test-de-source)
+- [Dépannage](#dépannage)
+- [Contribuer](#contribuer)
+- [Documentation](#documentation)
+- [Licence](#licence)
 
 ## Démarrage rapide
 
@@ -97,31 +98,75 @@ Points de repère pour la suite :
   page ne peut pas lire `data/evenements.json` (blocage du navigateur) et
   affiche la démo.
 - **Ajouter une salle** : lire [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md).
-- **Comprendre l'architecture** : lire [`docs/architecture.md`](docs/architecture.md).
+- **Comprendre l'architecture** : lire [Tech stack](#tech-stack) et
+  [Architecture](#architecture), puis [`docs/architecture.md`](docs/architecture.md).
 
 Les tests, le lint et le typage tournent **hors-ligne** : aucune requête vers
 les sites des salles n'est faite en test (les réponses HTTP sont figées dans des
 fixtures). On peut donc développer sans accès réseau ; seule l'exécution réelle
 de la CLI (`culturecentro lister`) contacte les sites.
 
-## Installation
+## Tech stack
 
-```bash
-pip install -e .          # ou : pip install -e ".[dev]" pour les outils de dév
+| Couche | Technologies |
+| --- | --- |
+| **Backend** (collecte, agrégation) | Python ≥ 3.10 (testé sur 3.10, 3.11 et 3.12) ; [`requests`](https://requests.readthedocs.io/) (session HTTP, reprises via `urllib3.Retry`) ; [`beautifulsoup4`](https://www.crummy.com/software/BeautifulSoup/) (analyse HTML, `html.parser`) ; bibliothèque standard (`dataclasses`, `argparse`, `zoneinfo`, `csv`, `json`, `logging`). Ni base de données, ni framework web. |
+| **Données** | Un fichier JSON statique, `web/data/evenements.json` : le feed, seul contrat entre backend et frontend (voir [Schéma d'événement](#schéma-dévénement)). |
+| **Frontend** | Une page HTML autonome, `web/index.html` : HTML, CSS et JavaScript natifs dans un seul fichier, sans framework, sans dépendance JavaScript ni étape de build. Polices [Google Fonts](https://fonts.google.com/) (Bricolage Grotesque, Instrument Sans). Plan des lieux en SVG intégré, tracé d'après OpenStreetMap. API du navigateur : Web Share, Clipboard, `IntersectionObserver`, requêtes de conteneur CSS, `localStorage` (préférences d'affichage). |
+| **Pages de partage** | Pages HTML statiques générées en Python (`culturecentro.partage`), avec balises Open Graph. |
+| **Hébergement** | [GitHub Pages](https://pages.github.com/) : site entièrement statique, sans serveur applicatif. |
+| **CI/CD** | GitHub Actions : `tests.yml` (qualité, tests, couverture) et `publish.yml` (cron quotidien : collecte, pages de partage, déploiement). |
+| **Qualité** | pytest, coverage (seuil 85 %), ruff (lint + format), mypy en mode strict, pre-commit. |
+| **Packaging** | setuptools, `pyproject.toml`, layout `src/`, commande `culturecentro`. |
+
+## Architecture
+
+Culture Centro n'a **pas de serveur applicatif** : tout le calcul se fait au
+moment de la publication, et le site public n'est fait que de fichiers
+statiques.
+
+```mermaid
+flowchart LR
+    sites["Sites des partenaires<br/>(HTML, AJAX, JSON-LD)"]
+    subgraph backend["Backend Python : culturecentro (GitHub Actions)"]
+        sources["Sources<br/>une par salle"]
+        agreger["Agrégation<br/>lieux, centre-ville,<br/>catégorie, doublons"]
+        pages["Pages de partage<br/>(Open Graph)"]
+    end
+    feed[("Feed JSON<br/>web/data/evenements.json")]
+    subgraph frontend["Frontend statique : web/ (GitHub Pages)"]
+        index["Page publique<br/>index.html"]
+        variantes["Variantes de design<br/>variantes/"]
+    end
+    sites --> sources --> agreger --> feed
+    feed --> pages
+    feed --> index
+    feed --> variantes
 ```
 
-Le paquet `culturecentro` est installé (layout `src/`). Dépendances :
-`requests` et `beautifulsoup4`. Python **3.10 ou plus récent** est requis.
+1. **Collecte (backend)** : chaque jour, GitHub Actions lance la CLI Python.
+   Chaque source télécharge et analyse la page de programmation d'un
+   partenaire ; l'agrégation ramène les lieux à leur nom canonique, écarte ce
+   qui est hors du centre-ville, classe chaque événement par discipline,
+   fusionne les annonces en double et trie le tout.
+2. **Feed** : le résultat est écrit dans un seul fichier JSON,
+   `web/data/evenements.json` (voir [Schéma d'événement](#schéma-dévénement)).
+   C'est la seule interface entre le backend et le frontend.
+3. **Pages de partage** : le backend écrit aussi une page HTML statique par
+   événement, dont les balises Open Graph donnent un aperçu riche aux liens
+   partagés.
+4. **Affichage (frontend)** : `web/index.html` lit le feed dans le navigateur
+   et fait le reste côté client : filtres, recherche, fil par mois, ajout au
+   calendrier, partage.
+5. **Hébergement** : le dossier `web/` est déployé tel quel sur GitHub Pages
+   (voir [Publication](#publication-github-pages)).
 
-L'installation fournit la commande `culturecentro` ; `python -m culturecentro`
-fait la même chose sans dépendre du `PATH`. Pour n'utiliser que la CLI, sans
-cloner le dépôt :
+Conséquences : backend et frontend évoluent indépendamment tant que le schéma
+du feed est respecté ; le site reste en ligne quand la collecte échoue (le feed
+précédent est republié) ; il n'y a ni base de données ni compte utilisateur.
+Le détail des modules Python est dans [`docs/architecture.md`](docs/architecture.md).
 
-```bash
-pip install "git+https://github.com/remtav/culturecentro.git"
-```
-
-## Structure du projet
+### Structure du projet
 
 ```
 culturecentro/
@@ -186,7 +231,37 @@ rassemble toutes les salles, et les `exporters` produisent la sortie (texte,
 CSV, JSON, ou le feed JSON du site). Voir [`docs/architecture.md`](docs/architecture.md)
 pour le schéma détaillé.
 
-## Sources disponibles
+## Backend — collecte et agrégation (Python)
+
+Le backend est le paquet Python `culturecentro`
+([`src/culturecentro/`](src/culturecentro/)). Il récupère la liste des
+**événements à venir** de la programmation de salles de spectacle et permet de
+les exporter en texte, CSV ou JSON. Chaque salle est
+une **source** (`culturecentro.sources`) qui n'implémente que l'extraction
+propre à son site ; tout le reste — client HTTP, analyse des dates françaises,
+repli JSON-LD, modèle d'événement, déduplication, exports et CLI — est fourni
+par un **cœur partagé** (`culturecentro.models`, `.http`, `.dates`, `.jsonld`,
+`.filtrage`, `.exporters`). Ajouter une salle se limite ainsi à écrire sa
+logique d'extraction et à l'inscrire au registre.
+
+### Installation
+
+```bash
+pip install -e .          # ou : pip install -e ".[dev]" pour les outils de dév
+```
+
+Le paquet `culturecentro` est installé (layout `src/`). Dépendances :
+`requests` et `beautifulsoup4`. Python **3.10 ou plus récent** est requis.
+
+L'installation fournit la commande `culturecentro` ; `python -m culturecentro`
+fait la même chose sans dépendre du `PATH`. Pour n'utiliser que la CLI, sans
+cloner le dépôt :
+
+```bash
+pip install "git+https://github.com/remtav/culturecentro.git"
+```
+
+### Sources disponibles
 
 | Salle | Slug (`--source`) | Module | Source | Catégorie par défaut |
 | --- | --- | --- | --- | --- |
@@ -211,7 +286,7 @@ Les autres partenaires du centre-ville, et l'état de leur intégration, sont
 suivis dans [`docs/partenaires.md`](docs/partenaires.md) : c'est la feuille de
 route des prochaines sources.
 
-## Schéma d'événement
+### Schéma d'événement
 
 Toutes les sources produisent le **même schéma** d'événement (colonnes
 `titre`, `sous_titre`, `date_debut`, `date_fin`, `lien`, `image`, `lieu`,
@@ -255,7 +330,7 @@ clé `id` n'est pas un champ d'`Evenement` : elle est ajoutée au feed par
 }
 ```
 
-## Agrégation — CLI unifiée
+### Agrégation — CLI unifiée
 
 La commande `culturecentro` (ou `python -m culturecentro`) agrège toutes les
 salles enregistrées en une seule liste, dédupliquée et triée par date. Le
@@ -281,7 +356,7 @@ culturecentro lister --format json --tentatives 3 --attente 120 \
 python -m culturecentro lister            # équivalent sans le script installé
 ```
 
-### Options de la CLI unifiée
+#### Options de la CLI unifiée
 
 `culturecentro` a trois sous-commandes : `sources` (liste des salles, sans
 option), `lister` et `pages`.
@@ -310,7 +385,7 @@ qui ne commence pas par `http://` ou `https://` (`pages`). La CLI propre à
 chaque salle (voir [Utilisation en ligne de commande](#utilisation-en-ligne-de-commande))
 accepte en plus `--url`, pour analyser une autre page que la page officielle.
 
-### Salle indisponible : reprises, repli et alerte
+#### Salle indisponible : reprises, repli et alerte
 
 Le site d'un partenaire peut être momentanément hors ligne (connexion
 refusée, délai dépassé) ou avoir changé de structure. Dans ce cas :
@@ -330,7 +405,7 @@ refusée, délai dépassé) ou avoir changé de structure. Dans ce cas :
 En publication, le workflow utilise les trois (voir
 [Publication](#publication-github-pages)).
 
-### Spectacle annoncé par deux partenaires
+#### Spectacle annoncé par deux partenaires
 
 Un même spectacle figure parfois sur la page de deux partenaires : celui qui
 le présente et celui qui l'accueille (le Théâtre Granada annonce les
@@ -357,7 +432,7 @@ manquent. Chaque fusion est journalisée (`INFO`). Sur la page web, le filtre
 par partenaire retient aussi le lieu : l'événement fusionné reste visible sous
 les deux partenaires.
 
-### Catégorie artistique automatique
+#### Catégorie artistique automatique
 
 La catégorie (`categorie`) n'est **pas** fixée par partenaire : elle est
 déterminée pour chaque événement, dans cet ordre (`culturecentro.categories`) :
@@ -398,7 +473,7 @@ Les clés de catégorie et leur libellé affiché
 | `jeunesse` | Jeunesse |
 | `festival` | Festivals |
 
-## Utilisation en ligne de commande
+### Utilisation en ligne de commande
 
 Cette section porte sur la CLI **propre à chaque salle**, utile pour mettre au
 point ou diagnostiquer une source isolément. Elle déduplique, filtre (à venir)
@@ -426,7 +501,7 @@ Options principales :
 | `--timeout SECONDES` | Délai réseau (défaut : 20). |
 | `-v`, `--verbose` | Journalisation niveau DEBUG. |
 
-## Utilisation en bibliothèque
+### Utilisation en bibliothèque
 
 ```python
 from culturecentro.sources.theatre_granada import (
@@ -491,7 +566,7 @@ renvoient toujours la chaîne produite, et l'écrivent en plus dans le fichier
 s'il est fourni. Les fonctions `lister_evenements_a_venir`, `exporter_json` et
 `exporter_csv` sont aussi importables depuis chaque module de source.
 
-## Fonctionnement par salle
+### Fonctionnement par salle
 
 Chaque salle a sa **fiche technique** dans [`docs/sources/`](docs/sources/) :
 page analysée, technique d'extraction (AJAX, billetterie, calendrier…), replis
@@ -512,37 +587,35 @@ python -m culturecentro.sources.theatre_granada --format json
 | Sporobole | Liste AJAX du thème (`standish_select_refresh`) : seules les diffusions, page après page, tant qu'elles sont en cours ou à venir. Repli : JSON-LD. | [`sporobole.md`](docs/sources/sporobole.md) |
 | Le Grand-Espace | Pages grand public et jeune public de l'édition (saison) en cours (`?edition=2026-2027`) ; spectacles « [Terminé] » ignorés. Repli : JSON-LD. | [`le-grand-espace.md`](docs/sources/le-grand-espace.md) |
 
-## Site web (`web/`) et feed
+### Générer le feed et les pages de partage
+
+On génère le feed, puis les pages de partage, avec la CLI :
+
+```bash
+python -m culturecentro lister --format json -o web/data/evenements.json
+python -m culturecentro pages --url-base https://remtav.github.io/culturecentro/
+```
+
+`pages` lit le feed (`--feed`, défaut `web/data/evenements.json`), y ajoute
+l'identifiant `id` de chaque événement daté, puis écrit `web/e/<id>/index.html`
+et `web/404.html` (`--dossier`, défaut `web`), en supprimant les pages du
+déploiement précédent. `--url-base` est l'adresse publique du site : les
+balises Open Graph exigent des URL absolues. Ces fichiers générés ne sont pas
+versionnés. Sans pages de partage (démo, feed sans `id`), le bouton partage
+directement le lien `?e=<id>`, sans aperçu riche.
+
+## Frontend — site web statique (`web/`)
+
+Le frontend est un site statique, servi tel quel par GitHub Pages : il n'y a
+aucune étape de build, et il suffit d'un navigateur pour l'ouvrir. Il ne
+connaît du backend que le feed JSON.
 
 Le dossier [`web/`](web/) contient la **page publique** (`index.html`,
-autonome, sans dépendance) : agenda filtrable par discipline, période et lieu,
-fil chronologique par mois, bande « En ce moment », et une flèche « Revenir en
+autonome : HTML, CSS et JavaScript natifs dans un seul fichier, sans
+framework ni dépendance JavaScript ; seules les polices viennent de Google
+Fonts) : agenda filtrable par discipline, période et lieu, fil chronologique
+par mois, bande « En ce moment », et une flèche « Revenir en
 haut » qui apparaît en bas à droite dès que l'on descend dans la liste.
-
-La section **Lieux partenaires** est un plan du centre-ville (tracé d'après
-OpenStreetMap, comme celui de la variante 4) : chaque partenaire y a un repère
-numéroté, de sa couleur, posé à son adresse géocodée (`lat` / `lon` dans
-`PARTNERS`). La légende, à côté du plan (dessous sur mobile), donne pour chaque
-numéro le nom du lieu, son type, le lien vers son site et un lien **Google
-Maps** ; les numéros vont du nord au sud. Survoler un lieu, dans la légende ou
-sur le plan, le met en évidence et affiche son nom sur le plan ; un clic sur le
-repère ou sur la tuile de la légende ouvre le site du partenaire. Le lien Google
-Maps est une simple URL de recherche (`https://www.google.com/maps/search/?api=1&query=…`,
-sans clé ni script) sur « nom du lieu, Sherbrooke, QC », qui ouvre la fiche du
-lieu (adresse, horaires, itinéraire).
-
-**Logo.** Le logo actuel (deux étincelles sur tuile sombre) est **provisoire**,
-en attendant le logo officiel. Il tient dans un seul fichier,
-[`web/logo.svg`](web/logo.svg), qu'utilisent l'en-tête, le pied de page et
-l'icône d'onglet : pour changer de logo, remplacer ce fichier, puis refaire
-`web/apple-touch-icon.png` (écran d'accueil iOS, 180 × 180) et l'image
-d'aperçu `web/img/partage.png`, qui le reprennent.
-
-**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
-datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
-téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
-reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
-conteneur), pas celle de l'écran.
 
 ### Feed et filtres
 
@@ -555,6 +628,33 @@ s'il diffère, le lieu. Les pastilles de discipline reprennent la `categorie` du
 « Humour » et « Jeunesse »). Pour voir le vrai feed en local, servir `web/` en
 HTTP plutôt que d'ouvrir le fichier depuis le disque (voir
 [Démarrage rapide](#démarrage-rapide)).
+
+### Affichage et accessibilité
+
+**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
+datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
+téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
+reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
+conteneur), pas celle de l'écran.
+
+**Thème et taille du texte.** Les boutons en haut à droite agrandissent ou
+réduisent le texte (de 90 % à 150 %) et font alterner le thème : selon
+l'appareil, clair ou sombre. Ces deux préférences sont mémorisées dans le
+navigateur (`localStorage`).
+
+### Lieux partenaires
+
+La section **Lieux partenaires** est un plan du centre-ville (tracé d'après
+OpenStreetMap, comme celui de la variante 4) : chaque partenaire y a un repère
+numéroté, de sa couleur, posé à son adresse géocodée (`lat` / `lon` dans
+`PARTNERS`). La légende, à côté du plan (dessous sur mobile), donne pour chaque
+numéro le nom du lieu, son type, le lien vers son site et un lien **Google
+Maps** ; les numéros vont du nord au sud. Survoler un lieu, dans la légende ou
+sur le plan, le met en évidence et affiche son nom sur le plan ; un clic sur le
+repère ou sur la tuile de la légende ouvre le site du partenaire. Le lien Google
+Maps est une simple URL de recherche (`https://www.google.com/maps/search/?api=1&query=…`,
+sans clé ni script) sur « nom du lieu, Sherbrooke, QC », qui ouvre la fiche du
+lieu (adresse, horaires, itinéraire).
 
 ### Ajouter au calendrier
 
@@ -584,6 +684,15 @@ prend l'image par défaut [`web/img/partage.png`](web/img/partage.png). Si
 l'événement n'est plus au feed (passé, renommé par le partenaire), la page
 404 renvoie vers l'agenda, où un bandeau le signale.
 
+### Logo
+
+**Logo.** Le logo actuel (deux étincelles sur tuile sombre) est **provisoire**,
+en attendant le logo officiel. Il tient dans un seul fichier,
+[`web/logo.svg`](web/logo.svg), qu'utilisent l'en-tête, le pied de page et
+l'icône d'onglet : pour changer de logo, remplacer ce fichier, puis refaire
+`web/apple-touch-icon.png` (écran d'accueil iOS, 180 × 180) et l'image
+d'aperçu `web/img/partage.png`, qui le reprennent.
+
 ### Variantes de design
 
 Le sous-dossier [`web/variantes/`](web/variantes/) propose **cinq variantes de
@@ -596,22 +705,10 @@ jours d'écart) ; sans feed, elles retombent sur un jeu de démonstration. Le
 plan de la variante 4 est tracé d'après OpenStreetMap et les lieux y sont
 placés à leur adresse géocodée.
 
-### Générer le feed et les pages de partage
+## Déploiement et intégration continue
 
-On génère le feed, puis les pages de partage, avec la CLI :
-
-```bash
-python -m culturecentro lister --format json -o web/data/evenements.json
-python -m culturecentro pages --url-base https://remtav.github.io/culturecentro/
-```
-
-`pages` lit le feed (`--feed`, défaut `web/data/evenements.json`), y ajoute
-l'identifiant `id` de chaque événement daté, puis écrit `web/e/<id>/index.html`
-et `web/404.html` (`--dossier`, défaut `web`), en supprimant les pages du
-déploiement précédent. `--url-base` est l'adresse publique du site : les
-balises Open Graph exigent des URL absolues. Ces fichiers générés ne sont pas
-versionnés. Sans pages de partage (démo, feed sans `id`), le bouton partage
-directement le lien `?e=<id>`, sans aperçu riche.
+Deux workflows GitHub Actions : l'un publie le site, l'autre vérifie chaque
+changement de code.
 
 ### Publication (GitHub Pages)
 
@@ -643,6 +740,21 @@ Précisions :
   notifications du workflow), et le résumé du lancement liste les salles en
   cause.
 - **Site publié** : <https://remtav.github.io/culturecentro/>.
+
+### Intégration continue
+
+GitHub Actions exécute, sur chaque `push` et *pull request*
+(voir [`.github/workflows/tests.yml`](.github/workflows/tests.yml)) :
+
+- **qualité** — `ruff check`, `ruff format --check`, `mypy` (mode strict) ;
+- **tests** — `pytest` sur Python 3.10, 3.11 et 3.12 ;
+- **couverture** — mesure, seuil minimal (85 %) et régénération du badge.
+
+Le rapport de couverture est ajouté au résumé de chaque exécution. Le badge
+`coverage.svg` n'est recommité (par `github-actions[bot]`, avec `[skip ci]`)
+que sur un `push` vers la branche par défaut, et seulement s'il a changé. La
+publication du site est un workflow distinct (voir
+[Publication](#publication-github-pages)).
 
 ## Développement
 
@@ -685,21 +797,6 @@ Les tests de sources ([`tests/sources/`](tests/sources/)) ne touchent **jamais**
 le réseau : ils rejouent des réponses HTTP figées (fixtures HTML/JSON) pour
 vérifier l'extraction. Pour brancher une nouvelle salle et son test, suivre le
 guide [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md).
-
-## Intégration continue
-
-GitHub Actions exécute, sur chaque `push` et *pull request*
-(voir [`.github/workflows/tests.yml`](.github/workflows/tests.yml)) :
-
-- **qualité** — `ruff check`, `ruff format --check`, `mypy` (mode strict) ;
-- **tests** — `pytest` sur Python 3.10, 3.11 et 3.12 ;
-- **couverture** — mesure, seuil minimal (85 %) et régénération du badge.
-
-Le rapport de couverture est ajouté au résumé de chaque exécution. Le badge
-`coverage.svg` n'est recommité (par `github-actions[bot]`, avec `[skip ci]`)
-que sur un `push` vers la branche par défaut, et seulement s'il a changé. La
-publication du site est un workflow distinct (voir
-[Publication](#publication-github-pages)).
 
 ## Dépannage
 
