@@ -96,7 +96,18 @@ SOURCES = {source.slug: source for source in (TheatreGranada(), LaPetiteBoiteNoi
 Créez `tests/sources/test_ma_salle.py` avec un fragment HTML figé (hors-ligne)
 et vérifiez l'extraction. Inspirez-vous des tests des salles existantes.
 
-## 4. Vérifier
+## 4. Documenter la source
+
+Créez sa fiche, `docs/sources/<slug>.md`, sur le modèle donné dans
+[`sources/README.md`](sources/README.md) (page analysée, technique
+d'extraction, replis), puis ajoutez la salle :
+
+- au tableau de [`sources/README.md`](sources/README.md) ;
+- aux tableaux « Sources disponibles » et « Fonctionnement par salle » du
+  [README](../README.md) ;
+- à [`partenaires.md`](partenaires.md), en passant son statut à « ✅ Implémenté ».
+
+## 5. Vérifier
 
 ```bash
 ruff check . && ruff format --check . && mypy && pytest

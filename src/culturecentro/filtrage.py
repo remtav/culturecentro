@@ -13,6 +13,7 @@ import re
 from collections.abc import Sequence
 from dataclasses import replace
 from datetime import datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from culturecentro.lieux import cle
 from culturecentro.models import Evenement
@@ -25,14 +26,25 @@ _MOTS_VIDES = frozenset(
 )
 
 
-def minuit_utc() -> datetime:
-    """Minuit du jour courant en UTC (seuil « jour courant ou futur »)."""
-    return datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+#: Fuseau des salles. Les dates « naïves » des sources sont des heures locales.
+FUSEAU = ZoneInfo("America/Toronto")
+
+
+def minuit_local(maintenant: datetime | None = None) -> datetime:
+    """Minuit du jour courant à Sherbrooke (seuil « jour courant ou futur »).
+
+    Le seuil suit le fuseau des salles, comme les dates des sources : en UTC,
+    le soir (dès 20 h en heure d'été), le jour serait déjà le lendemain et les
+    spectacles du soir même seraient écartés. ``maintenant`` (avec fuseau)
+    remplace l'heure courante, pour les tests.
+    """
+    local = (maintenant or datetime.now(FUSEAU)).astimezone(FUSEAU)
+    return local.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 def _en_aware(date: datetime) -> datetime:
-    """Date « naïve » supposée en UTC, pour permettre les comparaisons."""
-    return date if date.tzinfo is not None else date.replace(tzinfo=timezone.utc)
+    """Date « naïve » supposée en heure locale (:data:`FUSEAU`), pour les comparaisons."""
+    return date if date.tzinfo is not None else date.replace(tzinfo=FUSEAU)
 
 
 def _mots(titre: str) -> frozenset[str]:

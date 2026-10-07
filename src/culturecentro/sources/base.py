@@ -13,7 +13,7 @@ from datetime import datetime
 
 import requests
 
-from culturecentro.filtrage import finaliser, minuit_utc
+from culturecentro.filtrage import finaliser, minuit_local
 from culturecentro.http import creer_session, telecharger
 from culturecentro.models import Evenement
 
@@ -66,7 +66,8 @@ class Source(ABC):
         Args:
             url: page à analyser (défaut : :attr:`url_defaut`).
             a_partir_de: seuil temporel ; par défaut minuit du jour courant
-                (UTC). Les événements sans date connue sont conservés.
+                (heure de Sherbrooke). Les événements sans date connue sont
+                conservés.
             timeout: délai d'attente réseau, en secondes.
 
         Raises:
@@ -75,7 +76,7 @@ class Source(ABC):
         """
         url = url or self.url_defaut
         if a_partir_de is None:
-            a_partir_de = minuit_utc()
+            a_partir_de = minuit_local()
 
         session = creer_session()
         try:

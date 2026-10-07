@@ -31,7 +31,7 @@ exporters          web/data/evenements.json  ──► web/index.html (GitHub Pa
 | `dates.py` | Analyse ISO 8601 et dates françaises : date simple, heure, listes de dates et plages (« du 7 au 17 octobre 2026 », « jusqu'en mai »). |
 | `jsonld.py` | Extraction schema.org `Event` (repli commun). |
 | `scraping.py` | `attribut()`, `url_image()`, `premiere_image()` : accès normalisé aux attributs HTML et aux images (lazy, `srcset`, fonds CSS). |
-| `filtrage.py` | `finaliser()` (dédup/filtre/tri), `fusionner_doublons()` (un spectacle annoncé par deux partenaires) et `minuit_utc()`. |
+| `filtrage.py` | `finaliser()` (dédup/filtre/tri), `fusionner_doublons()` (un spectacle annoncé par deux partenaires) et `minuit_local()` (seuil « à venir » : minuit du jour à Sherbrooke, `America/Toronto`, fuseau des dates naïves des sources). |
 | `categories.py` | Catégorie artistique automatique : libellés de taxonomie, mots-clés, fiche de l'événement (`Categorisation`). |
 | `lieux.py` | `normaliser_lieu()` (noms canoniques, alias), `lieu_connu()` et `est_centre_ville()` (périmètre du centre-ville : lieux connus, rues, marqueurs hors périmètre). |
 | `exporters.py` | Exports texte / CSV / JSON. |
