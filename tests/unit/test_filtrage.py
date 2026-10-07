@@ -5,7 +5,13 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from culturecentro.filtrage import finaliser, fusionner, fusionner_doublons, minuit_utc
+from culturecentro.filtrage import (
+    FUSEAU,
+    finaliser,
+    fusionner,
+    fusionner_doublons,
+    minuit_local,
+)
 from culturecentro.models import Evenement
 
 
@@ -39,12 +45,24 @@ class TestFinaliser(unittest.TestCase):
 
     def test_seuil_est_minuit_jour_courant(self):
         # Un événement plus tôt aujourd'hui est conservé ; hier est exclu.
-        maintenant = datetime.now(timezone.utc)
+        # Dates naïves en heure locale, comme celles des sources.
+        maintenant = datetime.now(FUSEAU).replace(tzinfo=None)
         tot_aujourdhui = maintenant.replace(hour=0, minute=1, second=0, microsecond=0)
         hier = maintenant - timedelta(days=1)
         brut = [Evenement("Tôt aujourd'hui", tot_aujourdhui), Evenement("Hier", hier)]
-        resultat = finaliser(brut, minuit_utc())
+        resultat = finaliser(brut, minuit_local())
         self.assertEqual([e.titre for e in resultat], ["Tôt aujourd'hui"])
+
+    def test_spectacle_du_soir_conserve_apres_minuit_utc(self):
+        # 21 h à Sherbrooke le 5 octobre = 1 h UTC le 6 : le seuil reste le
+        # 5 octobre (heure locale), donc le spectacle de 21 h 30 est conservé.
+        seuil = minuit_local(datetime(2026, 10, 6, 1, 0, tzinfo=timezone.utc))
+        brut = [
+            Evenement("Ce soir", datetime(2026, 10, 5, 21, 30)),
+            Evenement("Hier soir", datetime(2026, 10, 4, 21, 30)),
+        ]
+        resultat = finaliser(brut, seuil)
+        self.assertEqual([e.titre for e in resultat], ["Ce soir"])
 
 
 GRANADA, PBN = "Théâtre Granada", "La Petite Boîte Noire"
@@ -181,11 +199,23 @@ class TestFusionnerDoublons(unittest.TestCase):
         self.assertEqual([e.titre for e in resultat], ["Kaïn : 25 ans", "Autre"])
 
 
-class TestMinuitUtc(unittest.TestCase):
-    def test_minuit_utc(self):
-        m = minuit_utc()
+class TestMinuitLocal(unittest.TestCase):
+    def test_minuit_local(self):
+        m = minuit_local()
         self.assertEqual((m.hour, m.minute, m.second, m.microsecond), (0, 0, 0, 0))
-        self.assertEqual(m.tzinfo, timezone.utc)
+        self.assertEqual(m.tzinfo, FUSEAU)
+
+    def test_jour_local_et_non_utc(self):
+        # 1 h UTC le 6 octobre : il est encore le 5 octobre à Sherbrooke (UTC−4).
+        m = minuit_local(datetime(2026, 10, 6, 1, 0, tzinfo=timezone.utc))
+        self.assertEqual(m, datetime(2026, 10, 5, tzinfo=FUSEAU))
+        self.assertEqual(m.utcoffset(), timedelta(hours=-4))
+
+    def test_heure_normale(self):
+        # En hiver (UTC−5), 4 h UTC le 15 janvier est encore le 14 à Sherbrooke.
+        m = minuit_local(datetime(2027, 1, 15, 4, 0, tzinfo=timezone.utc))
+        self.assertEqual(m, datetime(2027, 1, 14, tzinfo=FUSEAU))
+        self.assertEqual(m.utcoffset(), timedelta(hours=-5))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,22 @@
-# Événements à venir — salles de spectacle
+# Culture Centro — agenda culturel du centre-ville de Sherbrooke
 
 [![Tests](https://github.com/remtav/culturecentro/actions/workflows/tests.yml/badge.svg)](https://github.com/remtav/culturecentro/actions/workflows/tests.yml)
 ![Couverture](coverage.svg)
+[![Publication](https://github.com/remtav/culturecentro/actions/workflows/publish.yml/badge.svg)](https://github.com/remtav/culturecentro/actions/workflows/publish.yml)
+![Python ≥ 3.10](https://img.shields.io/badge/python-%E2%89%A5%203.10-blue)
+[![Licence MIT](https://img.shields.io/badge/licence-MIT-green)](LICENSE)
+
+**Culture Centro** réunit en un seul agenda la programmation des salles et
+organismes culturels du **centre-ville de Sherbrooke**.
+
+- **Site public** : <https://remtav.github.io/culturecentro/>, régénéré chaque
+  jour (voir [Publication](#publication-github-pages)).
+- **Salles couvertes** : 7 à ce jour (voir [Sources disponibles](#sources-disponibles)).
+- **Sorties** : texte, CSV, JSON, et le feed JSON du site.
+
+[![Page publique de Culture Centro : filtres par discipline, période et partenaire, bande « En ce moment » et liste datée](docs/img/apercu.png)](https://remtav.github.io/culturecentro/)
+
+<sub>Page publique (`web/index.html`) affichée avec son jeu de données de démonstration.</sub>
 
 Récupère la liste des **événements à venir** de la programmation de salles de
 spectacle et permet de les exporter en texte, CSV ou JSON. Chaque salle est
@@ -14,25 +29,31 @@ logique d'extraction et à l'inscrire au registre.
 
 ## Sommaire
 
-- [Événements à venir — salles de spectacle](#événements-à-venir--salles-de-spectacle)
+- [Culture Centro — agenda culturel du centre-ville de Sherbrooke](#culture-centro--agenda-culturel-du-centre-ville-de-sherbrooke)
   - [Démarrage rapide](#démarrage-rapide)
+  - [Installation](#installation)
   - [Structure du projet](#structure-du-projet)
   - [Sources disponibles](#sources-disponibles)
   - [Schéma d'événement](#schéma-dévénement)
   - [Agrégation — CLI unifiée](#agrégation--cli-unifiée)
-  - [Installation](#installation)
+    - [Options de la CLI unifiée](#options-de-la-cli-unifiée)
+    - [Spectacle annoncé par deux partenaires](#spectacle-annoncé-par-deux-partenaires)
+    - [Catégorie artistique automatique](#catégorie-artistique-automatique)
   - [Utilisation en ligne de commande](#utilisation-en-ligne-de-commande)
   - [Utilisation en bibliothèque](#utilisation-en-bibliothèque)
-  - [Théâtre Granada](#théâtre-granada)
-  - [La Petite Boîte Noire](#la-petite-boîte-noire)
-  - [Maison des arts de la parole](#maison-des-arts-de-la-parole)
-  - [Le Tremplin 16-30](#le-tremplin-16-30)
-  - [Musée des beaux-arts de Sherbrooke (MBAS)](#musée-des-beaux-arts-de-sherbrooke-mbas)
-  - [Sporobole](#sporobole)
-  - [Le Grand-Espace](#le-grand-espace)
+  - [Fonctionnement par salle](#fonctionnement-par-salle)
   - [Site web (web/) et feed](#site-web-web-et-feed)
+    - [Feed et filtres](#feed-et-filtres)
+    - [Ajouter au calendrier](#ajouter-au-calendrier)
+    - [Partage et aperçu riche](#partage-et-aperçu-riche)
+    - [Variantes de design](#variantes-de-design)
+    - [Générer le feed et les pages de partage](#générer-le-feed-et-les-pages-de-partage)
+    - [Publication (GitHub Pages)](#publication-github-pages)
   - [Développement](#développement)
+    - [Écrire un test de source](#écrire-un-test-de-source)
   - [Intégration continue](#intégration-continue)
+  - [Dépannage](#dépannage)
+  - [Contribuer](#contribuer)
   - [Documentation](#documentation)
   - [Licence](#licence)
 
@@ -60,12 +81,21 @@ python -m pytest
 culturecentro lister
 ```
 
+> **Astuce** : `culturecentro lister --sans-fiches` est nettement plus rapide
+> (il ne lit pas la fiche de chaque événement pour le classer) ; ajouter `-v`
+> pour suivre le détail des requêtes et des replis.
+
 Points de repère pour la suite :
 
 - **Explorer** les salles disponibles : `culturecentro sources`.
 - **Générer** le feed du site web : `python -m culturecentro lister --format json -o web/data/evenements.json`.
 - **Ouvrir** la page publique en local : ouvrir [`web/index.html`](web/index.html)
   dans un navigateur (elle utilise un jeu de démonstration si le feed est absent).
+- **Voir la page avec le vrai feed** : servir `web/` en HTTP,
+  `python -m http.server --directory web 8000`, puis ouvrir
+  <http://localhost:8000>. Ouverte directement depuis le disque (`file://`), la
+  page ne peut pas lire `data/evenements.json` (blocage du navigateur) et
+  affiche la démo.
 - **Ajouter une salle** : lire [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md).
 - **Comprendre l'architecture** : lire [`docs/architecture.md`](docs/architecture.md).
 
@@ -74,11 +104,30 @@ les sites des salles n'est faite en test (les réponses HTTP sont figées dans d
 fixtures). On peut donc développer sans accès réseau ; seule l'exécution réelle
 de la CLI (`culturecentro lister`) contacte les sites.
 
+## Installation
+
+```bash
+pip install -e .          # ou : pip install -e ".[dev]" pour les outils de dév
+```
+
+Le paquet `culturecentro` est installé (layout `src/`). Dépendances :
+`requests` et `beautifulsoup4`. Python **3.10 ou plus récent** est requis.
+
+L'installation fournit la commande `culturecentro` ; `python -m culturecentro`
+fait la même chose sans dépendre du `PATH`. Pour n'utiliser que la CLI, sans
+cloner le dépôt :
+
+```bash
+pip install "git+https://github.com/remtav/culturecentro.git"
+```
+
 ## Structure du projet
 
 ```
 culturecentro/
 ├── src/culturecentro/          # le paquet Python (layout « src/ »)
+│   ├── __init__.py             # version du paquet (__version__)
+│   ├── __main__.py             # point d'entrée « python -m culturecentro »
 │   ├── models.py               # Evenement : le schéma unique d'un événement
 │   ├── http.py                 # session requests + telecharger() (en-têtes, reprises)
 │   ├── dates.py                # analyse des dates en français (« Mardi 29 septembre 2026 »)
@@ -110,10 +159,24 @@ culturecentro/
 │   ├── apple-touch-icon.png    # logo pour l'écran d'accueil iOS
 │   ├── img/partage.png         # image d'aperçu par défaut (1200×630)
 │   ├── data/evenements.json
+│   ├── variantes/              # cinq maquettes de design + page de comparaison
+│   ├── 404.html                # page « événement introuvable » (générée au déploiement)
 │   └── e/<id>/index.html       # pages de partage (générées au déploiement)
 ├── docs/                       # architecture, guide d'ajout de source, partenaires
+│   ├── architecture.md
+│   ├── ajouter-une-source.md
+│   ├── partenaires.md
+│   ├── inspiration.md
+│   ├── img/apercu.png          # capture de la page publique (en-tête du README)
+│   └── sources/                # une fiche technique par salle (+ modèle de fiche)
 ├── scripts/                    # utilitaires (ex. génération du badge de couverture)
+│   └── coverage_badge.py
 ├── .github/workflows/          # intégration continue et publication GitHub Pages
+│   ├── tests.yml               # qualité, tests, couverture
+│   └── publish.yml             # feed + pages de partage → GitHub Pages
+├── .pre-commit-config.yaml     # hooks ruff + mypy (facultatifs)
+├── coverage.svg                # badge de couverture (régénéré par la CI)
+├── LICENSE
 └── pyproject.toml              # métadonnées du paquet et config des outils
 ```
 
@@ -125,18 +188,28 @@ pour le schéma détaillé.
 
 ## Sources disponibles
 
-| Salle | Module | Source |
-| --- | --- | --- |
-| [Théâtre Granada](https://theatregranada.com/programmation-2/) | `culturecentro.sources.theatre_granada` | WPBakery (grille AJAX) |
-| [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `culturecentro.sources.lapetiteboitenoire` | billetterie Lepointdevente |
-| [Maison des arts de la parole](https://maisondesartsdelaparole.com/programmation/) | `culturecentro.sources.maisondesartsdelaparole` | calendrier EventON (AJAX mois par mois) |
-| [Le Tremplin 16-30](https://tremplin16-30.com/evenements/) | `culturecentro.sources.tremplin16_30` | blocs Gutenberg « média + texte » |
-| [Musée des beaux-arts de Sherbrooke](https://mbas.qc.ca/en-cours/) | `culturecentro.sources.mbas` | pages « en cours » + « à venir » (blocs `#rectangle`) |
-| [Sporobole](https://sporobole.org/programmation/) | `culturecentro.sources.sporobole` | liste AJAX du thème (diffusions, paginée) |
-| [Le Grand-Espace](https://legrandespace.ca/public/grand-public/) | `culturecentro.sources.legrandespace` | pages grand public + jeune public de l'édition en cours |
+| Salle | Slug (`--source`) | Module | Source | Catégorie par défaut |
+| --- | --- | --- | --- | --- |
+| [Théâtre Granada](https://theatregranada.com/programmation-2/) | `theatre-granada` | `culturecentro.sources.theatre_granada` | WPBakery (grille AJAX) | `musique` |
+| [La Petite Boîte Noire](https://lapetiteboitenoire.com/evenements/) | `la-petite-boite-noire` | `culturecentro.sources.lapetiteboitenoire` | billetterie Lepointdevente | `musique` |
+| [Maison des arts de la parole](https://maisondesartsdelaparole.com/programmation/) | `maison-des-arts-de-la-parole` | `culturecentro.sources.maisondesartsdelaparole` | calendrier EventON (AJAX mois par mois) | `litt` |
+| [Le Tremplin 16-30](https://tremplin16-30.com/evenements/) | `tremplin-16-30` | `culturecentro.sources.tremplin16_30` | blocs Gutenberg « média + texte » | `musique` |
+| [Musée des beaux-arts de Sherbrooke](https://mbas.qc.ca/en-cours/) | `mbas` | `culturecentro.sources.mbas` | pages « en cours » + « à venir » (blocs `#rectangle`) | `arts` |
+| [Sporobole](https://sporobole.org/programmation/) | `sporobole` | `culturecentro.sources.sporobole` | liste AJAX du thème (diffusions, paginée) | `arts` |
+| [Le Grand-Espace](https://legrandespace.ca/public/grand-public/) | `le-grand-espace` | `culturecentro.sources.legrandespace` | pages grand public + jeune public de l'édition en cours | `theatre` |
 
 Le registre faisant autorité est [`culturecentro.sources.SOURCES`](src/culturecentro/sources/__init__.py) ;
-`culturecentro sources` l'affiche (slug + nom).
+`culturecentro sources` l'affiche (slug + nom). La catégorie par défaut
+(`Source.categorie_defaut`) ne sert qu'en dernier recours, quand rien d'autre
+ne permet de classer un événement (voir
+[Catégorie artistique automatique](#catégorie-artistique-automatique)). Le
+détail de chaque extraction est dans sa fiche,
+[`docs/sources/<slug>.md`](docs/sources/) (voir
+[Fonctionnement par salle](#fonctionnement-par-salle)).
+
+Les autres partenaires du centre-ville, et l'état de leur intégration, sont
+suivis dans [`docs/partenaires.md`](docs/partenaires.md) : c'est la feuille de
+route des prochaines sources.
 
 ## Schéma d'événement
 
@@ -159,6 +232,29 @@ l'événement. La page web affiche cette affiche en vignette lorsqu'elle existe.
 Le détail des champs et de leur sérialisation est donné dans
 [Utilisation en bibliothèque](#utilisation-en-bibliothèque).
 
+Exemple d'événement dans le feed `web/data/evenements.json` (valeurs
+illustratives). Les dates sont en ISO 8601, sans fuseau : ce sont des heures
+locales (`America/Toronto`), et le filtre « à venir » part de minuit, heure de
+Sherbrooke (`culturecentro.filtrage.minuit_local`). La
+clé `id` n'est pas un champ d'`Evenement` : elle est ajoutée au feed par
+`culturecentro pages`, pour les seuls événements datés (voir
+[Générer le feed et les pages de partage](#générer-le-feed-et-les-pages-de-partage)).
+
+```json
+{
+  "titre": "Les Belles-Sœurs",
+  "sous_titre": null,
+  "date_debut": "2026-10-03T20:00:00",
+  "date_fin": null,
+  "lien": "https://theatregranada.com/…",
+  "image": "https://theatregranada.com/…/affiche.jpg",
+  "lieu": "Théâtre Granada",
+  "partenaire": "Théâtre Granada",
+  "categorie": "theatre",
+  "id": "les-belles-soeurs-2026-10-03"
+}
+```
+
 ## Agrégation — CLI unifiée
 
 La commande `culturecentro` (ou `python -m culturecentro`) agrège toutes les
@@ -172,6 +268,47 @@ municipalité, campus, quartier périphérique) sont écartés — voir
 centre-ville et de marqueurs hors périmètre sont la « carte » éditable du
 projet. Une salle indisponible ne fait pas échouer l'agrégation (voir
 [Salle indisponible](#salle-indisponible--reprises-repli-et-alerte)).
+
+```bash
+culturecentro sources                     # liste les salles enregistrées
+culturecentro lister                      # agrège toutes les salles (texte)
+culturecentro lister --format json        # agrège en JSON
+culturecentro lister --source theatre-granada --format csv -o prog.csv
+culturecentro lister --source mbas --source sporobole   # plusieurs salles (option répétable)
+culturecentro lister --sans-fiches        # sans lecture des fiches d'événement (catégories)
+culturecentro lister --format json --tentatives 3 --attente 120 \
+  --precedent ancien.json --rapport echecs.json   # reprises, repli et rapport d'échecs
+python -m culturecentro lister            # équivalent sans le script installé
+```
+
+### Options de la CLI unifiée
+
+`culturecentro` a trois sous-commandes : `sources` (liste des salles, sans
+option), `lister` et `pages`.
+
+| Sous-commande | Option | Description |
+| --- | --- | --- |
+| `lister` | `--source SLUG` | Limite à cette salle ; répétable. Défaut : toutes. Slugs : `culturecentro sources`. |
+| `lister` | `--format {texte,csv,json}` | Format de sortie (défaut : `texte`). |
+| `lister` | `-o`, `--sortie FICHIER` | Écrit dans un fichier (sinon : sortie standard). |
+| `lister` | `--timeout SECONDES` | Délai réseau, par requête (défaut : 20). |
+| `lister` | `--sans-fiches` | Ne lit pas la fiche des événements pour les classer (plus rapide, classement moins fin). |
+| `lister` | `--tentatives N` | Essais au plus pour une salle en panne réseau (défaut : 1, sans reprise). |
+| `lister` | `--attente SECONDES` | Attente avant le 2e essai, doublée ensuite (défaut : 60). |
+| `lister` | `--precedent FEED` | Feed JSON précédent : une salle restée en échec y reprend ses événements. |
+| `lister` | `--rapport FICHIER` | Écrit en JSON la liste des salles restées en échec (vide si aucune). |
+| `lister` | `-v`, `--verbose` | Journalisation niveau DEBUG. |
+| `pages` | `--url-base URL` | **Obligatoire.** Adresse publique du site (URL absolue, pour Open Graph). |
+| `pages` | `--feed FICHIER` | Feed produit par `lister` (défaut : `web/data/evenements.json`). |
+| `pages` | `--dossier DOSSIER` | Racine du site (défaut : `web`). |
+| `pages` | `-v`, `--verbose` | Journalisation niveau DEBUG. |
+
+Codes de sortie : `0` en cas de succès ; `1` pour un échec réseau qui empêche
+l'agrégation, ou un feed illisible ou qui n'est pas une liste d'événements
+(`pages`) ; `2` pour un slug inconnu (`lister --source`) ou une `--url-base`
+qui ne commence pas par `http://` ou `https://` (`pages`). La CLI propre à
+chaque salle (voir [Utilisation en ligne de commande](#utilisation-en-ligne-de-commande))
+accepte en plus `--url`, pour analyser une autre page que la page officielle.
 
 ### Salle indisponible : reprises, repli et alerte
 
@@ -220,17 +357,6 @@ manquent. Chaque fusion est journalisée (`INFO`). Sur la page web, le filtre
 par partenaire retient aussi le lieu : l'événement fusionné reste visible sous
 les deux partenaires.
 
-```bash
-culturecentro sources                     # liste les salles enregistrées
-culturecentro lister                      # agrège toutes les salles (texte)
-culturecentro lister --format json        # agrège en JSON
-culturecentro lister --source theatre-granada --format csv -o prog.csv
-culturecentro lister --sans-fiches        # sans lecture des fiches d'événement (catégories)
-culturecentro lister --format json --tentatives 3 --attente 120 \
-  --precedent ancien.json --rapport echecs.json   # reprises, repli et rapport d'échecs
-python -m culturecentro lister            # équivalent sans le script installé
-```
-
 ### Catégorie artistique automatique
 
 La catégorie (`categorie`) n'est **pas** fixée par partenaire : elle est
@@ -258,16 +384,28 @@ déterminée pour chaque événement, dans cet ordre (`culturecentro.categories`
 Le classement est déterministe et n'utilise ni service tiers ni modèle de
 langage : il s'exécute tel quel en intégration continue (GitHub Actions).
 
-## Installation
+Les clés de catégorie et leur libellé affiché
+([`culturecentro.categories.CATEGORIES`](src/culturecentro/categories.py)) :
 
-```bash
-pip install -e .          # ou : pip install -e ".[dev]" pour les outils de dév
-```
-
-Le paquet `culturecentro` est installé (layout `src/`). Dépendances :
-`requests` et `beautifulsoup4`. Python **3.10 ou plus récent** est requis.
+| Clé (`categorie`) | Libellé |
+| --- | --- |
+| `theatre` | Théâtre |
+| `musique` | Musique |
+| `humour` | Humour |
+| `danse` | Danse |
+| `arts` | Arts visuels |
+| `litt` | Littérature et conte |
+| `jeunesse` | Jeunesse |
+| `festival` | Festivals |
 
 ## Utilisation en ligne de commande
+
+Cette section porte sur la CLI **propre à chaque salle**, utile pour mettre au
+point ou diagnostiquer une source isolément. Elle déduplique, filtre (à venir)
+et trie, mais ne ramène pas les lieux à leur nom canonique, n'écarte pas les
+événements hors du centre-ville et ne complète pas la catégorie : seule celle
+que le site expose lui-même est renseignée. Pour la liste agrégée, voir
+[Agrégation — CLI unifiée](#agrégation--cli-unifiée).
 
 Chaque source s'exécute comme un module du paquet :
 
@@ -317,217 +455,62 @@ Chaque `Evenement` expose :
 | `image` | URL de l'affiche. |
 | `lieu` | Nom du lieu (`None` si c'est la salle du partenaire ; l'agrégation le complète). |
 | `partenaire` | Organisme qui programme l'événement (nom de la source ; renseigné par `Source`). |
-| `categorie` | Catégorie artistique (`theatre`, `musique`, `humour`, `danse`, `arts`, `litt`, `jeunesse`, `festival`), déterminée automatiquement à l'agrégation (voir [Catégorie artistique automatique](#agrégation--cli-unifiée)). |
+| `categorie` | Catégorie artistique (`theatre`, `musique`, `humour`, `danse`, `arts`, `litt`, `jeunesse`, `festival`), déterminée automatiquement à l'agrégation (voir [Catégorie artistique automatique](#catégorie-artistique-automatique)). |
 
 `to_dict()` renvoie ces champs sérialisables (date au format ISO 8601), et
 les exports CSV/JSON reprennent les mêmes colonnes.
 
-## Théâtre Granada
+Pour la liste **agrégée** (toutes les salles, lieux normalisés, filtre
+centre-ville, catégorisation, fusion des doublons), utiliser `agreger()` ; le
+registre donne accès à chaque source par son slug :
 
-Module `culturecentro.sources.theatre_granada`, l'interface et les options
-communes décrites plus haut :
+```python
+from datetime import datetime
+
+from culturecentro.aggregate import agreger
+from culturecentro.exporters import exporter_csv, exporter_json, exporter_texte
+from culturecentro.sources import obtenir
+
+evenements = agreger()  # toutes les salles enregistrées
+exporter_json(evenements, "web/data/evenements.json")
+
+# Quelques salles, sans lecture des fiches, à partir d'une date donnée
+musees = agreger(
+    [obtenir("mbas"), obtenir("sporobole")],
+    a_partir_de=datetime(2026, 11, 1),
+    lire_fiches=False,
+)
+print(exporter_texte(musees))
+
+# Une seule salle, sans l'agrégation
+granada = obtenir("theatre-granada").lister_evenements_a_venir(timeout=30)
+```
+
+Les trois exporteurs (`exporter_texte`, `exporter_csv`, `exporter_json`)
+renvoient toujours la chaîne produite, et l'écrivent en plus dans le fichier
+s'il est fourni. Les fonctions `lister_evenements_a_venir`, `exporter_json` et
+`exporter_csv` sont aussi importables depuis chaque module de source.
+
+## Fonctionnement par salle
+
+Chaque salle a sa **fiche technique** dans [`docs/sources/`](docs/sources/) :
+page analysée, technique d'extraction (AJAX, billetterie, calendrier…), replis
+et particularités, commandes d'exemple. Toutes suivent l'interface et les
+options communes décrites plus haut ; par exemple :
 
 ```bash
 python -m culturecentro.sources.theatre_granada --format json
 ```
 
-### Fonctionnement
-
-Le site est un WordPress construit avec **WPBakery Page Builder**. Les
-événements sont affichés dans une grille en mode « lazy » : le HTML initial
-ne contient que 10 événements, mais un unique appel AJAX
-(`admin-ajax.php` / `vc_get_vc_grid_data`) renvoie **l'intégralité** des
-événements à venir. Le module reproduit cet appel, puis analyse chaque bloc
-`.vc_grid-item-mini` (titre, date en français, lien).
-
-Les catégories WordPress de chaque bloc mêlent genres (« Musique »,
-« Humour »…) et **salles** : le Granada annonce aussi des spectacles qu'il
-présente ailleurs, classés « La Petite Boîte Noire » ou « Le Grand-Espace -
-CAJB ». Le terme de salle donne le `lieu` (et n'est pas lu comme un genre :
-« Théâtre Granada » n'est pas du théâtre) ; les autres termes donnent la
-catégorie.
-
-Si cet appel échoue (thème modifié, nonce invalide…), le module se rabat
-successivement sur : la grille inline (10 événements), les données
-structurées schema.org `Event` (JSON-LD), puis les sélecteurs du plugin
-« The Events Calendar ». Chaque repli émet un avertissement via `logging`.
-
-## La Petite Boîte Noire
-
-Même interface, dans le module `culturecentro.sources.lapetiteboitenoire` :
-
-```bash
-python -m culturecentro.sources.lapetiteboitenoire                     # liste texte
-python -m culturecentro.sources.lapetiteboitenoire --format json
-python -m culturecentro.sources.lapetiteboitenoire --format csv -o evenements.csv
-```
-
-```python
-from culturecentro.sources.lapetiteboitenoire import (
-    lister_evenements_a_venir,
-    exporter_json,
-)
-
-evenements = lister_evenements_a_venir()
-exporter_json(evenements, "evenements.json")
-```
-
-Les options (`--url`, `--format`, `-o/--sortie`, `--timeout`, `-v`) sont
-identiques à celles du Théâtre Granada. Les événements suivent le schéma commun
-décrit plus haut ; La Petite Boîte Noire n'expose pas de `sous_titre` (toujours
-`None`), et `image` (URL de l'affiche) vaut `None` si la source n'en fournit pas.
-
-### Fonctionnement
-
-La page [`/evenements/`](https://lapetiteboitenoire.com/evenements/) n'affiche
-pas elle-même les spectacles : elle charge un **widget de la billetterie
-[Lepointdevente.com](https://lepointdevente.com)**. Le module télécharge la
-page, y découvre l'URL de la liste Lepointdevente (lien « Programmation
-complète » ou, à défaut, `widget.js`), télécharge cette liste et analyse
-chaque carte `.feature-col[data-tpos-event]` (titre, date en français, lieu,
-affiche). Le lien mène à la fiche propre à l'événement sur Lepointdevente
-(`https://lepointdevente.com/billets/<code>`, le contenu de la fenêtre
-surgissante du widget) plutôt qu'à la programmation générale ; le code est lu
-dans l'URL de l'affiche, sinon on utilise le lien permanent
-`/plugins/embed/redirect?event=<id>`, qui redirige vers la même fiche. Le lieu « <salle>, Sherbrooke, QC » est normalisé : la ville est
-retirée et toute graphie du nom de la salle (casse, accents) est ramenée à
-« La Petite Boîte Noire », pour qu'un seul lieu apparaisse dans l'agrégation.
-
-La **catégorie** que l'organisateur déclare sur Lepointdevente (« Humour »,
-« Arts littéraires », « Théâtre », « Danse ») n'apparaît ni dans la liste ni
-sur la fiche : seule la recherche du site filtre par catégorie. Le module y
-cherche donc la salle à Sherbrooke, une catégorie à la fois (4 requêtes), et
-attribue la catégorie correspondante aux événements trouvés — un spectacle
-d'humour est ainsi reconnu même quand ni son titre ni sa description ne
-disent « humour ». Les autres événements suivent le classement automatique
-(musique par défaut). En cas d'échec de la recherche, un avertissement est
-émis et ce classement automatique s'applique.
-
-Si la découverte échoue, le module retombe sur l'URL de billetterie connue,
-puis sur les données JSON-LD de la page. Chaque repli émet un avertissement
-via `logging`.
-
-## Maison des arts de la parole
-
-Module `culturecentro.sources.maisondesartsdelaparole`, même interface et mêmes
-options que les autres salles :
-
-```bash
-python -m culturecentro.sources.maisondesartsdelaparole --format json
-```
-
-### Fonctionnement
-
-La page [`/programmation/`](https://maisondesartsdelaparole.com/programmation/)
-affiche un calendrier **EventON** chargé mois par mois : le HTML initial ne
-contient que le mois courant, et le changement de mois passe par un appel AJAX
-(`admin-ajax.php` / `the_ajax_hook`) dont la requête reprend les réglages du
-calendrier (`.cal_arguments`, `.evo-data`, filtres actifs comme la saison) et
-un `nonce` inscrit dans la page. Le module lit le mois courant, puis rejoue
-l'appel « mois suivant » pour les 12 mois à venir. Chaque bloc
-`.eventon_list_event` fournit titre, sous-titre (distribution), dates de début
-et de fin (métadonnées schema.org), affiche, lieu (les spectacles se donnent
-souvent hors les murs : cafés, salles partenaires…) et lien de la fiche.
-
-Si le calendrier est introuvable, le module retombe sur les données JSON-LD de
-la page ; si un appel AJAX échoue, la boucle s'arrête avec les mois déjà
-chargés. Chaque repli émet un avertissement via `logging`.
-
-## Le Tremplin 16-30
-
-Module `culturecentro.sources.tremplin16_30`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.tremplin16_30 --format json
-```
-
-### Fonctionnement
-
-La page [`/evenements/`](https://tremplin16-30.com/evenements/) liste les
-événements à venir sous forme de blocs Gutenberg « média + texte »
-(`.wp-block-media-text`) : titre `h2`, `figure` dont l'affiche est un fond
-CSS, paragraphes `p.event-data` (dates, lieu, tarif) et bouton « Plus
-d'infos » vers la fiche. Les dates sont en texte libre et souvent **sans
-année** (celle-ci figure dans le titre, ex. « automne 2026 ») ; l'analyseur
-partagé `culturecentro.dates.plage_dates_fr` / `trouver_dates_fr` gère :
-
-- « Mardi 29 septembre 2026 - 17h » → un événement ;
-- « Jeudis 17 septembre, 29 octobre, 26 novembre et 17 décembre - 18h30 à 20h30 »
-  → **un événement par date** (même titre, même lien) ;
-- « Tous les mercredis du 9 septembre au 16 décembre - 18h30 à 20h30 » → un
-  événement avec `date_debut` et `date_fin` (série en cours conservée).
-
-Le texte des dates est repris en `sous_titre`. Repli JSON-LD si aucun bloc
-n'est trouvé.
-
-## Musée des beaux-arts de Sherbrooke (MBAS)
-
-Module `culturecentro.sources.mbas`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.mbas --format json
-```
-
-### Fonctionnement
-
-Les expositions sont réparties sur deux pages,
-[`/en-cours/`](https://mbas.qc.ca/en-cours/) (page par défaut) et
-[`/a-venir/`](https://mbas.qc.ca/a-venir/) (téléchargée en plus). Chaque
-exposition est un bloc `div#rectangle` : affiche `img`, titre `h2`, un
-paragraphe « type + période » (« EXPOSITION TEMPORAIRE / 15 octobre 2026 au
-21 mars 2027 », « EXPO-VENTE / Jusqu'en octobre 2026 », « EXPOSITION
-PERMANENTE »), parfois un sous-titre (thème, artiste invité), et un bouton
-« En savoir plus ». La période donne `date_debut` et `date_fin` : une
-exposition **déjà commencée** reste listée tant qu'elle n'est pas terminée ;
-une exposition permanente n'a pas de date (triée en fin de liste). Le
-`sous_titre` reprend le sous-titre du bloc, sinon le type d'exposition.
-Repli JSON-LD si aucun bloc n'est trouvé.
-
-## Sporobole
-
-Module `culturecentro.sources.sporobole`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.sporobole --format json
-```
-
-### Fonctionnement
-
-La page [`/programmation/`](https://sporobole.org/programmation/) ne contient
-aucun événement : la liste est injectée par un appel AJAX du thème
-(`admin-ajax.php` / `standish_select_refresh`), filtrable par type de contenu
-(« Diffusions », projets, créations, ateliers) et paginé. Seules les
-**diffusions** (expositions, lancements, résidences ouvertes…) portent des
-dates : le module les interroge page après page, tant que les événements
-restent en cours ou à venir (la liste est triée du plus récent au plus
-ancien). Chaque bloc `.standish-single-event` fournit l'affiche (fond CSS), la
-catégorie (`sous_titre`), le titre, le lien et la période (« Du 02 octobre
-2026 au 27 novembre 2026 » → `date_debut`/`date_fin`, « Le 23 octobre 2026 »).
-Repli JSON-LD si l'appel AJAX échoue.
-
-## Le Grand-Espace
-
-Module `culturecentro.sources.legrandespace`, même interface et mêmes options :
-
-```bash
-python -m culturecentro.sources.legrandespace --format json
-```
-
-### Fonctionnement
-
-Le site publie sa programmation par **public** et par **édition** (saison) :
-[`/public/grand-public/`](https://legrandespace.ca/public/grand-public/?edition=2026-2027)
-et [`/public/jeune-public/`](https://legrandespace.ca/public/jeune-public/?edition=2026-2027),
-avec un paramètre `?edition=2026-2027`. L'édition en cours est déduite de la
-date (la saison commence en août) ; `--url` permet d'en viser une autre.
-Chaque page contient d'abord un sélecteur de billetterie (tous les spectacles,
-liens `#`, ignoré) puis la liste proprement dite (`.liste_spectacle_block`) :
-blocs `.spectacle` avec l'affiche (`img.product_image`), le genre et la
-compagnie (réunis en `sous_titre`), le titre, le lien de la fiche et la date de
-représentation (« 18 octobre 2026 10 h 00 », « Du 7 au 17 octobre 2026 »,
-« Du 29 octobre 2026 au 28 mai 2027 » → `date_debut`/`date_fin`). Les
-spectacles marqués « [Terminé] » sont ignorés. Le module télécharge les deux
-publics et fusionne les listes ; repli JSON-LD si aucun bloc n'est trouvé.
+| Salle | En bref | Fiche |
+| --- | --- | --- |
+| Théâtre Granada | WordPress / WPBakery : un appel AJAX (`vc_get_vc_grid_data`) renvoie toute la grille ; les catégories WordPress donnent le genre ou le lieu. Replis : grille inline, JSON-LD, The Events Calendar. | [`theatre-granada.md`](docs/sources/theatre-granada.md) |
+| La Petite Boîte Noire | Widget de la billetterie Lepointdevente : liste des spectacles, lien vers leur fiche de billetterie ; catégorie lue via la recherche du site (4 requêtes). Replis : URL de billetterie connue, JSON-LD. | [`la-petite-boite-noire.md`](docs/sources/la-petite-boite-noire.md) |
+| Maison des arts de la parole | Calendrier EventON : mois courant, puis 12 mois rejoués en AJAX (`the_ajax_hook`, nonce de la page) ; spectacles souvent hors les murs. Repli : JSON-LD. | [`maison-des-arts-de-la-parole.md`](docs/sources/maison-des-arts-de-la-parole.md) |
+| Le Tremplin 16-30 | Blocs Gutenberg « média + texte » ; dates en texte libre, souvent sans année : une liste de dates donne un événement par date, « tous les mercredis… » une série. Repli : JSON-LD. | [`tremplin-16-30.md`](docs/sources/tremplin-16-30.md) |
+| Musée des beaux-arts de Sherbrooke (MBAS) | Expositions des pages « en cours » et « à venir » (blocs `div#rectangle`) ; la période donne début et fin, une exposition permanente n'a pas de date. Repli : JSON-LD. | [`mbas.md`](docs/sources/mbas.md) |
+| Sporobole | Liste AJAX du thème (`standish_select_refresh`) : seules les diffusions, page après page, tant qu'elles sont en cours ou à venir. Repli : JSON-LD. | [`sporobole.md`](docs/sources/sporobole.md) |
+| Le Grand-Espace | Pages grand public et jeune public de l'édition (saison) en cours (`?edition=2026-2027`) ; spectacles « [Terminé] » ignorés. Repli : JSON-LD. | [`le-grand-espace.md`](docs/sources/le-grand-espace.md) |
 
 ## Site web (`web/`) et feed
 
@@ -555,13 +538,27 @@ l'icône d'onglet : pour changer de logo, remplacer ce fichier, puis refaire
 `web/apple-touch-icon.png` (écran d'accueil iOS, 180 × 180) et l'image
 d'aperçu `web/img/partage.png`, qui le reprennent.
 
+**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
+datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
+téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
+reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
+conteneur), pas celle de l'écran.
+
+### Feed et filtres
+
 La page charge le **feed agrégé** [`web/data/evenements.json`](web/data/) s'il
 est présent et non vide ; sinon elle retombe sur un jeu de données de
 démonstration (utile pour l'ouvrir localement). Le filtre déroulant porte sur
 le **partenaire** : un événement y figure sous l'organisme qui le programme et
 sous celui qui l'accueille (son lieu) ; chaque carte affiche le partenaire et,
 s'il diffère, le lieu. Les pastilles de discipline reprennent la `categorie` du feed (dont
-« Humour » et « Jeunesse »). Chaque carte porte un bouton **Ajouter au
+« Humour » et « Jeunesse »). Pour voir le vrai feed en local, servir `web/` en
+HTTP plutôt que d'ouvrir le fichier depuis le disque (voir
+[Démarrage rapide](#démarrage-rapide)).
+
+### Ajouter au calendrier
+
+Chaque carte porte un bouton **Ajouter au
 calendrier** (icône sur la vignette) : il propose le *calendrier de l'appareil*
 — un fichier `.ics` généré dans le navigateur, qu'ouvrent Apple Calendrier,
 Outlook ou Samsung Calendrier — ou *Google Agenda* (lien pré-rempli), pratique
@@ -569,6 +566,8 @@ sur Android où l'app Google Agenda n'ouvre pas les `.ics`. Heures en
 `America/Toronto` ; un événement sur plusieurs jours (ou sans heure) est inscrit
 en journées entières, et une durée de 2 h est supposée quand l'heure de fin
 manque.
+
+### Partage et aperçu riche
 
 Chaque carte porte aussi un bouton **Partager** dont le lien ramène vers Culture
 Centro, et non vers le site du partenaire. Sur mobile, le bouton ouvre la
@@ -585,6 +584,8 @@ prend l'image par défaut [`web/img/partage.png`](web/img/partage.png). Si
 l'événement n'est plus au feed (passé, renommé par le partenaire), la page
 404 renvoie vers l'agenda, où un bandeau le signale.
 
+### Variantes de design
+
 Le sous-dossier [`web/variantes/`](web/variantes/) propose **cinq variantes de
 design** à présenter au client (affiche, calendrier, application mobile, par
 lieu, programme accessible), avec une page de comparaison
@@ -594,6 +595,8 @@ aussi les activités récurrentes (même titre chez un partenaire, à au moins s
 jours d'écart) ; sans feed, elles retombent sur un jeu de démonstration. Le
 plan de la variante 4 est tracé d'après OpenStreetMap et les lieux y sont
 placés à leur adresse géocodée.
+
+### Générer le feed et les pages de partage
 
 On génère le feed, puis les pages de partage, avec la CLI :
 
@@ -610,12 +613,6 @@ balises Open Graph exigent des URL absolues. Ces fichiers générés ne sont pas
 versionnés. Sans pages de partage (démo, feed sans `id`), le bouton partage
 directement le lien `?e=<id>`, sans aperçu riche.
 
-**Affichage « billet ».** Sur tablette et ordinateur, chaque carte de la liste
-datée porte à droite un talon détachable (jour, date, mois, heure) ; sur
-téléphone, ou quand le texte est très agrandi, le talon s'efface et la date
-reste en pastille sur l'image. Le seuil suit la largeur de la liste (requête de
-conteneur), pas celle de l'écran.
-
 ### Publication (GitHub Pages)
 
 Le workflow [`publish.yml`](.github/workflows/publish.yml) régénère le feed et
@@ -624,15 +621,28 @@ puis déploie `web/` sur **GitHub Pages** — quotidiennement (cron), à chaque 
 sur `main` touchant `web/` ou le paquet, et à la demande. Prérequis (une seule
 fois) : **Settings → Pages → Source = GitHub Actions**.
 
-Le feed déjà en ligne est d'abord téléchargé et sert de repli : une salle en
-panne réseau est réessayée deux fois (après 2 puis 4 minutes), puis, si elle
-reste en échec, ses derniers événements connus sont conservés ; si toute
-l'agrégation échoue, le feed en ligne est republié tel quel. Le site est
-ensuite déployé, puis le dernier pas du workflow **échoue** si une salle est
-restée en échec : GitHub envoie alors un courriel de notification (réglage
-**Settings → Notifications → Actions** du compte qui reçoit les
-notifications du workflow), et le résumé du lancement liste les salles en
-cause.
+Précisions :
+
+- **Horaire** : le cron tourne chaque jour à 06:00 UTC (2 h du matin à
+  Sherbrooke en heure d'été, 1 h en heure normale) ; GitHub retarde souvent
+  le lancement de quelques heures quand ses serveurs sont chargés.
+- **À la demande** : onglet **Actions** → « Publier le feed et la maquette » →
+  **Run workflow**.
+- **Salle en panne** : le feed déjà en ligne est d'abord téléchargé et sert de
+  repli. Une salle en panne réseau est réessayée deux fois (après 2 puis
+  4 minutes) ; si elle reste en échec, ses derniers événements connus sont
+  repris du feed en ligne (voir
+  [Salle indisponible](#salle-indisponible--reprises-repli-et-alerte)).
+- **En cas d'échec de toute l'agrégation** : le feed en ligne est republié tel
+  quel (au tout premier déploiement, un feed vide `[]` : la page publique
+  affiche alors le jeu de démonstration).
+- **Alerte par courriel** : une fois le site déployé, le dernier pas du
+  workflow **échoue** si une salle est restée en échec (ou si toute
+  l'agrégation a échoué) ; GitHub envoie alors un courriel de notification
+  (réglage **Settings → Notifications → Actions** du compte qui reçoit les
+  notifications du workflow), et le résumé du lancement liste les salles en
+  cause.
+- **Site publié** : <https://remtav.github.io/culturecentro/>.
 
 ## Développement
 
@@ -642,6 +652,9 @@ Installer le paquet et les outils de qualité :
 pip install -e ".[dev]"
 pre-commit install        # facultatif : lance ruff + mypy à chaque commit
 ```
+
+`pre-commit` est fourni par les dépendances `[dev]`. Pour lancer les hooks sur
+tout le dépôt sans attendre un commit : `pre-commit run --all-files`.
 
 | Outil | Commande | Rôle |
 | --- | --- | --- |
@@ -654,6 +667,17 @@ La configuration de tous ces outils vit dans [`pyproject.toml`](pyproject.toml)
 (y compris le mode strict de mypy et le seuil de couverture minimal, 85 %).
 `ruff` et `mypy` y sont **épinglés** à une version précise pour que le résultat
 local soit identique à celui de l'intégration continue.
+
+Avant de pousser, cette ligne reproduit les vérifications de la CI :
+
+```bash
+ruff check . && ruff format --check . && mypy && python -m coverage run -m pytest && python -m coverage report
+```
+
+Pour repérer les lignes non couvertes dans un navigateur :
+`python -m coverage html`, puis ouvrir `htmlcov/index.html` (dossier ignoré par
+git). Inutile de régénérer `coverage.svg` à la main : la CI s'en charge sur la
+branche par défaut.
 
 ### Écrire un test de source
 
@@ -671,10 +695,44 @@ GitHub Actions exécute, sur chaque `push` et *pull request*
 - **tests** — `pytest` sur Python 3.10, 3.11 et 3.12 ;
 - **couverture** — mesure, seuil minimal (85 %) et régénération du badge.
 
+Le rapport de couverture est ajouté au résumé de chaque exécution. Le badge
+`coverage.svg` n'est recommité (par `github-actions[bot]`, avec `[skip ci]`)
+que sur un `push` vers la branche par défaut, et seulement s'il a changé. La
+publication du site est un workflow distinct (voir
+[Publication](#publication-github-pages)).
+
+## Dépannage
+
+| Symptôme | Piste |
+| --- | --- |
+| Une salle n'apporte aucun événement. | Lancer sa CLI seule avec `-v` (ex. `python -m culturecentro.sources.sporobole -v`) : les avertissements de repli (AJAX, JSON-LD…) indiquent quelle étape a échoué, souvent une structure de site modifiée. |
+| `Salle inconnue : …` | Vérifier le slug avec `culturecentro sources` (code de sortie `2`). |
+| L'agrégation est lente. | `--sans-fiches` évite une requête par fiche d'événement ; le classement s'appuie alors sur le site, les mots-clés et la catégorie par défaut. |
+| Délais réseau dépassés. | Augmenter `--timeout` (défaut : 20 s) ; les erreurs temporaires (429, 5xx) sont déjà reprises automatiquement (3 reprises). |
+| Un événement attendu manque. | Il est peut-être hors du périmètre du centre-ville (lieu écarté, visible avec `-v`) : voir `culturecentro.lieux`. Ou il a été fondu avec l'annonce d'un autre partenaire (fusion journalisée en `INFO`). |
+| La page locale affiche la démo. | Le feed est absent, vide, ou la page est ouverte en `file://` : servir `web/` en HTTP (voir [Démarrage rapide](#démarrage-rapide)). |
+| Le bouton Partager n'offre pas d'aperçu riche. | Les pages de partage n'ont pas été générées (`culturecentro pages`) ou le feed n'a pas d'`id` : le lien `?e=<id>` est alors partagé tel quel. |
+
+## Contribuer
+
+- Le code, les identifiants, la documentation et les messages de commit sont
+  rédigés en **français**.
+- Les tests restent **hors-ligne** : toute nouvelle extraction est vérifiée sur
+  des fixtures figées, jamais sur le site réel.
+- La CI doit être verte (lint, format, typage strict, tests sur 3.10 à 3.12,
+  couverture ≥ 85 %) ; la ligne de vérification de la section
+  [Développement](#développement) la reproduit en local.
+- Pour une nouvelle salle : suivre [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md)
+  et choisir parmi les partenaires de [`docs/partenaires.md`](docs/partenaires.md),
+  puis mettre à jour les tableaux [Sources disponibles](#sources-disponibles)
+  et [Fonctionnement par salle](#fonctionnement-par-salle), et rédiger sa
+  fiche dans [`docs/sources/`](docs/sources/) (modèle fourni).
+
 ## Documentation
 
 - [`docs/architecture.md`](docs/architecture.md) — vue d'ensemble du paquet et du flux de données.
 - [`docs/ajouter-une-source.md`](docs/ajouter-une-source.md) — guide pour brancher une nouvelle salle.
+- [`docs/sources/`](docs/sources/) — fiche technique de chaque salle (extraction, replis) et modèle de fiche.
 - [`docs/partenaires.md`](docs/partenaires.md) — partenaires culturels du centre-ville (feuille de route des sources).
 - [`docs/inspiration.md`](docs/inspiration.md) — sites d'agendas culturels agrégés servant d'inspiration pour le design.
 

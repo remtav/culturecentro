@@ -6,7 +6,10 @@ programmation ont été vérifiées le **2026-09-27**.
 
 La colonne **Statut d'implémentation** indique si un extracteur (scraper)
 existe pour ce lieu dans le dépôt, à l'état de la branche par défaut
-(`claude/tender-rubin-apkjew`) au 2026-09-27.
+(`main`) au 2026-10-06. Le registre faisant autorité reste
+[`culturecentro.sources.SOURCES`](../src/culturecentro/sources/__init__.py)
+(`culturecentro sources`), et chaque extracteur est décrit dans
+[`docs/sources/`](sources/).
 
 ## Cœur du centre-ville
 
@@ -37,7 +40,7 @@ existe pour ce lieu dans le dépôt, à l'état de la branche par défaut
 - Toutes les URLs de programmation ci-dessus ont été confirmées comme
   existantes et pointant vers une page de programmation / calendrier /
   expositions.
-- **Statut d'implémentation** : au 2026-09-28, sept lieux disposent d'un
+- **Statut d'implémentation** : au 2026-10-06, sept lieux disposent d'un
   extracteur dans le dépôt (Théâtre Granada, La Petite Boîte Noire, Maison
   des arts de la parole, Le Tremplin 16-30, MBAS, Sporobole, Le Grand-Espace) ;
   les autres ne sont pas encore couverts.

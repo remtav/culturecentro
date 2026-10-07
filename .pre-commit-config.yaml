@@ -1,4 +1,5 @@
-# Hooks de pré-commit. Installation : pip install pre-commit && pre-commit install
+# Hooks de pré-commit. pre-commit est fourni par pip install -e ".[dev]" ;
+# activation : pre-commit install
 # Exécution manuelle sur tout le dépôt : pre-commit run --all-files
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
