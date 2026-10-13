@@ -1,0 +1,1758 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  html { -webkit-text-size-adjust: 100%; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Culture Centro Sherbrooke</title>
+<meta name="description" content="Guichet unique de la programmation culturelle du centre-ville de Sherbrooke.">
+<!-- Aperçu des liens partagés (Facebook, Messenger, WhatsApp…) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Culture Centro Sherbrooke">
+<meta property="og:title" content="Culture Centro — toute la culture du centre-ville de Sherbrooke">
+<meta property="og:description" content="Théâtre, musique, arts visuels, littérature… La programmation culturelle du centre-ville de Sherbrooke, en un seul agenda.">
+<meta property="og:locale" content="fr_CA">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper: #FBF7F0;
+    --paper-2: #F3ECDF;
+    --card: #FFFFFF;
+    --ink: #16162E;
+    --ink-soft: #45455E;
+    --ink-faint: #6E6E85;
+    --line: #E4DBCB;
+    --line-strong: #D2C7B2;
+    --accent: #B4741F;
+
+    --d-theatre: #D6435A;
+    --d-musique: #6C5CE7;
+    --d-arts: #159A8A;
+    --d-festival: #E39A2B;
+    --d-danse: #C24E8E;
+    --d-litt: #3D7DCA;
+    --d-humour: #E0672F;
+    --d-jeunesse: #4CAF50;
+
+    /* Plan des lieux partenaires */
+    --map-land: #EAE2D2; --map-street: #FFFDF8; --map-water: #B9D3E2; --map-park: #CFDFBC;
+    --map-water-ink: #4F7389; --pin-ring: #FFFFFF;
+
+    --shadow: 0 1px 2px rgba(22,22,46,.04), 0 8px 22px rgba(22,22,46,.06);
+    --radius: 14px;
+    --maxw: 1140px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #131322; --paper-2: #1B1B2E; --card: #1E1E33;
+      --ink: #F2EEF6; --ink-soft: #C3C0D4; --ink-faint: #918EA8;
+      --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C;
+      --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
+      --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
+      --d-humour: #F58A57; --d-jeunesse: #7BD37F;
+      --map-land: #23233A; --map-street: #3A3A58; --map-water: #1D3652; --map-park: #1F3729;
+      --map-water-ink: #8FB2CC; --pin-ring: #F2EEF6;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px rgba(0,0,0,.34);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #131322; --paper-2: #1B1B2E; --card: #1E1E33;
+    --ink: #F2EEF6; --ink-soft: #C3C0D4; --ink-faint: #918EA8;
+    --line: #2E2E48; --line-strong: #3A3A58; --accent: #E4A44C;
+    --d-theatre: #F0728A; --d-musique: #9A8CFF; --d-arts: #37C3B1;
+    --d-festival: #F2B34F; --d-danse: #E378B4; --d-litt: #6BA5EE;
+    --d-humour: #F58A57; --d-jeunesse: #7BD37F;
+    --map-land: #23233A; --map-street: #3A3A58; --map-water: #1D3652; --map-park: #1F3729;
+    --map-water-ink: #8FB2CC; --pin-ring: #F2EEF6;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 26px rgba(0,0,0,.34);
+    color-scheme: dark;
+  }
+  /* Thème clair choisi : « only light » empêche le navigateur (thème sombre automatique de
+     Chrome Android, Samsung Internet…) d'assombrir lui-même la page, ce qui la rendait sombre. */
+  :root[data-theme="light"] { color-scheme: only light; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    zoom: var(--text-zoom, 1); /* taille du texte choisie par le visiteur (boutons A− / A+) */
+  }
+  h1, h2, h3, .display {
+    font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+    text-wrap: balance; letter-spacing: -0.02em; line-height: 1.05; margin: 0;
+  }
+  a { color: inherit; }
+  .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding-inline: 22px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* ---------- Masthead : en-tête + hero fusionnés, compact ---------- */
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(90% 130% at 100% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%),
+      var(--paper);
+  }
+  .mast-inner { padding-block: 20px 22px; }
+  .top-row { display: flex; align-items: center; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; margin-right: auto; }
+  /* Logo (fichier logo.svg, tuile sombre) : un liseré clair le détache des fonds sombres. */
+  .mark { width: 40px; height: 40px; flex: none; display: block; border-radius: 11px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mark { box-shadow: 0 0 0 1px rgba(255,255,255,.12); } }
+  :root[data-theme="dark"] .mark, footer.site .mark { box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
+  .brand-txt strong { display: block; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 18px; line-height: 1; letter-spacing: -0.03em; }
+  .brand-txt span { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
+  nav.top { display: flex; gap: 20px; font-size: 14.5px; font-weight: 500; }
+  nav.top a { text-decoration: none; color: var(--ink-soft); }
+  nav.top a:hover { color: var(--ink); }
+  .theme-btn {
+    border: 1px solid var(--line-strong); background: var(--card); color: var(--ink-soft);
+    width: 40px; height: 40px; border-radius: 11px; cursor: pointer; display: grid; place-items: center; flex: none;
+  }
+  .theme-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .theme-btn:disabled { opacity: .4; cursor: default; color: var(--ink-soft); border-color: var(--line-strong); }
+  .theme-btn svg { display: block; }
+  .brand { min-width: 0; } .brand-txt { min-width: 0; }
+  @media (max-width: 540px) { :root[data-text] .top-row { flex-wrap: wrap; row-gap: 12px; } }
+  .tools { display: flex; align-items: center; gap: 8px; flex: none; margin-left: auto; }
+  .text-btn { font: inherit; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; line-height: 1; }
+  .text-btn.minus { font-size: 13px; }
+  .text-btn.plus { font-size: 17px; }
+  #theme[data-mode="auto"] .ico-sun, #theme[data-mode="auto"] .ico-moon,
+  #theme[data-mode="light"] .ico-auto, #theme[data-mode="light"] .ico-moon,
+  #theme[data-mode="dark"] .ico-auto, #theme[data-mode="dark"] .ico-sun { display: none; }
+  @media (max-width: 420px) { .tools { gap: 6px; } .theme-btn { width: 36px; height: 36px; border-radius: 10px; } }
+  @media (max-width: 680px) { nav.top { display: none; } }
+
+  .mast-hero { margin-top: 20px; }
+  .mast-hero h1 { font-size: clamp(21px, 3.1vw, 33px); font-weight: 800; white-space: nowrap; }
+  :root[data-text] .mast-hero h1 { white-space: normal; } /* texte agrandi : le titre peut passer à la ligne */
+  .mast-hero h1 .hl { color: var(--accent); }
+  @media (max-width: 620px) { .mast-hero h1 { white-space: normal; text-align: right; } }
+
+  /* ---------- Toolbar sticky ---------- */
+  .toolbar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding-block: 12px;
+  }
+  .toolbar-inner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-right: auto; }
+  .chip {
+    border: 1px solid var(--line-strong); background: var(--card); color: var(--ink-soft);
+    font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px; transition: border-color .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--ink-faint); color: var(--ink); }
+  .chip .swatch { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--ink-faint)); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .chip[aria-pressed="true"] .swatch { box-shadow: 0 0 0 2px color-mix(in srgb, var(--paper) 40%, transparent); }
+  .search { position: relative; flex: 0 1 250px; }
+  .search input {
+    width: 100%; font: inherit; font-size: 14px; padding: 9px 14px 9px 38px;
+    border-radius: 999px; border: 1px solid var(--line-strong); background: var(--card); color: var(--ink);
+  }
+  .search input::placeholder { color: var(--ink-faint); }
+  .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); }
+  /* Filtre par lieu */
+  .venue-wrap { position: relative; }
+  .venue-wrap::after { content: "▾"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink-faint); font-size: 11px; }
+  .venue-wrap select { -webkit-appearance: none; appearance: none; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); background: var(--card); border: 1px solid var(--line-strong); border-radius: 999px; padding: 8px 30px 8px 14px; cursor: pointer; max-width: min(200px, calc(100vw / var(--text-zoom, 1) - 48px)); }
+  .venue-wrap select:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .venue-wrap select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .venue-wrap.active select { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .venue-wrap.active::after { color: var(--paper); }
+
+  /* ---------- Agenda layout : liste + fil chronologique ---------- */
+  .agenda { padding-block: 26px 48px; }
+  .agenda-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .agenda-head h2 { font-size: clamp(21px, 3vw, 28px); font-weight: 800; }
+  .agenda-head .count { font-size: 14px; color: var(--ink-faint); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .agenda-layout { display: block; }
+
+  .month-group { margin-bottom: 30px; scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--tb, 70px) + 14px); }
+  .month-title {
+    font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 15px;
+    letter-spacing: 0.02em; text-transform: capitalize;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 14px; color: var(--ink);
+  }
+  .month-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .month-title .n { font-size: 12px; color: var(--ink-faint); font-weight: 600; text-transform: none; letter-spacing: 0; }
+
+  .rows { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Event card horizontale */
+  .event {
+    position: relative; isolation: isolate;
+    display: grid; grid-template-columns: 176px 1fr; gap: 0;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .15s;
+    text-decoration: none; color: inherit;
+    scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--tb, 70px) + 14px);
+  }
+  /* Toute la carte est cliquable : le lien du titre s'étend sur la carte entière,
+     sauf les boutons « Partager » et « Ajouter au calendrier » posés au-dessus. */
+  .ev-link { text-decoration: none; }
+  .ev-link::after { content: ""; position: absolute; inset: 0; z-index: 3; }
+  .ev-link:focus-visible { outline: none; }
+  .ev-link:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius); }
+  .event:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(22,22,46,.08), 0 16px 34px rgba(22,22,46,.1); }
+
+  /* Événement ouvert depuis un lien partagé (?e=…) */
+  .event.is-shared { outline: 3px solid var(--accent); outline-offset: 3px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .event.is-shared { animation: cc-pulse 1.1s ease-out 2; }
+  }
+  @keyframes cc-pulse {
+    from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent), var(--shadow); }
+    to { box-shadow: 0 0 0 16px transparent, var(--shadow); }
+  }
+  .notice {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 12px 14px 12px 16px;
+    border-radius: 12px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+    background: color-mix(in srgb, var(--accent) 10%, var(--card)); font-size: 14px; color: var(--ink-soft);
+  }
+  .notice b { color: var(--ink); }
+  .notice button { margin-left: auto; flex: none; border: 0; background: none; color: var(--ink-faint); font: inherit; font-size: 20px; line-height: 1; padding: 2px 6px; cursor: pointer; }
+  .notice button:hover { color: var(--ink); }
+
+  /* Message éphémère (« Lien copié ») */
+  .toast {
+    position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 50;
+    transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+    background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 600;
+    padding: 10px 18px; border-radius: 999px; box-shadow: var(--shadow); transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Bouton « Revenir en haut » : flèche flottante en bas à droite (par-dessus la
+     réglette des mois si elle descend jusque-là) ; il n'apparaît qu'une fois que
+     l'on descend dans la liste. */
+  .to-top {
+    position: fixed; z-index: 26;
+    right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%;
+    display: grid; place-items: center; cursor: pointer;
+    background: var(--ink); color: var(--paper);
+    /* liseré clair : le bouton reste visible sur le pied de page, sombre lui aussi */
+    box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--paper) 30%, transparent), var(--shadow);
+    opacity: 0; visibility: hidden; transform: translateY(10px);
+    transition: opacity .2s, transform .2s, visibility 0s .2s;
+  }
+  .to-top.show { opacity: 1; visibility: visible; transform: none; transition: opacity .2s, transform .2s; }
+  @media (hover: hover) { .to-top:hover { transform: translateY(-2px); } }
+  .to-top:focus-visible { border-radius: 50%; }
+  .to-top svg { display: block; }
+  .cover { position: relative; min-height: 132px; color: #fff; overflow: hidden; background: #1a1a24; }
+  .cover .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  /* Affiche fournie par la salle (feed) : recouvre la scène illustrée, qui reste en repli si l'image échoue. */
+  .cover .photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #1a1a24; }
+  .cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.04) 42%, rgba(0,0,0,0.3)); }
+  .cover .date-badge {
+    position: absolute; top: 12px; left: 12px; z-index: 2;
+    background: rgba(0,0,0,.32); border-radius: 10px; padding: 6px 9px; text-align: center; line-height: 1; backdrop-filter: blur(2px);
+  }
+  .cover .date-badge span { display: block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; opacity: .92; margin-bottom: 3px; }
+  .cover .date-badge b { font-family: "Bricolage Grotesque", sans-serif; font-size: 22px; font-variant-numeric: tabular-nums; }
+
+  .event .body { padding: 15px 17px; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .disc-pill {
+    align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+    color: var(--dc); background: color-mix(in srgb, var(--dc) 14%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--dc) 30%, transparent);
+  }
+  .event h3 { font-size: 19px; font-weight: 700; }
+  .event .venue { font-size: 13.5px; font-weight: 600; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 6px; }
+  /* « org » (et non « partner ») : .partner est la tuile encadrée de la section Lieux partenaires. */
+  .event .venue.org + .venue { font-weight: 500; color: var(--ink-faint); margin-top: -4px; }
+  .event .venue svg { color: var(--ink-faint); flex: none; }
+  .event .when { font-size: 13px; color: var(--ink-faint); font-weight: 500; }
+  .event .desc { font-size: 13.5px; color: var(--ink-soft); margin-top: 1px; }
+
+  .empty { text-align: center; padding: 54px 20px; color: var(--ink-faint); border: 1.5px dashed var(--line-strong); border-radius: var(--radius); }
+  .empty b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 20px; color: var(--ink); margin-bottom: 4px; }
+
+  /* Filtre de période (segmenté) */
+  .seg { display: inline-flex; background: var(--card); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px; gap: 2px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .seg button { border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+  /* Bande « En ce moment » (longue durée) */
+  .now-band { margin-bottom: 28px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--accent) 7%, var(--card)); }
+  .band-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+  .band-head h3 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .band-head h3::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .band-head span { font-size: 13px; color: var(--ink-faint); }
+  .now-rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+
+  /* Étiquettes de statut */
+  .pill-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tag-last { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: #241a08; background: var(--accent); }
+  .tag-soon { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; color: var(--ink-soft); background: color-mix(in srgb, var(--ink) 8%, var(--card)); border: 1px solid var(--line); }
+  /* Ajouter au calendrier : bouton-icône sur la vignette (coin opposé à la pastille de date,
+     loin de la réglette des mois) + menu (calendrier de l'appareil ou Google Agenda) */
+  /* Partager : même bouton-icône, juste à gauche de celui du calendrier */
+  .cal-btn, .share-btn {
+    position: absolute; right: 10px; bottom: 10px; z-index: 4; padding: 0; border: 0;
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer;
+    color: #fff; background: rgba(0,0,0,.38); backdrop-filter: blur(2px); transition: background .15s;
+  }
+  .share-btn { right: 50px; }
+  .cal-btn:hover, .cal-btn[aria-expanded="true"], .share-btn:hover { background: rgba(0,0,0,.62); }
+  .cal-btn:focus-visible, .share-btn:focus-visible { border-radius: 10px; }
+  .cal-btn svg, .share-btn svg { display: block; }
+  .cal-menu {
+    position: absolute; z-index: 5; min-width: 196px; max-width: calc(100% - 16px);
+    display: flex; flex-direction: column; padding: 5px;
+    background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow);
+  }
+  .cal-opt {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; line-height: 1.25; color: var(--ink); text-decoration: none;
+  }
+  .cal-opt:hover, .cal-opt:focus-visible { background: var(--paper-2); }
+  .cal-opt:focus-visible { outline-offset: -2px; border-radius: 8px; }
+  .cal-opt svg { flex: none; color: var(--ink-faint); }
+  .date-badge.cont { padding: 6px 10px; }
+  .date-badge.cont b { font-size: 15px; letter-spacing: -0.01em; }
+
+  /* ---------- Fil chronologique : réglette flottante en filigrane ---------- */
+  /* Fixée au bord droit de la fenêtre, identique desktop/mobile, translucide. */
+  .rail {
+    position: fixed;
+    right: max(4px, env(safe-area-inset-right, 0px));
+    top: 40vh; /* recalé par JS pour démarrer au niveau de l'agenda */
+    z-index: 25;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+    max-height: 82vh;
+  }
+  .rail:hover, .rail:focus-within { opacity: 1; }
+  .rail.rail--off { opacity: 0 !important; pointer-events: none; }
+  .rail .rail-label, .rail-jump { display: none; }
+  .rail .track {
+    position: relative; display: flex; flex-direction: column; gap: 0;
+    max-height: 84vh; overflow-y: auto; padding: 6px 4px;
+    scrollbar-width: none;
+  }
+  .rail .track::-webkit-scrollbar { display: none; }
+  .rail .track::before { content: ""; position: absolute; right: 11px; top: 8px; bottom: 8px; width: 2px; background: var(--ink); opacity: .14; border-radius: 2px; }
+  .tl-node {
+    position: relative; display: flex; flex-direction: row-reverse; align-items: center; gap: 8px;
+    background: none; border: 0; padding: 3px 6px; cursor: pointer; font: inherit; color: var(--ink-soft); width: 100%; border-radius: 8px;
+  }
+  .tl-node:hover { color: var(--ink); }
+  .tl-node .dot {
+    width: 9px; height: 9px; flex: none; border-radius: 50%;
+    background: var(--ink); opacity: .5; z-index: 1; transition: all .15s;
+  }
+  .tl-node .lbl {
+    display: none; line-height: 1.05; white-space: nowrap;
+    background: color-mix(in srgb, var(--paper) 84%, transparent);
+    padding: 3px 9px; border-radius: 999px; backdrop-filter: blur(3px);
+  }
+  .tl-node .lbl b { display: block; font-family: "Bricolage Grotesque", sans-serif; font-size: 12.5px; font-weight: 700; text-transform: capitalize; }
+  .tl-node .lbl i { font-style: normal; font-size: 10.5px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  /* Libellés : mois courant toujours ; tous au survol/focus de la réglette */
+  .tl-node[aria-current="true"] .lbl,
+  .rail:hover .tl-node .lbl,
+  .rail:focus-within .tl-node .lbl { display: block; }
+  .tl-node[aria-current="true"] { color: var(--ink); }
+  .tl-node[aria-current="true"] .dot { width: 12px; height: 12px; background: var(--accent); opacity: 1; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); }
+  @media (prefers-reduced-motion: no-preference) { .rail { transition: opacity .2s ease; } }
+
+  /* ---------- Mobile : barre de filtres compacte (elle reste collée en haut de l'écran) ---------- */
+  @media (max-width: 720px) {
+    .search input, .venue-wrap select { font-size: 16px; } /* évite le zoom auto iOS */
+    .toolbar { padding-block: 9px; }
+    .toolbar-inner { gap: 8px; }
+    /* Disciplines : une seule rangée qui défile au doigt, d'un bord à l'autre de l'écran
+       (la pastille coupée au bord invite à faire glisser). */
+    .chips {
+      flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+      margin-inline: -22px; padding-inline: 22px; scroll-padding-inline: 22px;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { flex: none; padding-block: 6px; }
+    .seg button { padding-block: 5px; }
+    /* Partenaire et recherche se partagent une rangée */
+    .venue-wrap, .search { flex: 1 1 120px; min-width: 0; }
+    .venue-wrap select { width: 100%; max-width: none; padding-block: 7px; }
+    .search input { padding-block: 7px; }
+  }
+  @media (min-width: 431px) and (max-width: 720px) {
+    .venue-wrap, .search { flex-basis: 150px; } /* sinon trop étroits à côté des périodes */
+  }
+
+  @media (max-width: 540px) {
+    .event { grid-template-columns: 104px 1fr; }
+    .cover { min-height: 100%; }
+    .cover .date-badge { top: 8px; left: 8px; padding: 4px 7px; }
+    .cover .date-badge b { font-size: 17px; }
+    .cal-btn, .share-btn { right: 8px; bottom: 8px; width: 32px; height: 32px; }
+    .share-btn { right: 46px; }
+    .event .body { padding: 13px 14px; }
+    .event h3 { font-size: 17px; }
+    .now-rows { grid-template-columns: 1fr; }
+    .agenda { padding-block: 20px 40px; }
+  }
+
+  /* ---------- Billet : talon de date détachable à droite des cartes de la liste ---------- */
+  /* Seuil en requête de conteneur : il suit la largeur réelle de la liste, donc
+     aussi la taille du texte choisie (A− / A+). En deçà (téléphone, texte très
+     agrandi), le talon est masqué et la carte garde sa pastille de date. La bande
+     « En ce moment » n'a pas de talon. */
+  #list { container: liste / inline-size; }
+  .stub { display: none; }
+  @container liste (min-width: 640px) {
+    #list .event { grid-template-columns: 168px 1fr 136px; }
+    #list .cover .date-badge, #list .event .when { display: none; }
+    #list .stub {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      position: relative; padding: 14px 10px; min-width: 0; text-align: center; line-height: 1;
+      border-left: 2px dashed var(--line-strong);
+      background: color-mix(in srgb, var(--dc) 6%, var(--card));
+    }
+    /* encoches du talon, en haut et en bas du pointillé */
+    #list .stub::before, #list .stub::after {
+      content: ""; position: absolute; left: -9px; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--paper); border: 1px solid var(--line);
+    }
+    #list .stub::before { top: -9px; }
+    #list .stub::after { bottom: -9px; }
+  }
+  .stub span { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+  .stub b { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .stub .time {
+    margin-top: 8px; padding: 4px 9px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-soft); font-variant-numeric: tabular-nums;
+    background: color-mix(in srgb, var(--dc) 14%, var(--card));
+  }
+
+  /* ---------- Lieux partenaires : plan du centre-ville + légende numérotée ---------- */
+  .partners-sec { background: var(--paper-2); border-top: 1px solid var(--line); scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--tb, 70px) + 8px); }
+  .partners-sec .wrap { padding-block: 34px; container: lieux / inline-size; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .sec-head h2 { font-size: clamp(19px, 2.6vw, 25px); font-weight: 800; }
+  .sec-head .count { font-size: 13px; color: var(--ink-faint); font-weight: 600; }
+  /* Plan à gauche, légende à droite ; légende sous le plan quand la place manque
+     (seuil en requête de conteneur : il suit aussi la taille du texte A− / A+). */
+  .lieux { display: grid; gap: 16px; align-items: start; }
+  .plan { width: 100%; max-width: 560px; justify-self: center; margin: 0; background: var(--map-land); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  @container lieux (min-width: 760px) {
+    .lieux { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 24px; }
+    .plan { max-width: none; }
+  }
+  .plan svg { display: block; width: 100%; height: auto; }
+  .plan .street { stroke: var(--map-street); fill: none; stroke-linecap: round; }
+  .plan .lbl { fill: var(--ink-faint); font-family: "Instrument Sans", sans-serif; font-size: 17px; font-weight: 600; paint-order: stroke; stroke: var(--map-land); stroke-width: 4px; stroke-linejoin: round; }
+  .plan .lbl.w { font-style: italic; font-size: 19px; fill: var(--map-water-ink); stroke: none; }
+  .plan .pin circle { stroke: var(--pin-ring); stroke-width: 4; transition: stroke .15s, stroke-width .15s; }
+  .plan .pin text { fill: #fff; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 21px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .plan .pin { transition: opacity .15s; }
+  .plan .pin.dim { opacity: .35; }
+  .plan .pin.on circle { stroke: var(--accent); stroke-width: 6; }
+  .plan .tip { pointer-events: none; }
+  .plan .tip rect { fill: var(--ink); }
+  .plan .tip text { fill: var(--paper); font-family: "Instrument Sans", sans-serif; font-size: 22px; font-weight: 600; dominant-baseline: central; }
+  /* Mention OpenStreetMap sous le dessin (et non par-dessus : elle couvrirait un repère sur mobile) */
+  .plan .osm { padding: 5px 10px; font-size: 11.5px; text-align: right; color: var(--ink-faint); background: var(--card); border-top: 1px solid var(--line); }
+  .plan .osm a { color: inherit; }
+  /* Légende : chaque lieu, son numéro sur le plan, le lien vers son site (toute
+     la tuile, comme les cartes de l'agenda) et, posé par-dessus, son emplacement
+     sur Google Maps. */
+  .partners { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 10px; }
+  .partner { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: flex; gap: 12px; align-items: center; transition: border-color .15s, transform .1s, box-shadow .15s; }
+  .partner:hover, .partner.on { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .partner .p-info { min-width: 0; flex: 1; }
+  .partner .p-link { text-decoration: none; color: inherit; }
+  .partner .p-link::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: var(--radius); }
+  .partner .p-link:focus-visible { outline: none; }
+  .partner .p-link:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .partner .p-ext { flex: none; color: var(--ink-faint); transition: color .15s; }
+  .partner:hover .p-ext, .partner.on .p-ext { color: var(--accent); }
+  .partner .num { width: 32px; height: 32px; flex: none; border-radius: 50%; display: grid; place-items: center; font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 15px; color: #fff; background: var(--pc, var(--ink)); font-variant-numeric: tabular-nums; }
+  .partner b { display: block; font-size: 14.5px; }
+  .partner .p-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; font-size: 12px; color: var(--ink-faint); }
+  .partner .p-maps { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 6px 0; margin-block: -4px; font-weight: 600; color: var(--ink-soft); text-decoration: none; }
+  .partner .p-maps svg { color: var(--pc, var(--ink-faint)); flex: none; }
+  .partner .p-maps:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ---------- Footer ---------- */
+  /* Le pied de page est toujours sombre : ses couleurs de texte sont fixes (claires) et ne
+     suivent pas --paper / --ink, qui s'inversent en mode sombre et rendraient les liens invisibles. */
+  /* Marge du bas élargie : la flèche « Revenir en haut » ne couvre pas la dernière ligne. */
+  footer.site { --f-bg: #16162E; --f-fg: #FBF7F0; background: var(--f-bg); color: color-mix(in srgb, var(--f-fg) 86%, transparent); padding-block: 34px 76px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer.site { --f-bg: #0C0C18; } }
+  :root[data-theme="dark"] footer.site { --f-bg: #0C0C18; }
+  footer.site .cols { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,.14); }
+  footer .brand-txt strong { color: var(--f-fg); }
+  footer h4 { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 11px; color: color-mix(in srgb, var(--f-fg) 58%, transparent); font-family: "Instrument Sans", sans-serif; font-weight: 600; }
+  footer a { color: color-mix(in srgb, var(--f-fg) 82%, transparent); text-decoration: none; display: block; margin-bottom: 7px; font-size: 14px; }
+  footer a:hover { color: #fff; }
+  footer .lede { font-size: 13.5px; max-width: 36ch; margin: 12px 0 0; color: color-mix(in srgb, var(--f-fg) 68%, transparent); }
+  footer .fine { padding-top: 18px; font-size: 12.5px; color: color-mix(in srgb, var(--f-fg) 54%, transparent); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  footer .fine a { display: inline; margin: 0; font-size: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  @media (max-width: 680px) { footer.site .cols { grid-template-columns: 1fr; gap: 20px; } }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  html { scroll-behavior: smooth; }
+</style>
+
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap mast-inner">
+    <div class="top-row">
+      <a class="brand" href="#">
+        <img class="mark" src="logo.svg" alt="" width="40" height="40">
+        <span class="brand-txt"><strong>Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
+      </a>
+      <nav class="top">
+        <a href="#agenda">Agenda</a>
+        <a href="#lieux">Partenaires</a>
+        <a href="#apropos">À propos</a>
+      </nav>
+      <div class="tools">
+        <button class="theme-btn text-btn minus" id="text-down" type="button" title="Rapetisser le texte" aria-label="Rapetisser le texte">A−</button>
+        <button class="theme-btn text-btn plus" id="text-up" type="button" title="Grossir le texte" aria-label="Grossir le texte">A+</button>
+        <button class="theme-btn" id="theme" type="button" data-mode="auto" title="Thème : selon l'appareil" aria-label="Thème : selon l'appareil (cliquer pour changer)">
+          <svg class="ico-auto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <svg class="ico-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <svg class="ico-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="mast-hero">
+      <h1>Toute la culture du <span class="hl">centre-ville</span>, un seul agenda.</h1>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar" id="agenda">
+  <div class="wrap toolbar-inner">
+    <div class="chips" id="chips"></div>
+    <div class="seg" id="period" role="group" aria-label="Filtrer par période">
+      <button type="button" data-p="all" aria-pressed="true">Tout</button>
+      <button type="button" data-p="week">Cette semaine</button>
+      <button type="button" data-p="month">Ce mois-ci</button>
+    </div>
+    <div class="venue-wrap"><select id="venue" aria-label="Filtrer par partenaire"></select></div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Rechercher…" aria-label="Rechercher un événement, un partenaire ou un lieu">
+    </div>
+  </div>
+</div>
+
+<main class="wrap agenda">
+  <div class="agenda-head">
+    <h2>Agenda</h2>
+    <span class="count" id="resCount"></span>
+  </div>
+  <div class="notice" id="notice" role="status" hidden>
+    <span><b>Cet événement n'est plus à l'affiche.</b> Voici la programmation actuelle.</span>
+    <button type="button" id="noticeClose" aria-label="Fermer">×</button>
+  </div>
+  <section class="now-band" id="nowBand" hidden>
+    <div class="band-head"><h3>En ce moment</h3><span>expositions et parcours à voir avant la fin</span></div>
+    <div class="now-rows" id="nowRows"></div>
+  </section>
+  <div class="agenda-layout">
+    <div id="list"></div>
+    <nav class="rail" id="rail" aria-label="Fil chronologique par mois">
+      <div class="rail-jump"><select class="rail-select" id="railSelect" aria-label="Aller au mois"></select></div>
+      <div class="track" id="track"></div>
+    </nav>
+  </div>
+  <div class="empty" id="empty" hidden>
+    <b>Aucun événement ne correspond</b>
+    Essayez une autre discipline ou effacez votre recherche.
+  </div>
+</main>
+
+<section class="partners-sec" id="lieux">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Lieux partenaires</h2>
+      <span class="count">Le réseau culturel du centre-ville</span>
+    </div>
+    <div class="lieux">
+      <!-- Le plan double la légende pour la souris ; les lecteurs d'écran et le
+           clavier passent par la légende, qui porte les mêmes liens. -->
+      <figure class="plan">
+        <svg id="plan" aria-hidden="true" focusable="false"></svg>
+        <figcaption class="osm">Fond de carte © contributeurs <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a></figcaption>
+      </figure>
+      <ol class="partners" id="partners" aria-label="Légende du plan : lieux partenaires"></ol>
+    </div>
+  </div>
+</section>
+
+<footer class="site" id="apropos">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <a class="brand" href="#">
+          <img class="mark" src="logo.svg" alt="" width="40" height="40">
+          <span class="brand-txt"><strong>Culture Centro</strong><span>Centre-ville de Sherbrooke</span></span>
+        </a>
+        <p class="lede">Le guichet unique, gratuit et public, de la programmation culturelle du cœur de Sherbrooke.</p>
+      </div>
+      <div>
+        <h4>Explorer</h4>
+        <a href="#agenda">Agenda complet</a>
+        <a href="#lieux">Lieux partenaires</a>
+        <a href="#">Ce week-end</a>
+        <a href="variantes/">Variantes de design</a>
+      </div>
+      <div>
+        <h4>Le projet</h4>
+        <a href="#">Devenir partenaire</a>
+        <a href="#">Soumettre un événement</a>
+        <a href="#">Infolettre</a>
+      </div>
+    </div>
+    <div class="fine">
+      <span>Conception web&nbsp;: <a href="mailto:remiavelo@proton.me">Rémi À Vélo</a></span>
+      <span id="maj" hidden>Agenda mis à jour <time id="majQuand"></time></span>
+      <span>Sherbrooke, Québec</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<button class="to-top" id="toTop" type="button" title="Revenir en haut" aria-label="Revenir en haut de la page">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+(function () {
+  "use strict";
+
+  // Vignettes « photo démo » : scènes illustrées par discipline (images externes bloquées en artefact).
+  function svgWrap(u, inner){
+    return '<svg class="scene" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      inner +
+      '<rect width="400" height="300" fill="url(#vg'+u+')"/>' +
+      '<defs><radialGradient id="vg'+u+'" cx="50%" cy="40%" r="78%">' +
+        '<stop offset="52%" stop-color="#000" stop-opacity="0"/>' +
+        '<stop offset="100%" stop-color="#000" stop-opacity="0.36"/>' +
+      '</radialGradient></defs></svg>';
+  }
+
+  var SCENES = {
+    theatre: function(u){ return svgWrap(u,
+      '<rect width="400" height="300" fill="#251016"/>' +
+      '<rect y="158" width="400" height="142" fill="#3a1a20"/>' +
+      '<ellipse cx="200" cy="52" rx="150" ry="130" fill="#f0cf8c" opacity="0.15"/>' +
+      '<polygon points="200,10 118,300 282,300" fill="#f4d78f" opacity="0.13"/>' +
+      '<rect y="0" width="400" height="26" fill="#5a1520"/>' +
+      '<path d="M0,0 H126 C116,64 134,128 104,190 C120,244 92,300 100,300 H0 Z" fill="#7c1f2c"/>' +
+      '<path d="M400,0 H274 C284,64 266,128 296,190 C280,244 308,300 300,300 H400 Z" fill="#6a1824"/>' +
+      '<path d="M126,2 C118,70 134,140 108,208 C120,258 100,300 100,300" stroke="#4d1019" stroke-width="7" fill="none" opacity=".45"/>' +
+      '<path d="M274,2 C282,70 266,140 292,208 C280,258 300,300 300,300" stroke="#43101a" stroke-width="7" fill="none" opacity=".45"/>'
+    ); },
+    musique: function(u){ return svgWrap(u,
+      '<rect width="400" height="300" fill="#0d0d20"/>' +
+      '<polygon points="95,0 62,300 152,300" fill="#6C5CE7" opacity=".5"/>' +
+      '<polygon points="165,0 128,300 246,300" fill="#C24E8E" opacity=".42"/>' +
+      '<polygon points="250,0 220,300 330,300" fill="#28B6C9" opacity=".4"/>' +
+      '<polygon points="322,0 300,300 384,300" fill="#E39A2B" opacity=".32"/>' +
+      '<circle cx="200" cy="26" r="64" fill="#ffffff" opacity=".07"/>' +
+      '<g stroke="#05050d" stroke-width="4" stroke-linecap="round"><path d="M60,246 V212"/><path d="M132,244 V208"/><path d="M242,248 V210"/><path d="M304,244 V214"/></g>' +
+      '<rect y="238" width="400" height="62" fill="#05050d"/>' +
+      '<g fill="#05050d"><circle cx="34" cy="246" r="24"/><circle cx="92" cy="250" r="26"/><circle cx="150" cy="244" r="23"/><circle cx="208" cy="250" r="27"/><circle cx="268" cy="245" r="24"/><circle cx="326" cy="250" r="26"/><circle cx="380" cy="246" r="23"/></g>'
+    ); },
+    arts: function(u){ return svgWrap(u,
+      '<rect width="400" height="300" fill="#ece5d6"/>' +
+      '<rect y="212" width="400" height="88" fill="#c7b085"/>' +
+      '<rect y="206" width="400" height="7" fill="#ac9068"/>' +
+      '<g stroke="#d9ccb2" stroke-width="7"><rect x="34" y="66" width="72" height="94" fill="#fff"/><rect x="164" y="52" width="96" height="70" fill="#fff"/><rect x="312" y="70" width="60" height="86" fill="#fff"/></g>' +
+      '<rect x="46" y="78" width="48" height="70" fill="#3d7dca"/>' +
+      '<rect x="176" y="64" width="72" height="46" fill="#159A8A"/>' +
+      '<rect x="324" y="82" width="36" height="62" fill="#D6435A"/>' +
+      '<g fill="#2b2b34" opacity=".8"><circle cx="150" cy="176" r="12"/><path d="M136,250 C136,212 164,212 164,250 Z"/></g>'
+    ); },
+    festival: function(u){ return svgWrap(u,
+      '<defs><linearGradient id="fs'+u+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3A24B"/><stop offset=".5" stop-color="#C85F6E"/><stop offset="1" stop-color="#573A6B"/></linearGradient></defs>' +
+      '<rect width="400" height="300" fill="url(#fs'+u+')"/>' +
+      '<circle cx="200" cy="150" r="52" fill="#FFE0A6" opacity=".55"/>' +
+      '<rect y="222" width="400" height="78" fill="#2b1e33"/>' +
+      '<polygon points="52,222 104,168 156,222" fill="#2b1e33"/>' +
+      '<polygon points="250,222 304,158 358,222" fill="#241a2e"/>' +
+      '<path d="M0,34 Q200,74 400,34" stroke="#fff" stroke-opacity=".5" stroke-width="2" fill="none"/>' +
+      '<g><polygon points="34,40 56,42 45,60" fill="#E39A2B"/><polygon points="90,48 112,50 101,68" fill="#D6435A"/><polygon points="150,52 172,54 161,72" fill="#159A8A"/><polygon points="228,52 250,54 239,72" fill="#6C5CE7"/><polygon points="292,48 314,50 303,68" fill="#E39A2B"/><polygon points="350,42 372,44 361,62" fill="#D6435A"/></g>' +
+      '<g fill="#160f1c"><circle cx="40" cy="240" r="16"/><circle cx="86" cy="244" r="18"/><circle cx="140" cy="238" r="16"/><circle cx="196" cy="245" r="19"/><circle cx="256" cy="240" r="17"/><circle cx="316" cy="245" r="18"/><circle cx="372" cy="240" r="16"/></g>' +
+      '<g><rect x="210" y="70" width="5" height="9" fill="#D6435A"/><rect x="140" y="104" width="5" height="9" fill="#6C5CE7"/><rect x="286" y="96" width="5" height="9" fill="#FFE9B8"/><rect x="96" y="86" width="5" height="9" fill="#159A8A"/></g>'
+    ); },
+    danse: function(u){ return svgWrap(u,
+      '<defs><radialGradient id="dr'+u+'" cx="50%" cy="34%" r="82%"><stop offset="0" stop-color="#E58FC0"/><stop offset="1" stop-color="#571E44"/></radialGradient></defs>' +
+      '<rect width="400" height="300" fill="url(#dr'+u+')"/>' +
+      '<ellipse cx="200" cy="298" rx="240" ry="56" fill="#3a1430" opacity=".55"/>' +
+      '<polygon points="200,0 150,300 250,300" fill="#ffffff" opacity=".12"/>' +
+      '<g stroke="#ffffff" stroke-opacity=".18" stroke-width="3" fill="none" stroke-linecap="round"><path d="M118,150 C150,118 172,120 192,140"/><path d="M282,172 C256,150 234,150 220,166"/></g>' +
+      '<g fill="#180a15"><circle cx="205" cy="92" r="14"/><path d="M205,106 C195,118 196,150 186,168 C179,182 166,192 146,196 C168,193 184,203 194,224 L178,272 L194,274 L214,224 C223,203 238,194 258,203 C240,187 230,166 226,146 C241,136 252,116 248,100 C242,118 224,126 210,118 Z"/></g>'
+    ); },
+    humour: function(u){ return svgWrap(u,
+      '<rect width="400" height="300" fill="#2a1410"/>' +
+      '<rect y="200" width="400" height="100" fill="#3d1d16"/>' +
+      '<ellipse cx="200" cy="120" rx="150" ry="120" fill="#F58A57" opacity=".18"/>' +
+      '<rect x="190" y="118" width="20" height="90" rx="4" fill="#F0A070"/>' +
+      '<rect x="176" y="72" width="48" height="66" rx="24" fill="#FFD1A8"/>' +
+      '<rect x="182" y="84" width="36" height="6" fill="#2a1410" opacity=".35"/><rect x="182" y="98" width="36" height="6" fill="#2a1410" opacity=".35"/>' +
+      '<path d="M160,208 h80 M200,208 v22" stroke="#F0A070" stroke-width="6" stroke-linecap="round"/>' +
+      '<g fill="#FFE0A6" opacity=".6"><circle cx="78" cy="70" r="5"/><circle cx="320" cy="58" r="4"/><circle cx="350" cy="130" r="6"/><circle cx="60" cy="150" r="4"/></g>' +
+      '<path d="M40,250 q30,-18 60,0 t60,0 t60,0 t60,0 t60,0" stroke="#F58A57" stroke-opacity=".5" stroke-width="3" fill="none"/>'
+    ); },
+    jeunesse: function(u){ return svgWrap(u,
+      '<defs><linearGradient id="je'+u+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD3F4"/><stop offset="1" stop-color="#E8F6DD"/></linearGradient></defs>' +
+      '<rect width="400" height="300" fill="url(#je'+u+')"/>' +
+      '<circle cx="330" cy="60" r="34" fill="#FFE27A"/>' +
+      '<polygon points="150,60 205,120 150,205 95,120" fill="#F0728A"/>' +
+      '<polygon points="150,60 205,120 150,120" fill="#FFD166" opacity=".9"/>' +
+      '<polygon points="150,120 150,205 95,120" fill="#6CCB70" opacity=".9"/>' +
+      '<path d="M150,205 q-10,30 10,50 t-6,45" stroke="#2E7D32" stroke-width="3" fill="none"/>' +
+      '<g fill="#F0728A"><path d="M132,238 l8,-6 8,6 -8,6z"/><path d="M158,262 l8,-6 8,6 -8,6z"/></g>' +
+      '<ellipse cx="200" cy="300" rx="260" ry="60" fill="#7BD37F"/>' +
+      '<g fill="#fff" opacity=".85"><ellipse cx="70" cy="90" rx="30" ry="14"/><ellipse cx="92" cy="82" rx="22" ry="12"/><ellipse cx="280" cy="150" rx="26" ry="12"/></g>'
+    ); },
+    litt: function(u){
+      var cols = ['#8a3b2e','#b6863c','#3d6b6f','#7c4a86','#a85a4a','#4a5f8a','#9c7b3a','#6b8a4a'];
+      var widths = [16,22,14,20,18,15,24,17,19,16,21,15,18,22,14,20];
+      function shelf(y){
+        var s = '', x = 8, i = 0;
+        while (x < 390){
+          var w = widths[i % widths.length];
+          var h = 44 - ((i * 7) % 16);
+          s += '<rect x="'+x+'" y="'+(y + (48 - h))+'" width="'+(w - 2)+'" height="'+h+'" fill="'+cols[(i + y) % cols.length]+'"/>';
+          x += w; i++;
+        }
+        return s + '<rect x="0" y="'+(y + 48)+'" width="400" height="8" fill="#5a3f28"/>';
+      }
+      return svgWrap(u,
+        '<rect width="400" height="300" fill="#e7dcc4"/>' +
+        '<ellipse cx="330" cy="40" rx="140" ry="100" fill="#ffe6a8" opacity=".5"/>' +
+        shelf(30) + shelf(120) + shelf(210)
+      );
+    }
+  };
+
+  var DISC = {
+    theatre:  { label: "Théâtre",      pill: "var(--d-theatre)",  a: "#E0556B", b: "#8E2C4A" },
+    musique:  { label: "Musique",      pill: "var(--d-musique)",  a: "#7B6BF0", b: "#3E2FA6" },
+    arts:     { label: "Arts visuels", pill: "var(--d-arts)",     a: "#1FB0A0", b: "#0C6E63" },
+    festival: { label: "Festivals",    pill: "var(--d-festival)", a: "#F0A93C", b: "#C9701A" },
+    danse:    { label: "Danse",        pill: "var(--d-danse)",    a: "#D06AA0", b: "#8A2F6E" },
+    litt:     { label: "Littérature",  pill: "var(--d-litt)",     a: "#4E89D6", b: "#285FA6" },
+    humour:   { label: "Humour",       pill: "var(--d-humour)",   a: "#F08A4B", b: "#A8401C" },
+    jeunesse: { label: "Jeunesse",     pill: "var(--d-jeunesse)", a: "#6CCB70", b: "#2E7D32" }
+  };
+
+  var MOIS_ABBR = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  var MOIS_LONG = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  var JOURS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+  var JOURS_LONG = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+
+  var EVENTS = [
+    // ---- Automne 2026 ----
+    { d:"musique",  title:"Soirée jazz manouche",             venue:"La Petite Boîte Noire",     date:"2026-09-27", time:"21 h 00", desc:"Trio de guitares dans l'esprit de Django Reinhardt, ambiance intime." },
+    { d:"arts",     title:"Exposition « Territoires »",        venue:"Musée des beaux-arts",      date:"2026-09-20", dateEnd:"2026-11-15", time:"10 h – 17 h", desc:"Le paysage estrien vu par une dizaine d'artistes contemporains." },
+    { d:"litt",     title:"Rencontre d'autrice : Kim Thúy",    venue:"Bibliothèque Éva-Senécal",  date:"2026-10-01", time:"19 h 00", desc:"Lecture et discussion suivies d'une séance de dédicaces." },
+    { d:"festival", title:"Festival des traditions du monde",  venue:"Parc Jacques-Cartier",      date:"2026-10-02", dateEnd:"2026-10-04", time:"Dès 11 h", desc:"Musiques, danses et cuisines d'ici et d'ailleurs, trois jours durant." },
+    { d:"theatre",  title:"Les Belles-Sœurs",                  venue:"Théâtre Granada",           date:"2026-10-03", time:"20 h 00", desc:"Le classique de Michel Tremblay dans une nouvelle mise en scène." },
+    { d:"musique",  title:"OSSH — Nuit romantique",           venue:"Maison des arts de la parole",    date:"2026-10-05", time:"19 h 30", desc:"Brahms et Schumann sous la direction de la cheffe invitée." },
+    { d:"arts",     title:"Art actuel : installations sonores",venue:"Sporobole",                 date:"2026-10-08", dateEnd:"2026-10-30", time:"12 h – 17 h", desc:"Parcours immersif dans l'espace de la galerie." },
+    { d:"musique",  title:"Vitrine de la relève",             venue:"Le Tremplin",               date:"2026-10-09", time:"20 h 00", desc:"Quatre groupes émergents de la scène sherbrookoise." },
+    { d:"theatre",  title:"Le Petit Prince (jeune public)",    venue:"Centre culturel de l'UdeS", date:"2026-10-12", time:"14 h 00", desc:"Adaptation familiale, à partir de 6 ans." },
+    { d:"litt",     title:"Slam ouvert : micro libre",         venue:"Le Boquébière",             date:"2026-10-16", time:"20 h 00", desc:"Scène ouverte de poésie parlée, inscription sur place." },
+    { d:"danse",    title:"Création contemporaine « Fascia »", venue:"Théâtre Léonard-St-Laurent",date:"2026-10-18", time:"20 h 00", desc:"Cinq interprètes, une écriture chorégraphique du souffle." },
+    { d:"festival", title:"Nuit des galeries",                 venue:"Rue Wellington Nord",       date:"2026-10-24", time:"18 h – 23 h", desc:"Vernissages, performances et ateliers tout au long de l'artère." },
+    { d:"musique",  title:"Chœur symphonique — Requiem",       venue:"Maison des arts de la parole",    date:"2026-11-07", time:"19 h 30", desc:"Le Requiem de Fauré porté par 80 voix et l'orchestre." },
+    { d:"theatre",  title:"Improvisation : la grande ligue",   venue:"Théâtre Granada",           date:"2026-11-14", time:"20 h 00", desc:"Match d'impro déjanté entre deux équipes de la région." },
+    { d:"arts",     title:"Exposition « Lumières du Nord »",   venue:"Musée des beaux-arts",      date:"2026-11-20", dateEnd:"2027-01-24", time:"10 h – 17 h", desc:"La photographie hivernale québécoise, du crépuscule aux aurores." },
+    { d:"danse",    title:"Bal folk du centre-ville",          venue:"Centre culturel de l'UdeS", date:"2026-11-21", time:"19 h 00", desc:"Initiation aux danses traditionnelles, ouvert à tous." },
+    { d:"musique",  title:"Nuit électro-acoustique",           venue:"La Petite Boîte Noire",     date:"2026-11-28", time:"21 h 30", desc:"Rencontre entre musiciens acoustiques et machines analogiques." },
+
+    // ---- Hiver 2026-2027 ----
+    { d:"theatre",  title:"Un conte de Noël",                  venue:"Théâtre Granada",           date:"2026-12-03", time:"20 h 00", desc:"L'adaptation scénique du récit de Dickens, en famille." },
+    { d:"musique",  title:"Concert de Noël de l'OSSH",         venue:"Maison des arts de la parole",    date:"2026-12-05", time:"19 h 30", desc:"Les grands classiques des Fêtes par l'orchestre et ses invités." },
+    { d:"danse",    title:"Casse-Noisette",                    venue:"Centre culturel de l'UdeS", date:"2026-12-06", time:"14 h 00", desc:"Le ballet féerique de Tchaïkovski dans une version régionale." },
+    { d:"festival", title:"Marché de Noël du centre-ville",    venue:"Rue Wellington Nord",       date:"2026-12-11", dateEnd:"2026-12-13", time:"Dès 11 h", desc:"Artisans, food trucks et musique au cœur du quartier illuminé." },
+    { d:"litt",     title:"Contes d'hiver au coin du feu",     venue:"Bibliothèque Éva-Senécal",  date:"2026-12-12", time:"15 h 00", desc:"Heure du conte pour petits et grands, chocolat chaud offert." },
+    { d:"festival", title:"Grand feu du Nouvel An",            venue:"Parc Jacques-Cartier",      date:"2026-12-31", time:"22 h 00", desc:"Feux d'artifice et DJ pour accueillir la nouvelle année." },
+    { d:"musique",  title:"Traditions du Jour de l'An",        venue:"Le Tremplin",               date:"2027-01-09", time:"20 h 00", desc:"Veillée de musique trad avec violon, podorythmie et gigue." },
+    { d:"festival", title:"Sherbrooke en lumières",            venue:"Rue Wellington Nord",       date:"2027-01-15", dateEnd:"2027-01-17", time:"17 h – 22 h", desc:"Projections monumentales et parcours lumineux dans le centre-ville." },
+    { d:"theatre",  title:"Huis clos",                         venue:"Théâtre Léonard-St-Laurent",date:"2027-01-22", time:"20 h 00", desc:"Le huis clos de Sartre, mise en scène épurée et tendue." },
+    { d:"litt",     title:"Nuit de la bande dessinée",         venue:"Bibliothèque Éva-Senécal",  date:"2027-01-28", time:"18 h 30", desc:"Rencontres d'illustrateurs et ateliers de création." },
+
+    // ---- Hiver-printemps 2027 ----
+    { d:"arts",     title:"Exposition « Matières premières »", venue:"Musée des beaux-arts",      date:"2027-02-05", dateEnd:"2027-04-25", time:"10 h – 17 h", desc:"La sculpture contemporaine et ses matériaux bruts." },
+    { d:"musique",  title:"OSSH — Symphonies nordiques",       venue:"Maison des arts de la parole",    date:"2027-02-06", time:"19 h 30", desc:"Sibelius et Grieg, un voyage sonore vers le grand froid." },
+    { d:"danse",    title:"Soirée de danse contemporaine",     venue:"Théâtre Léonard-St-Laurent",date:"2027-02-13", time:"20 h 00", desc:"Trois courtes pièces de chorégraphes de la relève." },
+    { d:"festival", title:"Carnaval d'hiver du centre-ville",  venue:"Parc Jacques-Cartier",      date:"2027-02-26", dateEnd:"2027-02-28", time:"Dès 10 h", desc:"Sculptures sur glace, glissades et animations pour tous." },
+    { d:"musique",  title:"Vitrine de la relève",             venue:"Le Tremplin",               date:"2027-03-06", time:"20 h 00", desc:"Nouvelle sélection d'artistes émergents de l'Estrie." },
+    { d:"theatre",  title:"En attendant Godot",               venue:"Théâtre Granada",           date:"2027-03-13", time:"20 h 00", desc:"Le chef-d'œuvre de Beckett dans une lecture lumineuse." },
+    { d:"festival", title:"Festival du film étudiant",         venue:"Centre culturel de l'UdeS", date:"2027-03-19", dateEnd:"2027-03-21", time:"Dès 13 h", desc:"Projections, jury et remise de prix aux jeunes cinéastes." },
+    { d:"litt",     title:"Slam ouvert : micro libre",         venue:"Le Boquébière",             date:"2027-03-27", time:"20 h 00", desc:"Scène ouverte de poésie parlée, inscription sur place." },
+    { d:"musique",  title:"Récital de piano",                 venue:"La Petite Boîte Noire",     date:"2027-04-03", time:"20 h 00", desc:"Un tour du répertoire romantique par une pianiste invitée." },
+    { d:"danse",    title:"Krump & cultures urbaines",        venue:"Centre culturel de l'UdeS", date:"2027-04-10", time:"20 h 00", desc:"Battle de danse urbaine et démonstrations de la scène locale." },
+    { d:"theatre",  title:"Théâtre d'objets : « Fragile »",   venue:"Théâtre Léonard-St-Laurent",date:"2027-04-17", time:"19 h 00", desc:"Un spectacle sans mots où les objets prennent vie." },
+    { d:"festival", title:"Festival de la relève musicale",   venue:"Rue Wellington Nord",       date:"2027-04-23", dateEnd:"2027-04-25", time:"Dès 16 h", desc:"Scènes extérieures et découvertes tout au long du week-end." },
+
+    // ---- Été 2027 ----
+    { d:"arts",     title:"Exposition estivale « Rivières »",  venue:"Musée des beaux-arts",      date:"2027-06-06", dateEnd:"2027-09-06", time:"10 h – 17 h", desc:"L'eau et le paysage fluvial de Sherbrooke à travers les époques." },
+    { d:"musique",  title:"OSSH — Final de saison",           venue:"Maison des arts de la parole",    date:"2027-05-08", time:"19 h 30", desc:"La 9e de Beethoven pour clore la saison symphonique." },
+    { d:"theatre",  title:"Roméo et Juliette",                venue:"Théâtre Granada",           date:"2027-05-15", time:"20 h 00", desc:"La tragédie de Shakespeare, mise en scène contemporaine." },
+    { d:"litt",     title:"Salon du livre de l'Estrie",       venue:"Centre culturel de l'UdeS", date:"2027-05-21", dateEnd:"2027-05-23", time:"Dès 10 h", desc:"Rencontres, dédicaces et tables rondes avec des auteurs d'ici." },
+    { d:"festival", title:"Fête nationale au centre-ville",   venue:"Parc Jacques-Cartier",      date:"2027-06-23", dateEnd:"2027-06-24", time:"Dès 15 h", desc:"Grand spectacle, feu de joie et musique jusqu'à la nuit." },
+    { d:"danse",    title:"Danse en plein air",               venue:"Parc Jacques-Cartier",      date:"2027-06-27", time:"18 h 00", desc:"Spectacle chorégraphique gratuit au bord de la rivière." },
+    { d:"festival", title:"Sherbrooke Blues",                 venue:"Rue Wellington Nord",       date:"2027-07-09", dateEnd:"2027-07-12", time:"Dès 17 h", desc:"Quatre jours de blues sur les scènes extérieures du centre-ville." },
+    { d:"musique",  title:"Concerts du parc",                 venue:"Parc Jacques-Cartier",      date:"2027-07-16", time:"19 h 00", desc:"Série gratuite de concerts en plein air, tous les vendredis." },
+    { d:"theatre",  title:"Théâtre d'été : comédie",          venue:"Théâtre Granada",           date:"2027-07-24", time:"20 h 00", desc:"Une comédie estivale légère et enlevée." },
+    { d:"festival", title:"Festival des traditions du monde", venue:"Parc Jacques-Cartier",      date:"2027-07-30", dateEnd:"2027-08-02", time:"Dès 11 h", desc:"L'édition estivale du grand rendez-vous interculturel." },
+    { d:"musique",  title:"Nuit électro sur le toit",         venue:"La Petite Boîte Noire",     date:"2027-08-07", time:"22 h 00", desc:"DJ set et création sonore sous les étoiles." },
+    { d:"danse",    title:"Bal populaire d'été",              venue:"Rue Wellington Nord",       date:"2027-08-21", time:"19 h 30", desc:"Piste de danse en plein air et orchestre swing." },
+
+    // ---- Automne-hiver 2027 ----
+    { d:"arts",     title:"Exposition « Regards contemporains »", venue:"Sporobole",              date:"2027-09-10", dateEnd:"2027-11-28", time:"12 h – 17 h", desc:"Cinq artistes explorent l'image à l'ère numérique." },
+    { d:"musique",  title:"Concert de rentrée de l'OSSH",     venue:"Maison des arts de la parole",    date:"2027-09-11", time:"19 h 30", desc:"Le coup d'envoi de la nouvelle saison symphonique." },
+    { d:"theatre",  title:"La Cantatrice chauve",             venue:"Théâtre Léonard-St-Laurent",date:"2027-09-18", time:"20 h 00", desc:"L'absurde de Ionesco, drôle et grinçant." },
+    { d:"festival", title:"Nuit des galeries",               venue:"Rue Wellington Nord",       date:"2027-09-24", time:"18 h – 23 h", desc:"Le retour du grand parcours d'art dans le centre-ville." },
+    { d:"litt",     title:"Rencontre d'auteur : Éric Dupont", venue:"Bibliothèque Éva-Senécal",  date:"2027-10-02", time:"19 h 00", desc:"Discussion autour de son dernier roman, suivie d'une dédicace." },
+    { d:"danse",    title:"Création : « Territoire du corps »",venue:"Théâtre Léonard-St-Laurent",date:"2027-10-15", time:"20 h 00", desc:"Une pièce sur le mouvement et l'espace intérieur." },
+    { d:"musique",  title:"Vitrine de la relève",             venue:"Le Tremplin",               date:"2027-10-22", time:"20 h 00", desc:"Les nouvelles voix de la scène estrienne." },
+    { d:"theatre",  title:"Impro : la grande ligue",          venue:"Théâtre Granada",           date:"2027-11-13", time:"20 h 00", desc:"La saison d'improvisation reprend ses droits." },
+    { d:"litt",     title:"Marathon d'écriture",              venue:"Bibliothèque Éva-Senécal",  date:"2027-11-20", time:"13 h 00", desc:"Six heures pour écrire ensemble, ateliers et lectures." },
+    { d:"musique",  title:"Chœurs d'automne",                 venue:"Maison des arts de la parole",    date:"2027-11-27", time:"19 h 30", desc:"Un programme choral autour des saisons." },
+
+    // ---- Hiver 2027-2028 ----
+    { d:"theatre",  title:"Un conte de Noël",                  venue:"Théâtre Granada",           date:"2027-12-03", time:"20 h 00", desc:"Le retour du grand classique des Fêtes." },
+    { d:"festival", title:"Marché de Noël du centre-ville",    venue:"Rue Wellington Nord",       date:"2027-12-10", dateEnd:"2027-12-12", time:"Dès 11 h", desc:"Artisans, saveurs et musique dans le quartier illuminé." },
+    { d:"musique",  title:"Concert des Fêtes de l'OSSH",       venue:"Maison des arts de la parole",    date:"2027-12-17", time:"19 h 30", desc:"Les incontournables de Noël par l'orchestre." },
+    { d:"festival", title:"Grand feu du Nouvel An",            venue:"Parc Jacques-Cartier",      date:"2027-12-31", time:"22 h 00", desc:"Feux d'artifice pour saluer 2028 au bord de la rivière." },
+    { d:"musique",  title:"Veillée trad du Jour de l'An",      venue:"Le Tremplin",               date:"2028-01-08", time:"20 h 00", desc:"Musique traditionnelle, gigue et bonne humeur." },
+    { d:"festival", title:"Sherbrooke en lumières",            venue:"Rue Wellington Nord",       date:"2028-01-14", dateEnd:"2028-01-16", time:"17 h – 22 h", desc:"Deuxième édition du parcours lumineux du centre-ville." },
+    { d:"theatre",  title:"Le Malade imaginaire",             venue:"Théâtre Léonard-St-Laurent",date:"2028-01-21", time:"20 h 00", desc:"La comédie de Molière, toujours aussi mordante." },
+    { d:"litt",     title:"Rendez-vous polar",                venue:"Bibliothèque Éva-Senécal",  date:"2028-01-28", time:"19 h 00", desc:"Une soirée noire : auteurs de romans policiers de la région." }
+  ];
+
+  // Lieux partenaires : les organismes du centre-ville dont la programmation
+  // est agrégée par un extracteur (voir docs/partenaires.md et
+  // src/culturecentro/sources/). Noms et sites repris des sources scrapées.
+  // lat / lon : géocodage OpenStreetMap des adresses (comme variantes/commun.js),
+  // pour placer le repère du lieu sur le plan ; null = hors du plan.
+  var PARTNERS = [
+    { name:"Théâtre Granada",                    kind:"Salle patrimoniale",         url:"https://theatregranada.com",          lat:45.40229, lon:-71.89107 },
+    { name:"Le Grand-Espace",                    kind:"Arts de la scène",           url:"https://legrandespace.ca",            lat:45.39787, lon:-71.88758 },
+    { name:"Musée des beaux-arts de Sherbrooke", kind:"Arts visuels",               url:"https://mbas.qc.ca",                  lat:45.40513, lon:-71.89460 },
+    { name:"Sporobole",                          kind:"Centre en art actuel",       url:"https://sporobole.org",               lat:45.40266, lon:-71.89021 },
+    { name:"La Petite Boîte Noire",              kind:"Salle de musique",           url:"https://lapetiteboitenoire.com",      lat:45.40341, lon:-71.89069 },
+    { name:"Le Tremplin 16-30",                  kind:"Diffusion de la relève",     url:"https://tremplin16-30.com",           lat:45.39980, lon:-71.88949 },
+    { name:"Maison des arts de la parole",       kind:"Contes · Arts de la parole", url:"https://maisondesartsdelaparole.com", lat:45.40368, lon:-71.89156 }
+  ];
+
+  var PIN = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+
+  function parseD(s){ var p = s.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+
+  // Identifiant d'événement pour les liens partagés (?e=<id>) : titre + date, donc
+  // stable d'un jour à l'autre tant que le partenaire ne change ni l'un ni l'autre.
+  // Ex. « Les Belles-Sœurs » le 3 oct. 2026 → les-belles-soeurs-2026-10-03.
+  function slugify(s){
+    return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/œ/g, "oe").replace(/æ/g, "ae").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+  // Le feed publié porte déjà l'identifiant (calculé à l'identique par
+  // « culturecentro pages », qui génère les pages de partage) ; on ne le calcule
+  // ici que pour les événements qui n'en ont pas (démo).
+  function assignerIds(){
+    var vus = {};
+    EVENTS.forEach(function(ev){ if (ev.id) vus[ev.id] = true; });
+    EVENTS.forEach(function(ev){
+      if (ev.id) return;
+      var id = (slugify(ev.title).slice(0, 60).replace(/-+$/, "") || "evenement") + "-" + ev.date;
+      if (vus[id]){ // même titre deux fois le même jour : on distingue par l'heure, sinon -2, -3…
+        var heure = String(ev.time || "").replace(/\D/g, "");
+        if (heure && !vus[id + "-" + heure]) id += "-" + heure;
+        else { var n = 2; while (vus[id + "-" + n]) n++; id += "-" + n; }
+      }
+      vus[id] = true;
+      ev.id = id;
+    });
+  }
+
+  function whenLabel(ev){
+    var s = parseD(ev.date);
+    if (ev.dateEnd){
+      var e = parseD(ev.dateEnd);
+      var sameMonth = s.getMonth() === e.getMonth();
+      var txt = "Du " + s.getDate() + (sameMonth ? "" : " " + MOIS_ABBR[s.getMonth()]) +
+                " au " + e.getDate() + " " + MOIS_ABBR[e.getMonth()];
+      return txt + (ev.time ? " · " + ev.time : "");
+    }
+    return JOURS_LONG[s.getDay()] + " " + s.getDate() + " " + MOIS_ABBR[s.getMonth()] +
+           (ev.time ? " · " + ev.time : "");
+  }
+
+  // Durée & période
+  var DAY = 86400000;
+  var NOW = new Date(2026, 8, 27); // « aujourd'hui » de la démo
+  function endOf(ev){ return ev.dateEnd ? parseD(ev.dateEnd) : parseD(ev.date); }
+  function spanDays(ev){ return Math.round((endOf(ev) - parseD(ev.date)) / DAY) + 1; }
+  function isContinu(ev){ return ev.cont === true || (ev.dateEnd && spanDays(ev) > 8); }
+  function daysUntil(dt){ return Math.ceil((dt - NOW) / DAY); }
+  function inPeriod(ev){
+    if (state.period === "all") return true;
+    var wEnd = new Date(NOW.getTime() + (state.period === "week" ? 7 : 31) * DAY);
+    return parseD(ev.date) <= wEnd && endOf(ev) >= NOW; // chevauchement avec la fenêtre
+  }
+
+  // Ligne « quand » selon le type
+  function whenLine(ev, cont){
+    if (!cont) return whenLabel(ev);
+    var s = parseD(ev.date), e = endOf(ev);
+    if (s <= NOW) return "Jusqu'au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + (ev.time ? " · " + ev.time : "");
+    var sm = s.getMonth() === e.getMonth();
+    return "Du " + s.getDate() + (sm ? "" : " " + MOIS_ABBR[s.getMonth()]) + " au " + e.getDate() + " " + MOIS_LONG[e.getMonth()] + (ev.time ? " · " + ev.time : "");
+  }
+
+  // Pastille de date : jour, plage, ou « jusqu'au » pour le continu
+  function badgeHtml(ev, cont){
+    var s = parseD(ev.date), e = endOf(ev);
+    if (cont){
+      if (s <= NOW) return '<span class="date-badge cont"><span>Jusqu\'au</span><b>'+ e.getDate() +' '+ MOIS_ABBR[e.getMonth()] +'</b></span>';
+      return '<span class="date-badge cont"><span>Dès le</span><b>'+ s.getDate() +' '+ MOIS_ABBR[s.getMonth()] +'</b></span>';
+    }
+    if (ev.dateEnd && s.getMonth() === e.getMonth())
+      return '<span class="date-badge"><span>'+ MOIS_ABBR[s.getMonth()] +'</span><b>'+ s.getDate() +'–'+ e.getDate() +'</b></span>';
+    if (ev.dateEnd)
+      return '<span class="date-badge"><span>dès '+ MOIS_ABBR[s.getMonth()] +'</span><b>'+ s.getDate() +'</b></span>';
+    return '<span class="date-badge"><span>'+ JOURS[s.getDay()] +'</span><b>'+ s.getDate() +'</b></span>';
+  }
+
+  var state = { disc: "all", q: "", period: "all", venue: "all" };
+  var listEl = document.getElementById("list");
+  var trackEl = document.getElementById("track");
+  var railEl = document.getElementById("rail");
+  var emptyEl = document.getElementById("empty");
+  var resCount = document.getElementById("resCount");
+  var nowBand = document.getElementById("nowBand");
+  var nowRows = document.getElementById("nowRows");
+  var railSelect = document.getElementById("railSelect");
+  railSelect.addEventListener("change", function(){
+    var t = document.getElementById(this.value);
+    if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // Chips
+  var chipsEl = document.getElementById("chips");
+  function addChip(key, label, color){
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.setAttribute("aria-pressed", key === state.disc ? "true" : "false");
+    b.dataset.key = key;
+    b.innerHTML = (color ? '<span class="swatch" style="--c:'+color+'"></span>' : '') + label;
+    b.addEventListener("click", function(){
+      state.disc = key;
+      Array.prototype.forEach.call(chipsEl.children, function(c){ c.setAttribute("aria-pressed", c.dataset.key === key ? "true" : "false"); });
+      render();
+    });
+    chipsEl.appendChild(b);
+  }
+  addChip("all", "Tout");
+  Object.keys(DISC).forEach(function(k){ addChip(k, DISC[k].label, DISC[k].pill); });
+
+  document.getElementById("q").addEventListener("input", function(e){ state.q = e.target.value.trim().toLowerCase(); render(); });
+
+  var periodEl = document.getElementById("period");
+  Array.prototype.forEach.call(periodEl.children, function(btn){
+    btn.addEventListener("click", function(){
+      state.period = btn.dataset.p;
+      Array.prototype.forEach.call(periodEl.children, function(b){ b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+      render();
+    });
+  });
+
+  // Filtre par partenaire : l'organisme qui programme l'événement, ou celui qui
+  // l'accueille (lieu, affiché sur la carte quand il diffère). Un spectacle
+  // annoncé par deux partenaires n'est qu'une fois au feed : il reste visible
+  // sous chacun des deux.
+  var venueEl = document.getElementById("venue");
+  function partnerOf(ev){ return ev.partner || ev.venue; }
+  function populateVenues(){
+    var partners = EVENTS.map(partnerOf).filter(function(v, i, a){ return v && a.indexOf(v) === i; })
+      .sort(function(a, b){ return a.localeCompare(b, "fr"); });
+    venueEl.innerHTML = '<option value="all">Tous les partenaires</option>' +
+      partners.map(function(v){ return '<option value="' + v.replace(/"/g, "&quot;") + '">' + v + '</option>'; }).join("");
+    libelleTous();
+  }
+  // Sur téléphone, la liste partage sa rangée avec la recherche : libellé court.
+  var ecranEtroit = window.matchMedia ? window.matchMedia("(max-width: 720px)") : null;
+  function libelleTous(){
+    if (venueEl.options[0]) venueEl.options[0].textContent = ecranEtroit && ecranEtroit.matches ? "Partenaires" : "Tous les partenaires";
+  }
+  if (ecranEtroit){
+    if (ecranEtroit.addEventListener) ecranEtroit.addEventListener("change", libelleTous);
+    else if (ecranEtroit.addListener) ecranEtroit.addListener(libelleTous);
+  }
+  populateVenues();
+  venueEl.addEventListener("change", function(){
+    state.venue = this.value;
+    this.parentNode.classList.toggle("active", this.value !== "all");
+    render();
+  });
+
+  // Affiche fournie par la salle (champ « image » du feed). Elle recouvre la scène
+  // illustrée ; si le téléchargement échoue, l'image est retirée et la scène reste visible.
+  function photoHtml(ev){
+    if (!ev.image || !/^https?:\/\//i.test(ev.image)) return "";
+    var src = ev.image.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    return '<img class="photo" src="' + src + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">';
+  }
+
+  // Partenaire (organisme) et lieu : « Maison des arts de la parole · Café 440 ».
+  // Quand l'événement se tient chez le partenaire, une seule mention.
+  var HOUSE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>';
+  function placeHtml(ev){
+    var partner = partnerOf(ev);
+    var html = '<span class="venue org">' + HOUSE + ' ' + partner + '</span>';
+    if (ev.venue && ev.venue !== partner) html += '<span class="venue">' + PIN + ' ' + ev.venue + '</span>';
+    return html;
+  }
+
+  // Talon de date de la vue Billet : [petit libellé, grand chiffre, mois] + heure
+  function stubParts(ev, cont){
+    var s = parseD(ev.date), e = endOf(ev);
+    if (cont){
+      if (s <= NOW) return ["Jusqu'au", e.getDate(), MOIS_ABBR[e.getMonth()]];
+      return ["Dès le", s.getDate(), MOIS_ABBR[s.getMonth()]];
+    }
+    if (ev.dateEnd){
+      var mois = s.getMonth() === e.getMonth() ? MOIS_ABBR[s.getMonth()] : MOIS_ABBR[s.getMonth()] + "–" + MOIS_ABBR[e.getMonth()];
+      return [JOURS[s.getDay()] + "–" + JOURS[e.getDay()], s.getDate() + "–" + e.getDate(), mois];
+    }
+    return [JOURS[s.getDay()], s.getDate(), MOIS_ABBR[s.getMonth()]];
+  }
+  function stubHtml(ev, cont){
+    var p = stubParts(ev, cont);
+    return '<div class="stub"><span>'+ p[0] +'</span><b>'+ p[1] +'</b><span>'+ p[2] +'</span>' +
+      (ev.time ? '<span class="time">'+ ev.time +'</span>' : '') + '</div>';
+  }
+
+  // ---------- Ajouter au calendrier ----------
+  // Généré dans le navigateur à partir de l'événement : fichier .ics (calendrier de
+  // l'appareil — Apple, Outlook, Samsung…) ou lien Google Agenda pré-rempli.
+  var TZ = "America/Toronto";  // fuseau de Sherbrooke (heure de l'Est)
+  var HEURE = 3600000;
+  var DUREE_DEFAUT = 2 * HEURE; // quand la salle ne donne pas l'heure de fin
+  var IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var VTIMEZONE = [
+    "BEGIN:VTIMEZONE", "TZID:" + TZ,
+    "BEGIN:DAYLIGHT", "TZOFFSETFROM:-0500", "TZOFFSETTO:-0400", "TZNAME:EDT",
+    "DTSTART:19700308T020000", "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU", "END:DAYLIGHT",
+    "BEGIN:STANDARD", "TZOFFSETFROM:-0400", "TZOFFSETTO:-0500", "TZNAME:EST",
+    "DTSTART:19701101T020000", "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU", "END:STANDARD",
+    "END:VTIMEZONE"
+  ];
+
+  function pad2(n){ return (n < 10 ? "0" : "") + n; }
+  // Heure « murale » de la salle, manipulée en UTC pour ignorer les changements d'heure.
+  function mural(iso, h, m){ var p = iso.split("-"); return new Date(Date.UTC(+p[0], +p[1]-1, +p[2], h || 0, m || 0)); }
+  function ymd(dt){ return dt.getUTCFullYear() + pad2(dt.getUTCMonth() + 1) + pad2(dt.getUTCDate()); }
+  function ymdhms(dt){ return ymd(dt) + "T" + pad2(dt.getUTCHours()) + pad2(dt.getUTCMinutes()) + "00"; }
+
+  // « 20 h 00 », « Dès 11 h », « 10 h – 17 h » → [[20,0]], [[11,0]], [[10,0],[17,0]]
+  function heuresTexte(s){
+    var out = [], re = /(\d{1,2})\s*h\s*(\d{2})?/g, m;
+    while ((m = re.exec(s || ""))) if (+m[1] < 24 && +(m[2] || 0) < 60) out.push([+m[1], +(m[2] || 0)]);
+    return out;
+  }
+  // Heure d'un horodatage ISO du feed ; minuit = heure inconnue (comme à l'affichage).
+  function heureIso(iso){
+    var m = /T(\d{2}):(\d{2})/.exec(iso || "");
+    return m && !(m[1] === "00" && m[2] === "00") ? [+m[1], +m[2]] : null;
+  }
+
+  // Début et fin à inscrire : journées entières pour ce qui s'étale sur plusieurs
+  // jours ou n'a pas d'heure, sinon rendez-vous horaire (fin exclusive).
+  function bornes(ev){
+    var debutJour = mural(ev.date);
+    if (ev.dateEnd) return { jour: true, debut: debutJour, fin: new Date(mural(ev.dateEnd).getTime() + DAY) };
+    var txt = heuresTexte(ev.time);
+    var h1 = heureIso(ev.debutIso) || txt[0];
+    if (!h1) return { jour: true, debut: debutJour, fin: new Date(debutJour.getTime() + DAY) };
+    var h2 = heureIso(ev.finIso) || txt[1];
+    var debut = mural(ev.date, h1[0], h1[1]);
+    var fin = h2 ? mural(ev.date, h2[0], h2[1]) : null;
+    if (fin && fin < debut) fin = new Date(fin.getTime() + DAY); // se termine après minuit
+    if (!fin || fin <= debut) fin = new Date(debut.getTime() + DUREE_DEFAUT);
+    return { jour: false, debut: debut, fin: fin };
+  }
+
+  function calLieu(ev){
+    var lieu = ev.venue || partnerOf(ev) || "";
+    return lieu && !/sherbrooke/i.test(lieu) ? lieu + ", Sherbrooke (Québec)" : lieu;
+  }
+  function calLien(ev){ return ev.lien && /^https?:\/\//i.test(ev.lien) ? ev.lien.replace(/\s/g, "") : ""; }
+  function calDetails(ev, b){
+    var lignes = [];
+    if (ev.desc) lignes.push(ev.desc);
+    if (b.jour && ev.time) lignes.push("Horaire : " + ev.time);
+    var partner = partnerOf(ev);
+    if (partner && ev.venue && partner !== ev.venue) lignes.push("Présenté par " + partner);
+    if (calLien(ev)) lignes.push(calLien(ev));
+    return lignes.join("\n");
+  }
+
+  function icsTexte(s){ return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n"); }
+  // Repli des lignes longues à 75 octets (RFC 5545, § 3.1).
+  function plier(ligne){
+    var out = "", n = 0;
+    for (var i = 0; i < ligne.length; i++){
+      var c = ligne.charAt(i), code = ligne.charCodeAt(i);
+      if (code >= 0xD800 && code <= 0xDBFF && i + 1 < ligne.length) c += ligne.charAt(++i);
+      var octets = code < 0x80 ? 1 : code < 0x800 ? 2 : c.length === 2 ? 4 : 3;
+      if (n + octets > 75){ out += "\r\n "; n = 1; }
+      out += c; n += octets;
+    }
+    return out;
+  }
+  // Identifiant stable : réajouter le même événement le met à jour au lieu de le dupliquer.
+  function calUid(ev){
+    var s = ev.title + "|" + ev.date + "|" + partnerOf(ev), h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+    return "cc-" + ev.date.replace(/-/g, "") + "-" + h.toString(36) + "@culturecentro";
+  }
+  function calIcs(ev){
+    var b = bornes(ev);
+    function quand(nom, dt){ return b.jour ? nom + ";VALUE=DATE:" + ymd(dt) : nom + ";TZID=" + TZ + ":" + ymdhms(dt); }
+    var lignes = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Culture Centro//Agenda//FR", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+    if (!b.jour) lignes = lignes.concat(VTIMEZONE);
+    lignes.push("BEGIN:VEVENT", "UID:" + calUid(ev),
+      "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""),
+      quand("DTSTART", b.debut), quand("DTEND", b.fin), "SUMMARY:" + icsTexte(ev.title));
+    var lieu = calLieu(ev), details = calDetails(ev, b), lien = calLien(ev);
+    if (lieu) lignes.push("LOCATION:" + icsTexte(lieu));
+    if (details) lignes.push("DESCRIPTION:" + icsTexte(details));
+    if (lien) lignes.push("URL:" + lien);
+    lignes.push("END:VEVENT", "END:VCALENDAR");
+    return lignes.map(plier).join("\r\n") + "\r\n";
+  }
+  function calGoogle(ev){
+    var b = bornes(ev);
+    var f = b.jour ? ymd : ymdhms;
+    var url = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      "&text=" + encodeURIComponent(ev.title) + "&dates=" + f(b.debut) + "%2F" + f(b.fin);
+    if (!b.jour) url += "&ctz=" + encodeURIComponent(TZ);
+    var lieu = calLieu(ev), details = calDetails(ev, b);
+    if (lieu) url += "&location=" + encodeURIComponent(lieu);
+    if (details) url += "&details=" + encodeURIComponent(details);
+    return url;
+  }
+  function calFichier(ev){
+    var base = ev.title.normalize ? ev.title.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ev.title;
+    base = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 60).replace(/^-+|-+$/g, "");
+    return (base || "evenement") + ".ics";
+  }
+
+  var CAL_ICO = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>';
+  // Menu unique, déplacé dans la carte dont on a touché le bouton.
+  var calMenu = document.createElement("div");
+  calMenu.className = "cal-menu";
+  calMenu.id = "cal-menu";
+  calMenu.hidden = true;
+  calMenu.innerHTML =
+    '<a class="cal-opt" data-cal="ics" title="Fichier .ics : Apple Calendrier, Outlook, Samsung…">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>' +
+      'Calendrier de l\'appareil</a>' +
+    '<a class="cal-opt" data-cal="google" target="_blank" rel="noopener noreferrer">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>' +
+      'Google Agenda</a>';
+  var calIcsLink = calMenu.querySelector('[data-cal="ics"]');
+  var calGoogleLink = calMenu.querySelector('[data-cal="google"]');
+  var calBtnOuvert = null, calBlob = null;
+
+  function fermerCal(rendreFocus){
+    if (!calBtnOuvert) return;
+    var btn = calBtnOuvert;
+    calBtnOuvert = null;
+    btn.setAttribute("aria-expanded", "false");
+    calMenu.hidden = true;
+    if (rendreFocus) btn.focus();
+  }
+  function ouvrirCal(btn, ev){
+    fermerCal(false);
+    var ics = calIcs(ev);
+    if (calBlob){ URL.revokeObjectURL(calBlob); calBlob = null; }
+    // iOS : lien blob touché par l'utilisateur → Safari propose « Ajouter au calendrier ».
+    if (IOS && window.Blob && window.URL && URL.createObjectURL){
+      calBlob = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+      calIcsLink.href = calBlob;
+    } else {
+      calIcsLink.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
+    }
+    calIcsLink.download = calFichier(ev);
+    calGoogleLink.href = calGoogle(ev);
+
+    // Le menu va juste après la vignette (qui le rognerait) : ordre de tabulation
+    // bouton → menu → titre. Placé sous le bouton, ou au-dessus s'il n'y a pas la place.
+    var carte = btn.closest(".event");
+    carte.insertBefore(calMenu, btn.parentNode.nextSibling);
+    calMenu.hidden = false;
+    var x = 0, y = 0;
+    for (var n = btn; n && n !== carte; n = n.offsetParent){ x += n.offsetLeft; y += n.offsetTop; }
+    var haut = y + btn.offsetHeight + 6;
+    if (haut + calMenu.offsetHeight > carte.clientHeight - 4) haut = y - calMenu.offsetHeight - 6;
+    calMenu.style.top = Math.max(4, haut) + "px";
+    calMenu.style.left = Math.max(4, Math.min(x, carte.clientWidth - calMenu.offsetWidth - 4)) + "px";
+    btn.setAttribute("aria-expanded", "true");
+    calBtnOuvert = btn;
+    calIcsLink.focus();
+  }
+  calMenu.addEventListener("click", function(e){
+    if (e.target.closest && e.target.closest(".cal-opt")) setTimeout(function(){ fermerCal(false); }, 0);
+  });
+  document.addEventListener("click", function(e){
+    if (calBtnOuvert && !calMenu.contains(e.target) && !calBtnOuvert.contains(e.target)) fermerCal(false);
+  });
+  document.addEventListener("keydown", function(e){
+    if (calBtnOuvert && (e.key === "Escape" || e.key === "Esc")) fermerCal(true);
+  });
+  calMenu.addEventListener("focusout", function(e){
+    if (calBtnOuvert && e.relatedTarget && !calMenu.contains(e.relatedTarget) && e.relatedTarget !== calBtnOuvert) fermerCal(false);
+  });
+
+  // talon : carte de la liste datée (billet) ; la bande « En ce moment » n'en a pas.
+  function card(ev, uid, cont, talon){
+    var d = DISC[ev.d];
+    var started = parseD(ev.date) <= NOW;
+    var tag = "";
+    if (cont && started && daysUntil(endOf(ev)) <= 7) tag = '<span class="tag-last">Dernière chance</span>';
+    else if (cont && !started && daysUntil(parseD(ev.date)) <= 30) tag = '<span class="tag-soon">Bientôt</span>';
+    var el = document.createElement("article");
+    el.className = "event";
+    el.id = "e-" + ev.id;
+    el.style.setProperty("--dc", d.pill);
+    el.innerHTML =
+      '<div class="cover">' + SCENES[ev.d](uid) + photoHtml(ev) + badgeHtml(ev, cont) +
+        '<button class="share-btn" type="button" title="Partager">' + SHARE_ICO + '</button>' +
+        '<button class="cal-btn" type="button" aria-expanded="false" aria-controls="cal-menu" title="Ajouter au calendrier">' + CAL_ICO + '</button>' +
+      '</div>' +
+      '<div class="body">' +
+        '<div class="pill-row"><span class="disc-pill">'+ d.label +'</span>'+ tag +'</div>' +
+        '<h3><a class="ev-link">'+ ev.title +'</a></h3>' +
+        placeHtml(ev) +
+        '<span class="when">'+ whenLine(ev, cont) +'</span>' +
+        (ev.desc ? '<span class="desc">'+ ev.desc +'</span>' : '') +
+      '</div>' +
+      (talon ? stubHtml(ev, cont) : '');
+    var a = el.querySelector(".ev-link");
+    a.href = ev.lien || "#";
+    if (ev.lien){ a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    var share = el.querySelector(".share-btn");
+    share.setAttribute("aria-label", "Partager « " + a.textContent + " »");
+    share.addEventListener("click", function(){ partager(ev); });
+    var btn = el.querySelector(".cal-btn");
+    btn.setAttribute("aria-label", "Ajouter « " + a.textContent + " » au calendrier");
+    btn.addEventListener("click", function(){
+      if (calBtnOuvert === btn) fermerCal(false); else ouvrirCal(btn, ev);
+    });
+    return el;
+  }
+
+  // Partage : le lien pointe vers Culture Centro (?e=<id>), pas vers le partenaire,
+  // pour que la personne qui le reçoit arrive d'abord sur l'agenda.
+  var SHARE_ICO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>';
+  // Page de partage e/<id>/ quand le déploiement l'a générée (aperçu riche dans les
+  // réseaux sociaux : affiche, titre, date) ; sinon lien direct vers l'agenda.
+  function lienPartage(ev){
+    var page = location.href.split(/[?#]/)[0];
+    if (ev.pagePartage) return new URL("e/" + ev.id + "/", page).href;
+    return page + "?e=" + encodeURIComponent(ev.id);
+  }
+  function partager(ev){
+    var url = lienPartage(ev);
+    if (navigator.share){
+      // Feuille de partage native (mobile, Safari, Chrome/Edge de bureau). Le lien
+      // seul, sans « text » : avec un texte, l'action « Copier » de certains
+      // téléphones ne copie que ce texte, sans l'URL. Le titre, la date et
+      // l'affiche viennent de l'aperçu de la page de partage.
+      navigator.share({ title: ev.title, url: url })
+        .catch(function(err){ if (!err || err.name !== "AbortError") copier(url); });
+    } else {
+      copier(url);
+    }
+  }
+  function copier(url){
+    function demander(){ window.prompt("Copiez ce lien :", url); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ toast("Lien copié"); }, demander);
+    } else {
+      demander();
+    }
+  }
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2500);
+  }
+
+  var observer = null;
+
+  function render(){
+    fermerCal(false); // les cartes vont être recréées
+    var base = EVENTS.filter(function(ev){
+      if (state.disc !== "all" && ev.d !== state.disc) return false;
+      if (state.venue !== "all" && partnerOf(ev) !== state.venue && ev.venue !== state.venue) return false;
+      if (state.q){
+        var hay = (ev.title + " " + partnerOf(ev) + " " + ev.venue + " " + DISC[ev.d].label + " " + ev.desc).toLowerCase();
+        if (hay.indexOf(state.q) === -1) return false;
+      }
+      return inPeriod(ev);
+    });
+
+    var uid = 0;
+    var soonEnd = new Date(NOW.getTime() + 45 * DAY);
+
+    // Bande « En ce moment » : longue durée en cours ou débutant sous 45 jours
+    var band = base.filter(function(ev){ return isContinu(ev) && endOf(ev) >= NOW && parseD(ev.date) <= soonEnd; });
+    band.sort(function(a, b){
+      var sa = parseD(a.date) <= NOW ? 0 : 1, sb = parseD(b.date) <= NOW ? 0 : 1;
+      if (sa !== sb) return sa - sb;          // en cours d'abord
+      return endOf(a) - endOf(b);             // puis fin la plus proche
+    });
+    nowRows.innerHTML = "";
+    band.forEach(function(ev){ nowRows.appendChild(card(ev, uid++, true)); });
+    nowBand.hidden = band.length === 0;
+
+    // Liste datée : rendez-vous ponctuels + expositions lointaines, à leur mois de début
+    var dated = [];
+    base.forEach(function(ev){
+      if (!isContinu(ev)) dated.push({ ev: ev, cont: false });
+      else if (band.indexOf(ev) === -1 && endOf(ev) >= NOW) dated.push({ ev: ev, cont: true });
+    });
+    dated.sort(function(a, b){ return parseD(a.ev.date) - parseD(b.ev.date); });
+
+    listEl.innerHTML = "";
+    trackEl.innerHTML = "";
+    railSelect.innerHTML = "";
+
+    var groups = [], byKey = {};
+    dated.forEach(function(o){
+      var dt = parseD(o.ev.date);
+      var key = dt.getFullYear() + "-" + dt.getMonth();
+      if (!byKey[key]){ byKey[key] = { key:key, m:dt.getMonth(), y:dt.getFullYear(), items:[] }; groups.push(byKey[key]); }
+      byKey[key].items.push(o);
+    });
+
+    groups.forEach(function(g){
+      var wrap = document.createElement("section");
+      wrap.className = "month-group";
+      wrap.id = "m-" + g.key;
+      var head = document.createElement("h2");
+      head.className = "month-title";
+      head.innerHTML = MOIS_LONG[g.m] + " " + g.y + ' <span class="n">' + g.items.length + (g.items.length > 1 ? " événements" : " événement") + '</span>';
+      wrap.appendChild(head);
+      var rows = document.createElement("div");
+      rows.className = "rows";
+      g.items.forEach(function(o){ rows.appendChild(card(o.ev, uid++, o.cont, true)); });
+      wrap.appendChild(rows);
+      listEl.appendChild(wrap);
+
+      var node = document.createElement("button");
+      node.className = "tl-node";
+      node.type = "button";
+      node.dataset.target = "m-" + g.key;
+      node.innerHTML = '<span class="dot"></span><span class="lbl"><b>'+ MOIS_ABBR[g.m] +'</b><i>'+ g.y +'</i></span>';
+      node.addEventListener("click", function(){
+        var t = document.getElementById(this.dataset.target);
+        if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      trackEl.appendChild(node);
+
+      var opt = document.createElement("option");
+      opt.value = "m-" + g.key;
+      opt.textContent = MOIS_LONG[g.m].charAt(0).toUpperCase() + MOIS_LONG[g.m].slice(1) + " " + g.y + " (" + g.items.length + ")";
+      railSelect.appendChild(opt);
+    });
+
+    railEl.style.display = dated.length ? "" : "none";
+    emptyEl.hidden = (dated.length + band.length) !== 0;
+
+    var total = base.length;
+    resCount.textContent = total ? (total + (total > 1 ? " événements" : " événement")) : "";
+
+    setupSpy(groups);
+  }
+
+  function setActive(key){
+    Array.prototype.forEach.call(trackEl.children, function(n){
+      n.setAttribute("aria-current", n.dataset.target === "m-" + key ? "true" : "false");
+    });
+    if (railSelect.value !== "m-" + key) railSelect.value = "m-" + key;
+  }
+
+  function setupSpy(groups){
+    if (observer) observer.disconnect();
+    if (!groups.length) return;
+    var visible = {};
+    observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        var key = en.target.id.replace("m-", "");
+        if (en.isIntersecting) visible[key] = en.intersectionRatio; else delete visible[key];
+      });
+      var best = null, bestR = -1;
+      groups.forEach(function(g){ if (visible[g.key] != null && visible[g.key] > bestR){ bestR = visible[g.key]; best = g.key; } });
+      if (best == null) best = groups[0].key;
+      setActive(best);
+    }, { rootMargin: "-88px 0px -55% 0px", threshold: [0, 0.2, 0.5, 1] });
+    groups.forEach(function(g){ var el = document.getElementById("m-" + g.key); if (el) observer.observe(el); });
+    setActive(groups[0].key);
+  }
+
+  // Lieux partenaires : plan du centre-ville et légende numérotée. Le plan est
+  // tracé d'après OpenStreetMap (rues, rivières, parcs ; simplifié), comme celui
+  // de la variante 4 ; chaque lieu y a un repère numéroté, de sa couleur, posé à
+  // son adresse. Numéros du nord au sud : la légende se lit comme le plan.
+  // Survoler un lieu (légende ou repère) le met en évidence et affiche son nom
+  // sur le plan ; un clic ouvre le site du partenaire.
+  var PCOL = ["#C8324A", "#7A3FC4", "#0F7F74", "#1F5FBF", "#B4460F", "#A2337E", "#2D6B2F", "#8A5A00", "#3E4C9B", "#00707F"];
+  // Projection équirectangulaire, nord en haut ; VB = portion du plan affichée.
+  var PLAN = {"W":926,"water":["M-40 822 L-16 786 L-15 781 L42 789 L41 796 L78 802 L83 805 L87 811 L89 816 L89 823 L84 842 L63 887 L56 898 L12 955 L-8 965 L-40 976 L-40 822Z","M489 -40 L540 14 L556 57 L553 81 L595 159 L612 185 L621 204 L652 240 L744 331 L791 394 L832 441 L841 469 L894 558 L912 635 L914 670 L900 737 L889 822 L902 894 L920 947 L966 1009 L966 542 L902 407 L893 394 L860 359 L852 355 L843 344 L827 322 L781 267 L704 169 L643 28 L631 -17 L617 -40 L489 -40Z","M240 260 L246 256 L256 260 L257 258 L261 259 L268 250 L286 232 L308 215 L323 207 L368 189 L375 194 L382 194 L392 189 L405 188 L416 184 L423 180 L426 172 L407 178 L407 172 L404 172 L403 169 L475 149 L494 139 L538 106 L553 81 L595 159 L578 154 L572 160 L563 164 L544 168 L530 175 L501 179 L454 200 L448 187 L425 196 L428 202 L373 212 L372 209 L354 214 L331 223 L337 238 L333 239 L337 252 L314 268 L288 283 L276 283 L264 292 L246 299 L231 301 L200 314 L179 314 L155 335 L104 386 L96 399 L90 415 L89 429 L79 439 L73 431 L77 428 L74 425 L78 421 L75 418 L86 401 L84 399 L70 410 L66 408 L65 410 L69 412 L61 421 L63 423 L55 428 L53 437 L55 443 L59 445 L74 464 L64 477 L66 483 L33 513 L3 528 L-4 534 L-6 542 L5 589 L13 643 L17 704 L28 708 L22 731 L28 750 L33 752 L40 772 L42 789 L-15 781 L-10 743 L-3 724 L-5 703 L-2 696 L-9 685 L-11 613 L-13 607 L-24 591 L-40 563 L-40 500 L-33 498 L-7 498 L-3 496 L13 456 L33 433 L38 425 L39 408 L57 396 L68 383 L80 381 L85 383 L93 380 L96 377 L132 313 L140 303 L159 291 L171 288 L180 288 L205 291 L212 289 L227 278 L240 260Z"],"parks":["M139 940 L173 932 L213 927 L217 877 L210 870 L150 884 L142 861 L133 855 L130 850 L127 832 L108 795 L91 797 L42 791 L41 796 L78 802 L83 805 L89 816 L88 831 L63 887 L56 898 L12 955 L-8 965 L-73 986 L-213 1019 L-246 1018 L-266 1020 L-377 1035 L-449 1042 L-560 1071 L-571 1072 L-595 1065 L-610 1072 L-628 1076 L-641 1076 L-670 1085 L-676 1081 L-679 1070 L-677 1068 L-669 1066 L-662 1061 L-651 1062 L-637 1047 L-636 1043 L-638 1038 L-647 1036 L-678 1042 L-699 1055 L-711 1071 L-739 1097 L-741 1106 L-784 1125 L-809 1141 L-827 1141 L-848 1145 L-860 1152 L-867 1159 L-871 1177 L-870 1182 L-39 983 L54 959 L53 950 L136 929 L139 940Z","M391 456 L370 467 L363 452 L359 454 L354 445 L359 441 L366 443 L375 442 L381 438 L391 456Z","M730 1054 L705 1064 L696 1044 L674 1052 L665 1042 L657 1045 L663 1060 L689 1075 L732 1059 L730 1054Z","M502 838 L598 802 L586 775 L492 812 L502 838Z","M372 209 L364 212 L371 229 L377 227 L372 209Z","M-733 807 L-745 821 L-755 829 L-763 834 L-782 838 L-1082 847 L-1209 852 L-1214 854 L-1220 933 L-1218 952 L-1221 1104 L-1224 1135 L-1224 1198 L-1221 1229 L-1194 1232 L-1146 1234 L-1089 1234 L-1012 1217 L-1027 1198 L-1030 1192 L-1042 1139 L-1053 1105 L-1065 1086 L-1074 1066 L-1075 1049 L-1081 1026 L-1079 1010 L-1071 998 L-1053 988 L-1040 983 L-1024 976 L-952 929 L-943 928 L-939 925 L-936 921 L-937 920 L-868 888 L-845 881 L-701 885 L-672 895 L-660 897 L-641 896 L-612 884 L-585 869 L-554 846 L-545 842 L-491 835 L-453 833 L-409 825 L-398 830 L-364 831 L-352 829 L-338 823 L-167 863 L-154 864 L-132 860 L-130 863 L-128 864 L-124 863 L-122 859 L-51 831 L-42 825 L-41 821 L-82 839 L-119 851 L-136 854 L-151 854 L-170 852 L-272 825 L-323 806 L-351 804 L-558 830 L-590 837 L-603 833 L-624 821 L-650 859 L-733 807Z","M901 297 L917 287 L925 304 L909 312 L901 297Z","M-123 -27 L-125 121 L-123 125 L-116 128 L-70 128 L-60 125 L-57 121 L-56 114 L-54 -27 L-57 -30 L-60 -31 L-118 -32 L-123 -30 L-123 -27Z","M162 2 L188 -11 L196 -11 L212 9 L212 13 L209 18 L184 37 L177 40 L174 40 L158 12 L158 5 L162 2Z"],"streets":{"m":["M187 783 L186 774 L178 756","M711 432 L719 456 L723 477 L728 528 L733 542 L802 737 L847 857","M746 891 L759 890 L856 853","M-90 344 L-32 423","M852 844 L781 651 L746 549 L734 477 L727 452 L717 428 L709 421","M897 975 L925 1027 L953 1100","M-21 770 L43 780","M43 780 L67 784","M220 916 L219 944","M219 944 L216 978","M-1 457 L46 506","M92 587 L154 714","M686 367 L709 421","M838 332 L846 327","M67 784 L85 788 L115 784 L171 759","M216 978 L212 985 L209 1058","M709 421 L653 461","M773 380 L761 383 L709 421","M773 380 L838 332","M852 844 L754 880 L746 891","M174 748 L162 721 L154 714","M187 783 L219 850 L222 863","M154 714 L155 724 L168 751","M171 759 L180 778 L187 783","M643 480 L668 462","M168 751 L116 775 L67 784","M711 432 L768 392 L773 380","M960 1093 L930 1017","M463 600 L426 622 L347 663","M178 756 L350 671","M408 642 L467 608 L588 520","M906 971 L870 888","M746 891 L774 982 L789 1024 L828 1112","M856 853 L852 844","M178 756 L174 748","M846 327 L881 301","M668 462 L711 432","M283 693 L174 748","M314 679 L283 693","M585 510 L463 600","M54 513 L92 587","M46 506 L54 513","M920 275 L953 251 L967 236","M311 -55 L322 -54 L340 -47 L349 -45","M349 -45 L331 -61 L326 -74","M546 226 L552 231 L592 241 L599 240","M599 240 L592 236 L553 226 L546 226","M645 279 L627 256 L612 245 L599 240","M374 -31 L359 -41 L349 -45","M546 226 L534 222 L522 215 L507 201 L498 187","M498 187 L471 138","M653 461 L585 510","M222 863 L220 916","M881 301 L920 275","M446 93 L422 43","M454 110 L446 93","M675 342 L686 367","M655 299 L675 342","M471 138 L463 126","M399 -1 L386 -19 L374 -31","M414 29 L399 -1","M655 299 L645 279","M-251 745 L-21 770","M463 126 L454 110","M350 671 L408 642","M347 663 L314 679","M847 857 L897 975","M930 1017 L906 971","M870 888 L856 853","M168 751 L171 759","M174 748 L168 751","M171 759 L178 756","M709 421 L711 432","M588 520 L643 480","M217 1059 L220 985 L216 978","M422 43 L414 29","M-32 423 L-1 457"],"r":["M585 510 L512 339 L476 261","M-51 633 L-147 631","M-44 675 L-44 639 L-48 634 L-51 633","M-70 450 L-32 423","M147 3 L176 51","M361 222 L373 247","M114 97 L177 186 L185 189","M273 77 L158 158","M28 374 L24 372 L-77 235","M63 351 L35 372 L28 374","M-42 211 L63 351","M-46 128 L-6 185","M-46 128 L-51 113","M151 433 L215 558","M234 543 L261 600","M298 485 L379 647","M238 413 L215 375","M422 518 L381 438","M352 438 L366 443 L375 442 L381 438","M409 231 L430 281","M238 413 L255 408 L259 408 L276 442","M393 758 L429 836","M222 863 L350 830","M580 1012 L567 1005 L551 965","M561 785 L620 938","M429 836 L561 785","M561 785 L483 611","M589 705 L658 674","M589 705 L527 566","M664 -20 L791 -67","M893 18 L1050 -1","M769 220 L823 201","M823 201 L865 287","M718 810 L736 799 L743 787 L745 776 L728 719 L721 660","M718 810 L713 797","M746 891 L684 913 L551 965","M347 191 L361 222","M56 1232 L56 1162 L62 1046 L53 998 L53 991 L55 989","M582 388 L553 321","M589 1044 L584 1041 L541 1062","M553 321 L512 339","M396 348 L434 357 L441 357 L459 351","M691 633 L648 652","M463 996 L518 1013","M222 863 L158 876 L133 883","M653 461 L658 469","M492 812 L408 642","M492 812 L551 965","M620 938 L660 1044","M817 72 L806 52 L798 48 L728 45","M55 989 L106 978 L128 976 L216 978","M540 406 L582 388","M132 889 L132 889","M893 18 L897 22 L984 195","M138 253 L108 212 L87 180 L87 176","M87 176 L142 136","M90 485 L138 444","M813 -16 L741 11 L720 -14","M817 72 L833 28 L791 -67","M658 469 L678 515 L686 543","M426 120 L390 135 L334 164","M397 296 L430 281","M366 413 L352 438 L342 449 L309 475 L234 543 L203 568","M430 213 L430 213","M151 433 L159 432 L218 379 L369 256 L373 247","M373 247 L366 251 L307 298 L153 428 L151 433","M185 189 L240 167 L260 162 L292 159 L320 141","M238 29 L320 141 L334 164 L347 191","M843 126 L835 107 L817 72","M286 701 L363 856 L367 859","M624 759 L686 736","M684 913 L624 759","M802 1178 L762 1115 L684 913","M138 253 L138 258 L123 273 L89 331 L63 351","M-51 113 L-49 -29 L-54 -34 L-57 -34 L-136 -35","M686 736 L648 652","M483 611 L481 605 L485 595","M408 642 L403 639 L396 637","M588 520 L585 510","M238 29 L224 12","M456 226 L450 213","M450 213 L422 226","M409 231 L373 247","M526 1029 L570 1121 L573 1133","M718 810 L746 891","M504 986 L526 1029","M429 836 L453 885 L504 986","M367 859 L375 857 L429 836","M203 568 L119 642","M373 247 L403 312 L404 324 L396 348 L366 413","M605 555 L588 520","M138 444 L151 433","M54 513 L90 485","M283 693 L286 701","M720 656 L692 571 L686 543","M-44 736 L-44 675","M-48 767 L-44 736","M791 140 L791 140","M881 301 L871 295 L865 287","M426 120 L454 110","M551 965 L504 986","M673 555 L673 555","M553 321 L592 304","M341 31 L273 77","M399 -1 L384 7","M769 644 L727 656 L721 660","M384 7 L341 31","M536 729 L589 705","M617 587 L605 555","M347 663 L350 671","M770 648 L779 643","M721 660 L720 656","M721 660 L728 661 L770 648","M779 643 L769 644","M422 226 L409 231","M476 261 L456 226","M430 281 L459 351","M713 797 L686 736","M858 -46 L888 13 L893 18","M803 -39 L858 -46","M833 28 L893 18","M799 91 L813 79 L817 72","M823 201 L871 181","M276 442 L298 485","M350 671 L393 758","M648 652 L634 626 L617 587","M460 594 L422 518","M467 608 L460 594","M381 438 L366 413","M561 785 L624 759"],"t":["M220 -10 L215 -10","M897 383 L905 388 L913 390 L965 364","M147 3 L62 53 L-29 119 L-39 125 L-65 134 L-82 135 L-117 135 L-132 141","M91 -99 L99 -94 L105 -87 L158 -3","M224 12 L204 -13","M-134 277 L176 51","M920 275 L843 126 L824 107 L814 100 L799 91 L769 79","M897 383 L905 395 L968 522","M817 291 L846 327","M215 -10 L204 -13","M965 364 L962 372 L907 401","M204 -13 L167 -68 L128 -120 L122 -123","M941 316 L920 275","M700 29 L664 -20 L626 -63 L574 -111","M769 79 L732 58 L700 29","M700 29 L715 57 L769 220 L783 248 L817 291","M207 31 L224 12","M960 354 L941 316","M224 12 L228 7","M846 327 L897 383","M228 7 L279 -46","M274 -53 L235 -15 L220 -10","M204 -13 L197 -16 L187 -18 L147 3","M176 51 L207 31"]},"labels":[["Wellington N.",482,372,67],["King O.",500,584,-35],["Dufferin",301,116,52],["Marquette",289,494,-42],["Frontenac",263,342,-40],["du Dépôt",734,742,71],["Belvédère N.",123,650,64],["King E.",863,314,-36],["Rivière Magog",215,215,-38],["Rivière Saint-François",590,150,62],["Lac des Nations",60,700,-70]],"proj":{"lat0":45.396,"lat1":45.407,"lon0":-71.8995,"k":90909.09090912661,"c":0.7021344119562468}};
+  var VB = [150, 40, 760, 860];
+  var partnersEl = document.getElementById("partners");
+  var planEl = document.getElementById("plan");
+  function nord(p){ return p.lat == null ? -90 : p.lat; }
+  var LIEUX = PARTNERS.slice().sort(function(a, b){ return nord(b) - nord(a); });
+  LIEUX.forEach(function(p, i){ p.n = i + 1; p.pc = PCOL[i % PCOL.length]; });
+  function xy(p){ var P = PLAN.proj; return [(p.lon - P.lon0) * P.c * P.k, (P.lat1 - p.lat) * P.k]; }
+  function attr(s){ return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+
+  (function dessinerPlan(){
+    var g = '<rect x="' + VB[0] + '" y="' + VB[1] + '" width="' + VB[2] + '" height="' + VB[3] + '" fill="var(--map-land)"/>';
+    PLAN.parks.forEach(function(d){ g += '<path d="' + d + '" fill="var(--map-park)"/>'; });
+    PLAN.water.forEach(function(d){ g += '<path d="' + d + '" fill="var(--map-water)"/>'; });
+    [["r", 5], ["t", 8], ["m", 12]].forEach(function(c){
+      PLAN.streets[c[0]].forEach(function(d){ g += '<path class="street" d="' + d + '" stroke-width="' + c[1] + '"/>'; });
+    });
+    PLAN.labels.forEach(function(l){
+      var eau = /Rivière|Lac/.test(l[0]);
+      g += '<text class="lbl' + (eau ? " w" : "") + '" x="' + l[1] + '" y="' + l[2] + '" transform="rotate(' + l[3] + ' ' + l[1] + ' ' + l[2] + ')" text-anchor="middle">' + attr(l[0]) + '</text>';
+    });
+    // Repères ; les lieux qui partagent une adresse sont posés côte à côte.
+    var spots = {};
+    LIEUX.forEach(function(p){ if (p.lat != null){ var k = p.lat + "," + p.lon; (spots[k] = spots[k] || []).push(p); } });
+    Object.keys(spots).forEach(function(k){
+      var grp = spots[k], c = xy(grp[0]);
+      if (grp.length > 1) g += '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="7" fill="var(--ink)"/>';
+      grp.forEach(function(p, i){
+        p.x = c[0] + (i - (grp.length - 1) / 2) * 54;
+        p.y = c[1] - (grp.length > 1 ? 40 : 0);
+        g += '<a class="pin" href="' + attr(p.url) + '" target="_blank" rel="noopener noreferrer" tabindex="-1" data-n="' + p.n + '">' +
+          '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="24" fill="' + p.pc + '"/>' +
+          '<text x="' + p.x.toFixed(1) + '" y="' + (p.y + 1).toFixed(1) + '">' + p.n + '</text></a>';
+      });
+    });
+    g += '<g class="tip" visibility="hidden"><rect height="44" rx="12"/><text></text></g>';
+    planEl.setAttribute("viewBox", VB.join(" "));
+    planEl.innerHTML = g;
+  })();
+
+  // Emplacement sur Google Maps : lien de recherche documenté (Maps URLs, sans
+  // clé ni script). On cherche le nom du lieu plutôt que ses coordonnées, pour
+  // ouvrir sa fiche (horaires, itinéraire) et non un simple repère.
+  function lienGoogleMaps(p){
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.name + ", Sherbrooke, QC");
+  }
+  LIEUX.forEach(function(p){
+    var li = document.createElement("li");
+    li.className = "partner";
+    li.dataset.n = p.n;
+    li.style.setProperty("--pc", p.pc);
+    li.innerHTML = '<span class="num" aria-hidden="true">' + p.n + '</span>' +
+      '<span class="p-info"><a class="p-link" href="' + attr(p.url) + '" target="_blank" rel="noopener noreferrer"><b>' + p.name + '</b></a>' +
+        '<span class="p-meta"><span>' + p.kind + (p.lat == null ? ' · hors du plan' : '') + '</span>' +
+        '<a class="p-maps" href="' + attr(lienGoogleMaps(p)) + '" target="_blank" rel="noopener noreferrer" aria-label="' + attr(p.name) + ' sur Google Maps">' + PIN + 'Google Maps</a></span></span>' +
+      '<svg class="p-ext" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';
+    partnersEl.appendChild(li);
+  });
+
+  // Mise en évidence d'un lieu : repère cerclé (les autres s'estompent), nom
+  // affiché à côté du repère (à gauche s'il déborde du plan), légende soulignée.
+  var tipEl = planEl.querySelector(".tip");
+  function surligner(n){
+    var p = n ? LIEUX[n - 1] : null;
+    Array.prototype.forEach.call(planEl.querySelectorAll(".pin"), function(a){
+      a.classList.toggle("on", !!p && +a.dataset.n === n);
+      a.classList.toggle("dim", !!p && +a.dataset.n !== n);
+    });
+    Array.prototype.forEach.call(partnersEl.querySelectorAll(".partner"), function(a){
+      a.classList.toggle("on", !!p && +a.dataset.n === n);
+    });
+    if (!p || p.x == null){ tipEl.setAttribute("visibility", "hidden"); return; }
+    var txt = tipEl.querySelector("text"), rect = tipEl.querySelector("rect");
+    txt.textContent = p.name;
+    var w = txt.getComputedTextLength() + 28;
+    var x = p.x + 34;
+    if (x + w > VB[0] + VB[2] - 8) x = p.x - 34 - w;
+    rect.setAttribute("x", x.toFixed(1)); rect.setAttribute("y", (p.y - 22).toFixed(1)); rect.setAttribute("width", w.toFixed(1));
+    txt.setAttribute("x", (x + 14).toFixed(1)); txt.setAttribute("y", (p.y + 1).toFixed(1));
+    tipEl.setAttribute("visibility", "visible");
+  }
+  function suivre(el){
+    var n = +el.dataset.n;
+    el.addEventListener("mouseenter", function(){ surligner(n); });
+    el.addEventListener("mouseleave", function(){ surligner(null); });
+    el.addEventListener("focusin", function(){ surligner(n); });
+    el.addEventListener("focusout", function(){ surligner(null); });
+  }
+  Array.prototype.forEach.call(planEl.querySelectorAll(".pin"), suivre);
+  Array.prototype.forEach.call(partnersEl.querySelectorAll(".partner"), suivre);
+
+  // Thème : 3 modes en cycle — selon l'appareil (auto) → clair → sombre
+  var themeBtn = document.getElementById("theme");
+  var root = document.documentElement;
+  var THEME_LABEL = { auto: "selon l'appareil", light: "clair", dark: "sombre" };
+  var THEME_NEXT = { auto: "light", light: "dark", dark: "auto" };
+  function applyTheme(mode){
+    if (mode === "light" || mode === "dark") root.setAttribute("data-theme", mode);
+    else { mode = "auto"; root.removeAttribute("data-theme"); }
+    themeBtn.setAttribute("data-mode", mode);
+    themeBtn.title = "Thème : " + THEME_LABEL[mode];
+    themeBtn.setAttribute("aria-label", "Thème : " + THEME_LABEL[mode] + " (cliquer pour changer)");
+    return mode;
+  }
+  var themeMode = "auto";
+  try { themeMode = localStorage.getItem("cc-theme") || "auto"; } catch(e){}
+  themeMode = applyTheme(themeMode);
+  themeBtn.addEventListener("click", function(){
+    themeMode = applyTheme(THEME_NEXT[themeMode]);
+    try {
+      if (themeMode === "auto") localStorage.removeItem("cc-theme");
+      else localStorage.setItem("cc-theme", themeMode);
+    } catch(e){}
+  });
+
+  // Taille du texte : grossir / rapetisser (zoom de la page, mémorisé)
+  var TEXT_STEPS = [0.9, 1, 1.15, 1.3, 1.5];
+  var textDown = document.getElementById("text-down");
+  var textUp = document.getElementById("text-up");
+  var textIdx = 1;
+  function applyText(i){
+    textIdx = Math.max(0, Math.min(TEXT_STEPS.length - 1, i));
+    var z = TEXT_STEPS[textIdx];
+    if (z === 1) { root.style.removeProperty("--text-zoom"); root.removeAttribute("data-text"); }
+    else { root.style.setProperty("--text-zoom", z); root.setAttribute("data-text", String(z)); }
+    textDown.disabled = textIdx === 0;
+    textUp.disabled = textIdx === TEXT_STEPS.length - 1;
+  }
+  try { var savedText = TEXT_STEPS.indexOf(parseFloat(localStorage.getItem("cc-text"))); if (savedText >= 0) textIdx = savedText; } catch(e){}
+  applyText(textIdx);
+  function stepText(d){
+    applyText(textIdx + d);
+    try {
+      if (TEXT_STEPS[textIdx] === 1) localStorage.removeItem("cc-text");
+      else localStorage.setItem("cc-text", String(TEXT_STEPS[textIdx]));
+    } catch(e){}
+    if (typeof setToolbarHeight === "function") setToolbarHeight();
+  }
+  textDown.addEventListener("click", function(){ stepText(-1); });
+  textUp.addEventListener("click", function(){ stepText(1); });
+
+  // Hauteur réelle de la barre d'outils collante → --tb (utilisé par les offsets mobiles)
+  var toolbarEl = document.querySelector(".toolbar");
+  function setToolbarHeight(){ if (toolbarEl) root.style.setProperty("--tb", toolbarEl.offsetHeight + "px"); }
+  setToolbarHeight();
+  if (window.ResizeObserver && toolbarEl){ new ResizeObserver(setToolbarHeight).observe(toolbarEl); }
+  window.addEventListener("resize", setToolbarHeight);
+
+  // Masquer la réglette flottante quand l'agenda n'est plus à l'écran
+  var agendaEl = document.querySelector("main.agenda");
+  if (window.IntersectionObserver && agendaEl){
+    new IntersectionObserver(function(entries){
+      railEl.classList.toggle("rail--off", !entries[0].isIntersecting);
+    }, { rootMargin: "0px 0px -35% 0px" }).observe(agendaEl);
+  }
+
+  // Le fil démarre au niveau de l'agenda puis se cale sous la barre d'outils
+  function positionRail(){
+    if (!agendaEl) return;
+    var tb = toolbarEl ? toolbarEl.offsetHeight : 70;
+    var top = Math.max(tb + 18, agendaEl.getBoundingClientRect().top + 6);
+    railEl.style.top = top + "px";
+  }
+  positionRail();
+  window.addEventListener("scroll", positionRail, { passive: true });
+  window.addEventListener("resize", positionRail);
+
+  // Revenir en haut : la flèche apparaît dès que l'on descend dans la liste,
+  // c'est-à-dire quand l'en-tête de l'agenda passe sous la barre d'outils collante.
+  var toTopEl = document.getElementById("toTop");
+  var agendaHeadEl = document.querySelector(".agenda-head");
+  function majToTop(){
+    var bas = toolbarEl ? toolbarEl.getBoundingClientRect().bottom : 0;
+    toTopEl.classList.toggle("show", agendaHeadEl.getBoundingClientRect().bottom < bas);
+  }
+  majToTop();
+  window.addEventListener("scroll", majToTop, { passive: true });
+  window.addEventListener("resize", majToTop);
+  toTopEl.addEventListener("click", function(){
+    // Le focus repart du haut de la page (le bouton, lui, va disparaître).
+    var marque = document.querySelector(".masthead .brand");
+    if (marque) marque.focus({ preventScroll: true });
+    window.scrollTo(0, 0); // défilement doux (scroll-behavior), instantané si mouvements réduits
+  });
+
+  assignerIds();
+  render();
+  positionRail();
+
+  // Données en direct : si le feed agrégé (data/evenements.json) est présent
+  // et non vide, il remplace les données de démonstration. Sinon (fichier
+  // absent, vide, ou ouverture locale du fichier), la démo reste affichée.
+  // Le lien partagé (?e=…) n'est traité qu'ensuite, sur les données définitives.
+  chargerFeed().then(appliquerLienProfond);
+
+  // Arrivée par un lien partagé (?e=<id>) : l'événement est mis en évidence au
+  // milieu de l'agenda complet ; s'il n'y est plus, un bandeau le signale.
+  var noticeEl = document.getElementById("notice");
+  document.getElementById("noticeClose").addEventListener("click", function(){ noticeEl.hidden = true; });
+  function appliquerLienProfond(){
+    var id = null;
+    try { id = new URLSearchParams(location.search).get("e"); } catch(e){}
+    if (!id) return;
+    var trouve = EVENTS.some(function(ev){ return ev.id === id; });
+    if (trouve){
+      reinitialiserFiltres();
+      render();
+    }
+    var el = trouve && document.getElementById("e-" + id);
+    if (!el){ noticeEl.hidden = false; return; }
+    el.classList.add("is-shared");
+    el.scrollIntoView({ block: "center" });
+  }
+  function reinitialiserFiltres(){
+    state.disc = "all"; state.q = ""; state.period = "all"; state.venue = "all";
+    Array.prototype.forEach.call(chipsEl.children, function(c){ c.setAttribute("aria-pressed", c.dataset.key === "all" ? "true" : "false"); });
+    Array.prototype.forEach.call(periodEl.children, function(b){ b.setAttribute("aria-pressed", b.dataset.p === "all" ? "true" : "false"); });
+    venueEl.value = "all";
+    venueEl.parentNode.classList.remove("active");
+    document.getElementById("q").value = "";
+  }
+
+  // Dernière mise à jour de l'agenda, discrète au pied de page et en clair
+  // (« aujourd'hui à 2 h 04 », « hier à… », « le 3 octobre à… »). La date est
+  // celle de publication du feed, lue dans l'en-tête Last-Modified (posé par
+  // GitHub Pages comme par « python -m http.server ») ; sans elle, rien ne s'affiche.
+  function afficherMiseAJour(entete){
+    var d = entete ? new Date(entete) : null;
+    if (!d || isNaN(d)) return;
+    var maintenant = new Date();
+    var jour = new Date(d); jour.setHours(0, 0, 0, 0);
+    var auj = new Date(maintenant); auj.setHours(0, 0, 0, 0);
+    var ecart = Math.round((auj - jour) / 864e5); // arrondi : journées de 23 ou 25 h (heure d'été)
+    var date = (d.getDate() === 1 ? "1er" : d.getDate()) + " " + MOIS_LONG[d.getMonth()];
+    var annee = d.getFullYear() !== maintenant.getFullYear() ? " " + d.getFullYear() : "";
+    var heure = d.getHours() + " h " + ("0" + d.getMinutes()).slice(-2);
+    var quandEl = document.getElementById("majQuand");
+    quandEl.textContent = (ecart === 0 ? "aujourd'hui" : ecart === 1 ? "hier" : "le " + date + annee) + " à " + heure;
+    quandEl.dateTime = d.toISOString();
+    quandEl.title = JOURS_LONG[d.getDay()] + " " + date + " " + d.getFullYear() + " à " + heure;
+    document.getElementById("maj").hidden = false;
+  }
+
+  function chargerFeed(){
+    var modifie = null;
+    return fetch("data/evenements.json", { cache: "no-store" })
+      .then(function(r){
+        if (!r.ok) return null;
+        modifie = r.headers.get("Last-Modified");
+        return r.json();
+      })
+      .then(function(data){
+        if (!Array.isArray(data) || data.length === 0) return;
+        // Discipline par défaut selon la salle (le feed ne la fournit pas encore).
+        // Repli par partenaire, si le feed ne porte pas de catégorie
+        // (le champ « categorie » est déterminé automatiquement à l'agrégation).
+        var DISC_PARTENAIRE = {
+          "Théâtre Granada": "musique",
+          "La Petite Boîte Noire": "musique",
+          "Maison des arts de la parole": "litt",
+          "Le Tremplin 16-30": "musique",
+          "Musée des beaux-arts de Sherbrooke": "arts",
+          "Sporobole": "arts",
+          "Le Grand-Espace": "theatre"
+        };
+        var mapped = data.map(function(e){
+          var iso = e.date_debut || "";
+          var m = iso.match(/T(\d{2}):(\d{2})/);
+          var heure = m && !(m[1] === "00" && m[2] === "00") ? m[1] + " h " + m[2] : "";
+          var debut = (iso || "").slice(0, 10);
+          // date_fin peut valoir l'heure de fin d'un événement d'une seule
+          // journée : le même jour que date_debut n'est pas une plage. On ne
+          // garde dateEnd que si le dernier jour diffère, sinon on afficherait
+          // « Du 15 au 15 oct. » au lieu de la date simple.
+          var fin = e.date_fin ? String(e.date_fin).slice(0, 10) : "";
+          return {
+            d: (e.categorie && DISC[e.categorie]) ? e.categorie : (DISC_PARTENAIRE[e.partenaire] || "musique"),
+            title: e.titre || "Sans titre",
+            venue: e.lieu || "",
+            partner: e.partenaire || e.lieu || "",
+            date: debut,
+            dateEnd: (fin && fin !== debut) ? fin : undefined,
+            time: heure,
+            desc: e.sous_titre || "",
+            debutIso: iso,             // heures exactes, pour « Ajouter au calendrier »
+            finIso: e.date_fin || null,
+            lien: e.lien || null,
+            image: e.image || null,
+            id: e.id || undefined,     // fourni avec les pages de partage (culturecentro pages)
+            pagePartage: !!e.id
+          };
+        }).filter(function(e){ return /^\d{4}-\d{2}-\d{2}$/.test(e.date); });
+        if (!mapped.length) return;
+        EVENTS = mapped;
+        assignerIds();
+        NOW = new Date();
+        NOW.setHours(0, 0, 0, 0); // vraie date du jour pour les données réelles
+        populateVenues();
+        render();
+        positionRail();
+        afficherMiseAJour(modifie);
+      })
+      .catch(function(){ /* feed indisponible : la démo reste affichée */ });
+  }
+})();
+</script>
+
+</body>
+</html>

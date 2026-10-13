@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Variantes Culture Centro</title>
+<meta name="description" content="Cinq variantes de maquette pour clarifier les préférences de design du site Culture Centro.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Atkinson+Hyperlegible:wght@400;700&family=Big+Shoulders+Display:wght@900&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Gabarito:wght@800&family=IBM+Plex+Sans:wght@700&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Page de comparaison : reprend l'identité de la maquette actuelle
+     (web/index.html) pour rester neutre face aux cinq variantes. */
+  :root {
+    --paper: #FBF7F0; --card: #FFFFFF; --ink: #16162E; --soft: #45455E; --faint: #6E6E85;
+    --line: #E4DBCB; --accent: #B4741F;
+    --display: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+    --body: "Instrument Sans", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --paper: #131322; --card: #1E1E33; --ink: #F2EEF6; --soft: #C3C0D4; --faint: #918EA8; --line: #2E2E48; --accent: #E4A44C; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --paper: #131322; --card: #1E1E33; --ink: #F2EEF6; --soft: #C3C0D4; --faint: #918EA8; --line: #2E2E48; --accent: #E4A44C; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+  h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.08; letter-spacing: -.02em; text-wrap: balance; }
+
+  header { padding-block: 40px 26px; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+  header h1 { font-size: clamp(32px, 5vw, 50px); font-weight: 800; margin-top: 8px; }
+  header p { max-width: 66ch; color: var(--soft); margin: 12px 0 0; }
+  .how { display: flex; gap: 10px 26px; flex-wrap: wrap; margin-top: 18px; font-size: 14.5px; color: var(--soft); padding: 0; list-style: none; counter-reset: s; }
+  .how li { counter-increment: s; display: flex; gap: 8px; align-items: baseline; }
+  .how li::before { content: counter(s); font-family: var(--display); font-weight: 800; color: var(--accent); }
+
+  .variants { display: flex; flex-direction: column; gap: 18px; padding-block: 30px; }
+  .v { display: grid; grid-template-columns: 250px minmax(0, 1fr); background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  @media (max-width: 780px) { .v { grid-template-columns: 1fr; } }
+  .spec { padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; background: var(--bg-v); color: var(--fg-v); min-height: 210px; }
+  .spec .n { font-family: var(--display); font-weight: 800; font-size: 14px; opacity: .8; }
+  .spec .sample { font-size: 40px; line-height: 1; }
+  .spec .sw { display: flex; gap: 6px; }
+  .spec .sw i { width: 26px; height: 26px; border-radius: var(--r, 50%); background: var(--c); box-shadow: 0 0 0 1px rgba(128,128,128,.35); }
+  .spec .fonts { font-size: 12.5px; opacity: .85; }
+  .info { padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .info .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+  .info h2 { font-size: 25px; font-weight: 800; }
+  .info .pitch { color: var(--soft); margin: 4px 0 0; max-width: 62ch; }
+  .open { display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 600; font-size: 14.5px; padding: 9px 16px; border-radius: 999px; white-space: nowrap; }
+  .open:hover { background: var(--accent); color: #1a1206; }
+  dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 14.5px; }
+  dt { font-weight: 700; color: var(--faint); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding-top: 3px; }
+  dd { margin: 0; }
+  @media (max-width: 560px) { dl { grid-template-columns: 1fr; } dt { padding-top: 8px; } }
+  .fit { font-size: 14.5px; background: color-mix(in srgb, var(--accent) 10%, var(--card)); border-radius: 10px; padding: 10px 14px; }
+  .fit b { color: var(--accent); }
+
+  section.cmp, section.qs { padding-block: 26px; border-top: 1px solid var(--line); }
+  section h2.big { font-size: clamp(24px, 3.4vw, 32px); font-weight: 800; margin-bottom: 6px; }
+  section p.sub { color: var(--soft); margin: 0 0 16px; max-width: 70ch; }
+  .tscroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; min-width: 860px; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  thead th { font-family: var(--display); font-size: 15px; background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+  tbody th { font-weight: 700; color: var(--soft); width: 150px; }
+  tr:last-child th, tr:last-child td { border-bottom: 0; }
+
+  .qgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .q h3 { font-size: 17px; margin-bottom: 6px; }
+  .q ul { margin: 0; padding-left: 1.1em; color: var(--soft); font-size: 14.5px; }
+  .q li + li { margin-top: 4px; }
+
+  footer { padding-block: 26px; font-size: 13.5px; color: var(--faint); border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Culture Centro · atelier de design</div>
+    <h1>Cinq directions pour le site</h1>
+    <p>Chaque variante affiche les <strong>données réelles</strong> du flux publié sur le site (les mêmes que la page actuelle, images comprises), pour que seule la présentation change. Si le flux est indisponible, un jeu de démonstration prend le relais. Toutes gardent un filtre par partenaire. Elles ne jouent pas seulement sur l'apparence : chacune propose aussi une façon différente de naviguer dans les événements, de traiter les activités récurrentes et de hiérarchiser les partenaires.</p>
+    <ol class="how">
+      <li>Ouvrez chaque variante, sur ordinateur et sur téléphone.</li>
+      <li>Notez ce que vous aimez, élément par élément : on peut combiner.</li>
+      <li>Répondez aux questions en bas de page.</li>
+    </ol>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="variants">
+
+    <article class="v">
+      <div class="spec" style="--bg-v:#ECEEE8;--fg-v:#1A1C29">
+        <span class="n">Variante 1</span>
+        <span class="sample" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;text-transform:uppercase;font-size:52px;line-height:.85">À l'af<span style="color:#FF3D7F">fiche</span></span>
+        <div><div class="sw" style="--r:0"><i style="--c:#ECEEE8"></i><i style="--c:#1A1C29"></i><i style="--c:#FF3D7F"></i><i style="--c:#2B50F0"></i></div><div class="fonts">Big Shoulders Display · Schibsted Grotesk</div></div>
+      </div>
+      <div class="info">
+        <div class="top"><div><h2>À l'affiche</h2><p class="pitch">Une affiche sérigraphiée : deux encres qui se superposent, typo condensée très grasse, une sélection éditoriale en tête.</p></div><a class="open" href="v1-affiche.html">Ouvrir ↗</a></div>
+        <dl>
+          <dt>Mise en page</dt><dd>« À l'affiche » (3 affiches en grand : le prochain spectacle de chaque partenaire), puis la semaine jour par jour, puis la saison en liste compacte, chaque ligne avec son image.</dd>
+          <dt>Navigation</dt><dd>Défilement éditorial. Filtres : discipline, en liens texte, et partenaire.</dd>
+          <dt>Récurrents</dt><dd>Retirés de l'agenda et regroupés dans un encadré « Rendez-vous réguliers ».</dd>
+          <dt>Partenaires</dt><dd>Trois niveaux : 4 grands blocs couleur, le réseau en ligne de texte, le soutien en petit.</dd>
+          <dt>Formes</dt><dd>Angles droits, filets épais, gros chiffres de date, cercles superposés.</dd>
+        </dl>
+        <p class="fit"><b>Idéal si</b> l'équipe veut mettre de l'avant quelques spectacles chaque semaine et assumer une image forte, reconnaissable dans la rue comme en ligne.</p>
+      </div>
+    </article>
+
+    <article class="v">
+      <div class="spec" style="--bg-v:#FFFFFF;--fg-v:#102A2E">
+        <span class="n">Variante 2</span>
+        <span class="sample" style="font-family:'IBM Plex Sans',sans-serif;font-weight:700">Calendrier</span>
+        <div><div class="sw" style="--r:0"><i style="--c:#FFFFFF"></i><i style="--c:#102A2E"></i><i style="--c:#0E6B73"></i><i style="--c:#FFD23F"></i></div><div class="fonts">IBM Plex Sans · IBM Plex Mono</div></div>
+      </div>
+      <div class="info">
+        <div class="top"><div><h2>Calendrier</h2><p class="pitch">Un outil de service public, sobre et précis : on choisit une date, on voit ce qui se passe.</p></div><a class="open" href="v2-calendrier.html">Ouvrir ↗</a></div>
+        <dl>
+          <dt>Mise en page</dt><dd>Calendrier mensuel à gauche (des points de couleur indiquent les disciplines du jour), programme du jour ou de la semaine à droite.</dd>
+          <dt>Navigation</dt><dd>Par date : clic sur un jour, vue Jour / Semaine, flèches précédent / suivant. Disciplines en cases à cocher, menu partenaire.</dd>
+          <dt>Récurrents</dt><dd>Une grille hebdomadaire Lundi → Dimanche. Option pour les inclure ou non dans le programme du jour.</dd>
+          <dt>Partenaires</dt><dd>Tableau à cellules : cellule double pour les principaux, simple pour le réseau, avec le nombre d'activités à venir.</dd>
+          <dt>Formes</dt><dd>Angles droits, filets de 1 px, chiffres en police à chasse fixe, vignette de l'affiche pour chaque activité.</dd>
+        </dl>
+        <p class="fit"><b>Idéal si</b> le public cherche surtout « qu'est-ce qu'il y a tel soir ? » et que le site doit ressembler à un service fiable plutôt qu'à un magazine.</p>
+      </div>
+    </article>
+
+    <article class="v">
+      <div class="spec" style="--bg-v:#5443F0;--fg-v:#FFFFFF">
+        <span class="n">Variante 3</span>
+        <span class="sample" style="font-family:'Gabarito',sans-serif;font-weight:800">Ce soir ?</span>
+        <div><div class="sw"><i style="--c:#E23B4E"></i><i style="--c:#C77A00"></i><i style="--c:#00836C"></i><i style="--c:#1F6FE0"></i><i style="--c:#C42A86"></i></div><div class="fonts">Gabarito · Figtree</div></div>
+      </div>
+      <div class="info">
+        <div class="top"><div><h2>Sortir</h2><p class="pitch">Une application de sortie pensée d'abord pour le téléphone : couleurs vives, grandes cartes, carrousels.</p></div><a class="open" href="v3-sortir.html">Ouvrir ↗</a></div>
+        <dl>
+          <dt>Mise en page</dt><dd>Question en titre, grandes cartes pleine couleur, puis des carrousels : expos à voir avant la fin, chaque semaine, gratuit, en famille.</dd>
+          <dt>Navigation</dt><dd>Par moment : Ce soir, Demain, Ce week-end, Cette semaine, Plus tard, plus un menu « Tous les lieux ». Barre d'onglets en bas sur mobile. Favoris « Mes sorties » sans compte.</dd>
+          <dt>Récurrents</dt><dd>Carrousel dédié avec la prochaine date ; mêlés au reste seulement pour « Ce soir » et « Demain ».</dd>
+          <dt>Partenaires</dt><dd>Onglet « Lieux » : pastilles rondes, un anneau distingue les partenaires principaux.</dd>
+          <dt>Formes</dt><dd>Grands rayons, pastilles, cartes colorées par discipline, illustrations.</dd>
+        </dl>
+        <p class="fit"><b>Idéal si</b> la cible est un public plus jeune, sur téléphone, qui décide à la dernière minute.</p>
+      </div>
+    </article>
+
+    <article class="v">
+      <div class="spec" style="--bg-v:#F1F3F6;--fg-v:#0F1726">
+        <span class="n">Variante 4</span>
+        <span class="sample" style="font-family:'Archivo',sans-serif;font-stretch:125%;font-weight:900">12 lieux</span>
+        <div><div class="sw"><i style="--c:#C8324A"></i><i style="--c:#7A3FC4"></i><i style="--c:#0F7F74"></i><i style="--c:#1F5FBF"></i><i style="--c:#B4460F"></i></div><div class="fonts">Archivo (large et normale)</div></div>
+      </div>
+      <div class="info">
+        <div class="top"><div><h2>Le réseau</h2><p class="pitch">On entre par les lieux : un plan du centre-ville tracé d'après OpenStreetMap, avec chaque lieu à son adresse réelle, puis la programmation lieu par lieu.</p></div><a class="open" href="v4-reseau.html">Ouvrir ↗</a></div>
+        <dl>
+          <dt>Mise en page</dt><dd>Plan avec repères numérotés et liste des lieux, puis un grand panneau par partenaire principal et des cartes compactes pour le réseau.</dd>
+          <dt>Navigation</dt><dd>Par lieu (clic sur le plan ou la liste), avec une bascule « Par date » pour la vue chronologique.</dd>
+          <dt>Récurrents</dt><dd>Affichés dans la fiche du lieu (« Tous les mardis · Jam jazz »), avec les expositions en cours.</dd>
+          <dt>Partenaires</dt><dd>Au cœur du site : chaque lieu a un numéro et une couleur d'identité ; les principaux ont 4 dates, le réseau 2.</dd>
+          <dt>Formes</dt><dd>Rayons moyens, pastilles numérotées, titres en caractères élargis.</dd>
+        </dl>
+        <p class="fit"><b>Idéal si</b> le projet doit d'abord valoriser les partenaires et donner envie de découvrir le quartier à pied.</p>
+      </div>
+    </article>
+
+    <article class="v">
+      <div class="spec" style="--bg-v:#111111;--fg-v:#FFFFFF">
+        <span class="n">Variante 5</span>
+        <span class="sample" style="font-family:'Atkinson Hyperlegible',sans-serif;font-weight:700">Programme</span>
+        <div><div class="sw" style="--r:0"><i style="--c:#FFFFFF"></i><i style="--c:#111111"></i><i style="--c:#1D3FBB"></i><i style="--c:#FFDD00"></i></div><div class="fonts">Atkinson Hyperlegible</div></div>
+      </div>
+      <div class="info">
+        <div class="top"><div><h2>Programme</h2><p class="pitch">Le programme en texte, lisibilité avant tout : gros caractères, contraste élevé, aucune image.</p></div><a class="open" href="v5-programme.html">Ouvrir ↗</a></div>
+        <dl>
+          <dt>Mise en page</dt><dd>Filtres à gauche (repliés sur mobile), expositions puis activités régulières puis la liste jour par jour à droite.</dd>
+          <dt>Navigation</dt><dd>Filtres combinables : période, plusieurs disciplines, plusieurs lieux, gratuit, famille. Chaque option affiche son nombre de résultats.</dd>
+          <dt>Récurrents</dt><dd>Section à part avec « Prochaines dates » dépliables ; une case permet de les mélanger à la liste.</dd>
+          <dt>Partenaires</dt><dd>Trois colonnes de texte : principaux, membres du réseau, soutien.</dd>
+          <dt>Accessibilité</dt><dd>Réglage de la taille du texte, lien d'évitement, focus jaune très visible, cibles de 44 px.</dd>
+        </dl>
+        <p class="fit"><b>Idéal si</b> l'accessibilité est une priorité (public âgé, malvoyant) ou si le site doit rester très léger et facile à maintenir.</p>
+      </div>
+    </article>
+  </div>
+
+  <section class="cmp">
+    <h2 class="big">Les choix, côte à côte</h2>
+    <p class="sub">Chaque ligne est une décision indépendante : on peut prendre la navigation d'une variante et le style d'une autre.</p>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th></th><th>1 · À l'affiche</th><th>2 · Calendrier</th><th>3 · Sortir</th><th>4 · Le réseau</th><th>5 · Programme</th></tr></thead>
+        <tbody>
+          <tr><th>Entrée principale</th><td>Sélection éditoriale</td><td>Une date</td><td>Un moment (ce soir, ce week-end)</td><td>Un lieu</td><td>Des filtres</td></tr>
+          <tr><th>Filtres</th><td>Discipline, partenaire</td><td>Disciplines, partenaire, récurrents</td><td>Lieu, famille, discipline</td><td>Lieu (plan ou liste)</td><td>Tous, combinables</td></tr>
+          <tr><th>Événements récurrents</th><td>Encadré à part</td><td>Grille de la semaine</td><td>Carrousel dédié</td><td>Dans la fiche du lieu</td><td>Section à part, dépliable</td></tr>
+          <tr><th>Longue durée (expos)</th><td>Encadré « En ce moment »</td><td>Bandeau au-dessus du jour</td><td>Carrousel avec compte à rebours</td><td>Dans la fiche du lieu</td><td>Section en tête</td></tr>
+          <tr><th>Partenaires</th><td>3 niveaux, grands blocs</td><td>2 tailles de cellule</td><td>Pastilles, anneau pour les principaux</td><td>Au centre du site, numérotés</td><td>3 listes texte</td></tr>
+          <tr><th>Images</th><td>Affiches en grand + vignettes</td><td>Vignettes</td><td>Grandes images</td><td>Plan</td><td>Aucune</td></tr>
+          <tr><th>Densité</th><td>Moyenne</td><td>Élevée</td><td>Faible</td><td>Moyenne</td><td>Élevée</td></tr>
+          <tr><th>Priorité mobile</th><td>Moyenne</td><td>Moyenne</td><td>Très forte</td><td>Moyenne</td><td>Forte</td></tr>
+          <tr><th>Mise en avant</th><td>Automatique (ou « coups de cœur » choisis)</td><td>Aucune</td><td>Aucune</td><td>Les lieux principaux</td><td>Aucune</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="qs">
+    <h2 class="big">Questions pour le client</h2>
+    <p class="sub">Les réponses orientent la maquette finale plus sûrement qu'un « j'aime / je n'aime pas » global.</p>
+    <div class="qgrid">
+      <div class="q"><h3>Public et usage</h3><ul><li>Qui visite le site en premier : familles, étudiants, touristes, habitués ?</li><li>Surtout sur téléphone ou sur ordinateur ?</li><li>Le visiteur sait-il déjà quand il veut sortir, ou cherche-t-il une idée ?</li></ul></div>
+      <div class="q"><h3>Navigation dans les événements</h3><ul><li>Entrée par date, par moment, par lieu ou par filtres ?</li><li>Faut-il pouvoir cocher plusieurs disciplines à la fois ?</li><li>Les favoris « Mes sorties » sont-ils utiles ?</li></ul></div>
+      <div class="q"><h3>Ponctuels et récurrents</h3><ul><li>Les activités récurrentes doivent-elles apparaître chaque jour dans l'agenda ou être regroupées à part ?</li><li>Les expositions longues : en tête, à part, ou dans la fiche du lieu ?</li></ul></div>
+      <div class="q"><h3>Partenaires</h3><ul><li>Faut-il distinguer partenaires principaux et membres du réseau ? Sur quel critère ?</li><li>Afficher les commanditaires et organismes de soutien, et où ?</li><li>Les lieux doivent-ils avoir leur propre page ?</li></ul></div>
+      <div class="q"><h3>Ton visuel</h3><ul><li>Plutôt affiche culturelle (1), service public (2), application (3), réseau de lieux (4) ou texte accessible (5) ?</li><li>Photos des spectacles, illustrations ou aucune image ?</li><li>Couleurs par discipline, par lieu, ou une seule couleur d'accent ?</li></ul></div>
+      <div class="q"><h3>Contenu et gestion</h3><ul><li>Quelqu'un peut-il choisir des « coups de cœur » chaque semaine, ou la sélection automatique suffit-elle ?</li><li>Faut-il récupérer les prix auprès des salles ? (le flux actuel n'en contient pas, d'où l'absence du filtre « Gratuit »)</li><li>Le site doit-il être bilingue ?</li></ul></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>Maquettes de travail · données fictives · <a href="../index.html">maquette actuelle</a></span>
+  <span>Sherbrooke, Québec</span>
+</footer>
+<script>
+  try { var t = localStorage.getItem("cc-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+</body>
+</html>

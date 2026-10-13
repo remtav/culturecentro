@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Logo provisoire de Culture Centro (deux étincelles sur tuile sombre), en attendant
+       le logo officiel. Ce fichier sert à l'en-tête, au pied de page et à l'icône d'onglet :
+       le remplacer suffit (puis régénérer apple-touch-icon.png et img/partage.png). -->
+  <rect width="48" height="48" rx="13" fill="#16162E"/>
+  <path d="M22 9C23.2 18.6 25.4 20.8 35 22C25.4 23.2 23.2 25.4 22 35C20.8 25.4 18.6 23.2 9 22C18.6 20.8 20.8 18.6 22 9Z" fill="#F2B34F"/>
+  <path d="M33.5 28C34 32 35 33 39 33.5C35 34 34 35 33.5 39C33 35 32 34 28 33.5C32 33 33 32 33.5 28Z" fill="#F0728A"/>
+</svg>

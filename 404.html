@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page introuvable · Culture Centro</title>
+<script>
+  // Lien de partage d'un événement retiré du feed (passé, renommé) : retour à
+  // l'agenda, qui affiche le bandeau « n'est plus à l'affiche ».
+  var m = location.pathname.match(/\/e\/([a-z0-9-]+)/);
+  location.replace("/culturecentro/" + (m ? "?e=" + m[1] : ""));
+</script>
+</head>
+<body>
+<p><a href="/culturecentro/">Retour à l'agenda Culture Centro</a></p>
+</body>
+</html>
