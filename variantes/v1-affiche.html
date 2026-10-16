@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Culture Centro — Variante 1 · À l'affiche</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+  /* Variante 1 — affiche sérigraphiée : deux encres d'accompagnement (rose, bleu)
+     qui se superposent sur un papier gris-vert, typo condensée très grasse.
+     Mise en page éditoriale : sélection « À l'affiche », semaine jour par jour,
+     puis la saison en liste compacte. */
+  :root {
+    --paper: #ECEEE8;
+    --paper-2: #E1E4DC;
+    --ink: #1A1C29;
+    --muted: #585B6B;
+    --pink: #FF3D7F;
+    --blue: #2B50F0;
+    --on-spot: #FFFFFF;
+    --blend: multiply;
+    --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+    --body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14151C; --paper-2: #1C1D26; --ink: #EDEEE7; --muted: #A2A5B4;
+      --pink: #FF5C93; --blue: #5A78FF; --on-spot: #FFFFFF; --blend: screen; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14151C; --paper-2: #1C1D26; --ink: #EDEEE7; --muted: #A2A5B4;
+    --pink: #FF5C93; --blue: #5A78FF; --on-spot: #FFFFFF; --blend: screen; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  [hidden] { display: none !important; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding-inline: 20px; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  h1, h2, h3 { font-family: var(--display); text-transform: uppercase; line-height: .9; margin: 0; letter-spacing: .005em; text-wrap: balance; }
+
+  /* ---------- En-tête ---------- */
+  .topbar { display: flex; align-items: center; gap: 18px; padding-block: 14px; border-bottom: 3px solid var(--ink); font-size: 14px; font-weight: 600; }
+  .topbar .today { margin-right: auto; font-variant-numeric: tabular-nums; }
+  .topbar nav { display: flex; gap: 18px; }
+  .topbar nav a { text-decoration: none; }
+  .topbar nav a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+  .theme { border: 2px solid var(--ink); background: none; color: var(--ink); width: 34px; height: 34px; cursor: pointer; display: grid; place-items: center; }
+  @media (max-width: 640px) { .topbar nav { display: none; } }
+
+  .mast { padding-block: 14px 16px; border-bottom: 3px solid var(--ink); }
+  .wordmark { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(40px, 7vw, 84px); line-height: .85; letter-spacing: -.01em; display: flex; flex-wrap: wrap; column-gap: .18em; }
+  .wordmark .c2 { color: var(--pink); mix-blend-mode: var(--blend); }
+  .mast-sub { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-weight: 600; }
+  .mast-sub .wk { font-family: var(--display); font-size: 22px; font-weight: 800; text-transform: uppercase; color: var(--blue); }
+
+  /* Filtres : liens texte séparés par des barres obliques */
+  .filters { display: flex; flex-wrap: wrap; gap: 4px 0; padding-block: 12px; border-bottom: 1px solid var(--ink); font-family: var(--display); font-weight: 800; font-size: 21px; text-transform: uppercase; }
+  .filters button { font: inherit; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0 2px; }
+  .filters button:hover { color: var(--ink); }
+  .filters button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-decoration-thickness: 4px; text-underline-offset: 4px; text-decoration-color: var(--pink); }
+  .filters .sep { color: var(--muted); padding-inline: 8px; opacity: .5; }
+  .filters .pwrap { margin-left: auto; display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
+  @media (max-width: 640px) { .filters .pwrap { margin-left: 0; flex-basis: 100%; padding-top: 6px; } .filters select { flex: 1; min-width: 0; } }
+  .filters .pwrap label { font-size: 16px; color: var(--muted); }
+  .filters select { font: inherit; font-size: 19px; text-transform: uppercase; color: var(--ink); background: var(--paper); border: 0; border-bottom: 3px solid var(--ink); padding: 0 4px; cursor: pointer; max-width: 260px; }
+  .filters select.on { border-color: var(--pink); color: var(--pink); }
+  /* Vignettes : illustration + affiche de la salle */
+  .th { position: relative; overflow: hidden; background: var(--ink); }
+  .th svg, .th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  section { padding-block: 34px; }
+  .sec-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .sec-title h2 { font-size: clamp(36px, 6vw, 60px); font-weight: 900; }
+  .sec-title span { font-size: 14px; font-weight: 600; color: var(--muted); }
+
+  /* ---------- Affiches ---------- */
+  .posters { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: auto auto; gap: 16px; }
+  .poster { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-height: 250px; padding: 14px 14px 18px; color: var(--on-spot); text-decoration: none; isolation: isolate; transition: transform .15s; }
+  .poster:hover { transform: translate(-3px, -3px); }
+  .poster.big { grid-row: span 2; min-height: 520px; }
+  .poster.big .th { aspect-ratio: 4 / 3 !important; }
+  .poster .th { aspect-ratio: 16 / 9; max-width: 100%; box-shadow: 6px 6px 0 color-mix(in srgb, var(--ink) 85%, transparent); }
+  .poster .th img { filter: saturate(1.05) contrast(1.05); }
+  .poster .txt { display: flex; flex-direction: column; gap: 10px; padding-inline: 6px; }
+  .poster.s-pink { background: var(--pink); }
+  .poster.s-blue { background: var(--blue); }
+  .poster .dot { position: absolute; border-radius: 50%; z-index: -1; mix-blend-mode: multiply; opacity: .9; }
+  .poster.s-pink .dot { background: var(--blue); }
+  .poster.s-blue .dot { background: var(--pink); }
+  .poster .kicker { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .poster h3 { font-size: clamp(26px, 2.8vw, 38px); font-weight: 900; }
+  .poster.big h3 { font-size: clamp(38px, 5vw, 70px); }
+  .poster .when { font-family: var(--display); font-weight: 900; font-size: clamp(34px, 4vw, 52px); line-height: .85; font-variant-numeric: tabular-nums; }
+  .poster.big .when { font-size: clamp(50px, 7vw, 96px); }
+  .poster .where { font-weight: 600; font-size: 15px; margin-top: 6px; }
+  @media (max-width: 760px) { .posters { grid-template-columns: 1fr; } .poster.big { grid-row: auto; min-height: 380px; } }
+
+  /* ---------- Semaine ---------- */
+  .week-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 32px; align-items: start; }
+  @media (max-width: 900px) { .week-grid { grid-template-columns: 1fr; } }
+  .day { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 16px; border-top: 3px solid var(--ink); padding-block: 12px 18px; }
+  .day .num { font-family: var(--display); font-weight: 900; font-size: 64px; line-height: .8; font-variant-numeric: tabular-nums; }
+  .day .dn { display: block; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+  .day.is-today .num { color: var(--pink); }
+  .day ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .day li + li { border-top: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); }
+  .ev { display: grid; grid-template-columns: 64px 120px minmax(0, 1fr); gap: 14px; padding-block: 10px; text-decoration: none; align-items: start; }
+  .ev .th { aspect-ratio: 16 / 10; max-width: 100%; }
+  .ev:hover .t { text-decoration: underline; text-decoration-thickness: 2px; }
+  .ev .h { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; padding-top: 3px; }
+  .ev .t { font-family: var(--display); font-weight: 800; font-size: 25px; text-transform: uppercase; line-height: 1; display: block; }
+  .ev .m { font-size: 14px; color: var(--muted); display: block; margin-top: 3px; }
+  .ev .m b { font-weight: 700; color: var(--ink); }
+  .day .none { color: var(--muted); font-size: 14px; padding-block: 9px; }
+  @media (max-width: 520px) { .day { grid-template-columns: 1fr; gap: 4px; } .day > div:first-child { display: flex; align-items: baseline; gap: 10px; } .day .num { font-size: 46px; } .ev { grid-template-columns: 96px minmax(0, 1fr); gap: 2px 12px; } .ev .th { grid-column: 1; grid-row: 1 / span 2; } .ev .h { grid-column: 2; grid-row: 1; padding-top: 0; } .ev > span:last-child { grid-column: 2; grid-row: 2; } .ev .t { font-size: 21px; } }
+
+  .aside { display: flex; flex-direction: column; gap: 22px; }
+  .box { border: 3px solid var(--ink); padding: 16px 18px; background: var(--paper-2); }
+  .box h3 { font-size: 30px; font-weight: 900; margin-bottom: 4px; }
+  .box p.lead { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
+  .box ul { list-style: none; margin: 0; padding: 0; }
+  .box li { padding-block: 9px; border-top: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); }
+  .box li b { display: block; font-size: 15px; }
+  .box li span { font-size: 13.5px; color: var(--muted); }
+  .box .rule { display: inline-block; font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: 16px; color: var(--blue); }
+
+  /* ---------- Saison ---------- */
+  .season { columns: 2 380px; column-gap: 36px; }
+  .month { break-inside: avoid; margin-bottom: 26px; }
+  .month h3 { font-size: 38px; font-weight: 900; border-bottom: 3px solid var(--ink); padding-bottom: 6px; margin-bottom: 4px; }
+  .row { display: grid; grid-template-columns: 64px 64px minmax(0, 1fr); gap: 12px; align-items: center;
+  }
+  .row .th { aspect-ratio: 1; max-width: 100%; }
+  .row { padding-block: 8px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); text-decoration: none; }
+  .row:hover b { text-decoration: underline; }
+  .row .d { font-family: var(--display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .row b { display: block; font-size: 15px; }
+  .row span { font-size: 13.5px; color: var(--muted); }
+
+  /* ---------- Partenaires ---------- */
+  .majors { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 860px) { .majors { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .major { position: relative; overflow: hidden; isolation: isolate; aspect-ratio: 1 / 1; max-width: 100%; padding: 16px; color: var(--on-spot); text-decoration: none; display: flex; flex-direction: column; justify-content: space-between; }
+  .major:nth-child(odd) { background: var(--blue); } .major:nth-child(even) { background: var(--pink); }
+  .major .big { font-family: var(--display); font-weight: 900; font-size: clamp(34px, 4.6vw, 58px); text-transform: uppercase; line-height: .85; overflow-wrap: anywhere; }
+  .major small { font-size: 13px; font-weight: 600; }
+  .major .dot { position: absolute; width: 70%; aspect-ratio: 1; right: -18%; top: -18%; border-radius: 50%; z-index: -1; mix-blend-mode: multiply; }
+  .major:nth-child(odd) .dot { background: var(--pink); } .major:nth-child(even) .dot { background: var(--blue); }
+  .network { margin-top: 24px; font-size: 17px; line-height: 1.8; }
+  .network strong { font-family: var(--display); font-weight: 900; font-size: 22px; text-transform: uppercase; margin-right: 10px; }
+  .network a { text-decoration: none; border-bottom: 2px solid var(--pink); font-weight: 600; }
+  .network a:hover { background: var(--pink); color: var(--on-spot); }
+  .network .sl { color: var(--muted); padding-inline: 8px; }
+  .support { margin-top: 10px; font-size: 14px; color: var(--muted); }
+
+  footer { background: var(--ink); color: var(--paper); padding-block: 26px; margin-top: 20px; font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer b { font-family: var(--display); font-size: 26px; text-transform: uppercase; font-weight: 900; }
+  .back { display: inline-block; margin-top: 4px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <span class="today" id="today"></span>
+    <nav><a href="#affiche">À l'affiche</a><a href="#semaine">Cette semaine</a><a href="#saison">La saison</a><a href="#partenaires">Partenaires</a></nav>
+    <button class="theme" id="theme" type="button" aria-label="Basculer le thème clair / sombre"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  </div>
+  <header class="mast">
+    <div class="wordmark" aria-label="Culture Centro"><span>Culture</span><span class="c2">Centro</span></div>
+    <div class="mast-sub"><span>L'agenda culturel du centre-ville de Sherbrooke</span><span class="wk" id="wk"></span></div>
+  </header>
+  <div class="filters" id="filters" role="group" aria-label="Filtrer par discipline"></div>
+
+  <section id="affiche">
+    <div class="sec-title"><h2>À l'affiche</h2><span id="selNote">La sélection de la semaine</span></div>
+    <div class="posters" id="posters"></div>
+  </section>
+
+  <section id="semaine">
+    <div class="sec-title"><h2>Cette semaine</h2><span id="weekRange"></span></div>
+    <div class="week-grid">
+      <div id="days"></div>
+      <aside class="aside">
+        <div class="box"><h3>En ce moment</h3><p class="lead">Expositions et activités de longue durée.</p><ul id="now"></ul></div>
+        <div class="box"><h3>Rendez-vous réguliers</h3><p class="lead">Ils reviennent chaque semaine ou chaque mois : on les regroupe ici pour alléger l'agenda.</p><ul id="regular"></ul></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="saison">
+    <div class="sec-title"><h2>Plus loin dans la saison</h2><span>Ponctuels seulement</span></div>
+    <div class="season" id="season"></div>
+  </section>
+
+  <section id="partenaires">
+    <div class="sec-title"><h2>Partenaires</h2><span>Le réseau culturel du centre-ville</span></div>
+    <div class="majors" id="majors"></div>
+    <p class="network" id="network"></p>
+    <p class="support" id="support"></p>
+  </section>
+</div>
+<footer>
+  <div class="wrap">
+    <div><b>Culture Centro</b><br>Maquette · variante 1 · <span data-cc-source></span></div>
+    <div><a class="back" href="index.html">← Toutes les variantes</a></div>
+  </div>
+</footer>
+
+<script src="commun.js"></script>
+<script>
+window.CC.ready(function () {
+  "use strict";
+  var C = window.CC, T = C.TODAY, esc = C.esc;
+  C.initTheme(document.getElementById("theme"));
+  var state = { d: "all", p: "all" };
+
+  document.getElementById("today").textContent = C.cap(C.dateLong(T)) + " " + T.getFullYear();
+  var monday = C.startOfWeek(T);
+  var jan4 = new Date(T.getFullYear(), 0, 4);
+  var wkNum = Math.round((monday - C.startOfWeek(jan4)) / (7 * C.DAY)) + 1; // semaine ISO
+  document.getElementById("wk").textContent = "Semaine " + wkNum;
+  document.getElementById("weekRange").textContent = "Du " + C.dateShort(T) + " au " + C.dateShort(C.addDays(T, 6));
+
+  // Filtres texte (discipline) + sélecteur de partenaire
+  var fEl = document.getElementById("filters");
+  ["all"].concat(Object.keys(C.DISC)).forEach(function (k, i) {
+    if (i) { var s = document.createElement("span"); s.className = "sep"; s.textContent = "/"; s.setAttribute("aria-hidden", "true"); fEl.appendChild(s); }
+    var b = document.createElement("button");
+    b.type = "button"; b.dataset.k = k; b.textContent = k === "all" ? "Tout" : C.DISC[k].label;
+    b.setAttribute("aria-pressed", k === state.d);
+    b.addEventListener("click", function () {
+      state.d = k;
+      fEl.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x.dataset.k === k); });
+      render();
+    });
+    fEl.appendChild(b);
+  });
+  var pw = document.createElement("div");
+  pw.className = "pwrap";
+  pw.innerHTML = '<label for="partner">Partenaire</label><select id="partner"><option value="all">Tous</option>' +
+    C.activePartners().map(function (p) { return '<option value="' + p.id + '">' + esc(p.short) + '</option>'; }).join("") + '</select>';
+  fEl.appendChild(pw);
+  document.getElementById("partner").addEventListener("change", function () { state.p = this.value; this.classList.toggle("on", this.value !== "all"); render(); });
+
+  function keep(ev) { return (state.d === "all" || ev.d === state.d) && (state.p === "all" || ev.p === state.p); }
+  function dd(d) { return String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0"); }
+  function thumb(ev) { return '<span class="th">' + C.cover(ev) + '</span>'; }
+  function meta(ev, parts) { return parts.filter(Boolean).join(" · "); }
+
+  // À l'affiche : champ « vedette » (démo) ou, avec le flux réel, le prochain
+  // spectacle illustré de chaque partenaire, partenaires principaux d'abord.
+  function renderPosters() {
+    var sel;
+    if (C.SOURCE !== "flux") sel = C.EVENTS.filter(function (e) { return e.vedette && C.end(e) >= T && keep(e); });
+    else {
+      var seen = {}, rank = { principal: 0, reseau: 1, soutien: 2 };
+      sel = C.EVENTS.filter(function (e) { return !C.isLong(e) && e.image && C.start(e) >= T && C.start(e) <= C.addDays(T, 30) && keep(e); })
+        .filter(function (e) { if (seen[e.p]) return false; seen[e.p] = 1; return true; })
+        .sort(function (a, b) { var pa = C.partner(a.p), pb = C.partner(b.p); return (rank[pa.tier] - rank[pb.tier]) || (C.start(a) - C.start(b)); });
+    }
+    sel = sel.slice(0, 3);
+    document.getElementById("selNote").textContent = C.SOURCE === "flux" ? "Le prochain rendez-vous de chaque partenaire" : "La sélection de la semaine";
+    var el = document.getElementById("posters");
+    el.innerHTML = "";
+    document.getElementById("affiche").hidden = !sel.length;
+    sel.forEach(function (ev, i) {
+      var a = document.createElement("a");
+      a.className = "poster " + (i === 1 ? "s-blue" : "s-pink") + (i === 0 ? " big" : "");
+      a.href = C.href(ev); a.target = "_blank"; a.rel = "noopener";
+      var s = C.start(ev), long = C.isLong(ev);
+      var when = long && s <= T ? "→ " + dd(C.end(ev)) : (ev.dateEnd ? dd(s) + "–" + String(C.end(ev).getDate()).padStart(2, "0") : dd(s));
+      var size = i === 0 ? 420 : 220;
+      var p = C.partner(ev.p);
+      a.innerHTML =
+        '<span class="dot" style="width:' + size + 'px;height:' + size + 'px;right:-' + (size * .28) + 'px;bottom:-' + (size * .32) + 'px"></span>' +
+        thumb(ev) +
+        '<div class="txt"><div class="kicker"><span>' + C.DISC[ev.d].label + '</span><span>' + esc(ev.prix || (p ? p.short : "")) + '</span></div>' +
+        '<h3>' + esc(ev.title) + '</h3>' +
+        '<div><div class="when">' + when + '</div><div class="where">' + esc(meta(ev, [C.place(ev), ev.time])) + '</div></div></div>';
+      el.appendChild(a);
+    });
+  }
+
+  // Longue durée + rendez-vous réguliers (encadrés)
+  function renderAside() {
+    var now = document.getElementById("now"); now.innerHTML = "";
+    C.EVENTS.filter(function (e) { return C.isLong(e) && keep(e) && C.end(e) >= T && C.start(e) <= C.addDays(T, 45); })
+      .forEach(function (e) { now.insertAdjacentHTML("beforeend", '<li><a href="' + C.href(e) + '" target="_blank" rel="noopener" style="text-decoration:none"><b>' + esc(e.title) + '</b></a><span>' + esc(C.place(e)) + ' · ' + C.rangeLabel(e) + '</span></li>'); });
+    if (!now.children.length) now.innerHTML = '<li><span>Aucune exposition pour ce filtre.</span></li>';
+    var reg = document.getElementById("regular"); reg.innerHTML = "";
+    C.SERIES.filter(keep).forEach(function (s) {
+      var n = C.nextOccurrences(s, 1)[0];
+      if (!n) return;
+      reg.insertAdjacentHTML("beforeend", '<li><span class="rule">' + esc(meta(s, [s.rule, s.time])) + '</span><b>' + esc(s.title) + '</b><span>' + esc(C.place(s)) + ' · prochain : ' + C.dateShort(n) + '</span></li>');
+    });
+    if (!reg.children.length) reg.innerHTML = '<li><span>Aucun rendez-vous régulier pour ce filtre.</span></li>';
+  }
+
+  // Semaine jour par jour (sans les séries, sans la longue durée)
+  function renderWeek() {
+    var el = document.getElementById("days"); el.innerHTML = "";
+    var items = C.agenda(T, C.addDays(T, 6), { series: false, noLong: true, spread: true }).filter(function (i) { return keep(i.ev); });
+    for (var k = 0; k < 7; k++) {
+      var d = C.addDays(T, k);
+      var its = items.filter(function (i) { return C.sameDay(i.date, d); });
+      var html = '<div class="day' + (k === 0 ? " is-today" : "") + '"><div><div class="num">' + String(d.getDate()).padStart(2, "0") + '</div><span class="dn">' + (k === 0 ? "Aujourd'hui" : C.JOURS[d.getDay()]) + '</span></div>';
+      if (!its.length) html += '<div class="none">Rien de programmé ce jour-là' + (state.d !== "all" || state.p !== "all" ? " avec ces filtres" : "") + '.</div>';
+      else html += '<ul>' + its.map(function (i) {
+        var ev = i.ev;
+        return '<li><a class="ev" href="' + C.href(ev) + '" target="_blank" rel="noopener"><span class="h">' + esc(ev.time || "—") + '</span>' + thumb(ev) + '<span><span class="t">' + esc(ev.title) + '</span><span class="m"><b>' + esc(C.place(ev)) + '</b> · ' + esc(meta(ev, [C.DISC[ev.d].label, ev.prix])) + '</span></span></a></li>';
+      }).join("") + '</ul>';
+      el.insertAdjacentHTML("beforeend", html + '</div>');
+    }
+  }
+
+  // Saison : liste compacte par mois, ponctuels après la semaine en cours
+  function renderSeason() {
+    var el = document.getElementById("season"); el.innerHTML = "";
+    var from = C.addDays(T, 7);
+    var list = C.EVENTS.filter(function (e) { return keep(e) && C.start(e) >= from && !C.isLong(e); })
+      .sort(function (a, b) { return C.start(a) - C.start(b); });
+    var groups = {};
+    list.forEach(function (e) { var s = C.start(e), k = s.getFullYear() * 12 + s.getMonth(); (groups[k] = groups[k] || []).push(e); });
+    Object.keys(groups).sort(function (a, b) { return a - b; }).forEach(function (k) {
+      var y = Math.floor(k / 12), m = k % 12;
+      el.insertAdjacentHTML("beforeend", '<div class="month"><h3>' + C.MOIS[m] + ' ' + y + '</h3>' + groups[k].map(function (e) {
+        return '<a class="row" href="' + C.href(e) + '" target="_blank" rel="noopener"><span class="d">' + dd(C.start(e)) + '</span>' + thumb(e) + '<span><b>' + esc(e.title) + '</b><span>' + esc(meta(e, [C.place(e), e.time])) + '</span></span></a>';
+      }).join("") + '</div>');
+    });
+    if (!list.length) el.innerHTML = '<p>Rien d\'autre cette saison pour ce filtre.</p>';
+  }
+
+  // Partenaires à trois niveaux
+  (function partners() {
+    var maj = document.getElementById("majors");
+    C.PARTNERS.filter(function (p) { return p.tier === "principal"; }).forEach(function (p) {
+      maj.insertAdjacentHTML("beforeend", '<a class="major" href="' + p.url + '" target="_blank" rel="noopener"><span class="dot"></span><span class="big">' + esc(p.short) + '</span><small>' + esc(p.kind) + ' ↗</small></a>');
+    });
+    var net = C.PARTNERS.filter(function (p) { return p.tier === "reseau"; });
+    document.getElementById("network").innerHTML = '<strong>Le réseau</strong>' + net.map(function (p) {
+      return '<a href="' + p.url + '" target="_blank" rel="noopener">' + esc(p.name) + '</a>';
+    }).join('<span class="sl">/</span>');
+    document.getElementById("support").textContent = "Avec le soutien de : " + C.PARTNERS.filter(function (p) { return p.tier === "soutien"; }).map(function (p) { return p.name; }).join(", ") + ".";
+  })();
+
+  function render() { renderPosters(); renderWeek(); renderAside(); renderSeason(); }
+  render();
+});
+</script>
+</body>
+</html>
